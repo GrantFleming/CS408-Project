@@ -1,0 +1,31 @@
+\chapter{What Is A Type System?}
+	Most type systems offer three things:
+	\begin{itemize}
+		\item Type Safety \\
+		Type Safety is the act of a program protecting itself from its own abstractions i.e. what actions it takes to mitigate or prevent various type errors.
+		An example of unsafe behaviour might be dereferencing null pointers, or accessing arrays out of bounds. A safer behaviour might be runtime exceptions.
+		
+		\item Type Checking (either static, dynamic or both) \\
+		At one point, we must verify our program is safe. By 'safe' we mean that the program provides the output that was intended and does not crash or exhibit other unintended or erroneous behaviours. A large part of these checks involve verifying that if a function claims to return some type, that it actually does what it claims, and that a function is only ever applied to arguments of the correct type. 
+		
+		We have a choice of when we do this checking. If we conduct these checks in advance of running the program, as part of the compilation, this is known as static type checking. If we conduct these checks while our program is running, it is known as dynamic type checking.
+		
+		
+		\item Type Inference \\
+		Some statically typed languages (especially functional ones) will conduct static type inference - you need not give the types for the entities you declare. 
+	\end{itemize}
+	
+	More advanced, feature rich, type system can offer more. Such as:
+	\begin{itemize}
+		\item Functions as types
+		\item Algebraic data types \\
+		These help us to write sensible and correct code as we can pattern match on the structure of the ADT and it is possible for the compiler to let us know if we have covered all cases. Contrast this with a chain of if-else-if... where there is not guarantee that the full list of predicates we check is exhaustive.
+		\item Polymorphism
+		\begin{itemize}
+			\item Parametric polymorphism: functions/data types handle values \textit{identically} without depending on their type
+			\item Subtype polymorphism: data types can be related by some notion of substitutability
+			\item Ad-hoc polymorphism: defining multiple functions with the same name that take different types
+			\item Existential types: abstracting over types when you don't care what it is
+			\item Type classes: By separating data and behaviour and instead linking them through type classes we can do lots of fun stuff like add behaviour to types we don't own, and introduce different behaviours in different areas of our code.
+		\end{itemize}
+	\end{itemize}

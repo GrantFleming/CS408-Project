@@ -2,7 +2,7 @@
 
 \ProvidesClass{FinalYearReport}[2020/09/15 4th Year Report]
 
-\LoadClass[11pt, a4paper]{report}
+\LoadClass[10pt, a4paper]{report}
 
 \RequirePackage[utf8]{inputenc}
 \RequirePackage[english]{babel}

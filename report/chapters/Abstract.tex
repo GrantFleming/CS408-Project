@@ -1,0 +1,50 @@
+\begin{abstract}
+
+  Philip Wadler states that the Curry-Howard isomorphism is
+  "a double-barrelled name that ensures the existence of other
+  double-barrelled names"\cite{wadler2015}. By this he is of course
+  referring to the deep isomorphism between logic and programming languages.
+  
+  It seems that many great programming-language type systems are
+  developed (or discovered depending on your school of thought) not
+  once, but twice: once by a logician and once by a computer
+  scientist. Unfortunately for the computer scientists, the logicians
+  seem to beat them to the punch more often than not.
+
+  It is with this bitterly in mind that we aim to shorten the
+  timeframe from the development of new type systems to their
+  implementation by doing what computer scientists do best:
+  automating. We will aim to abstract the parts of type checker
+  software to such a degree where we can write software that creates
+  type-checkers for us. 
+  
+  We begin by performing a generalized type theory literature review:
+  taking the reader on a whirlwind tour of the Simply Typed Lambda Calculus
+  \cite{church1940}, System F \cite{reynolds1974} and Hindley-Milner
+  type theory \cite{hindley1969,milner1978,milner1982}
+  before finally exploring Intuitionistic type theory
+  \cite{martinlof1980} (sometimes known as Martin L\"{o}f type theory).
+
+  We will then focus specifically on Hindley-Milner and Martin L\"{o}f
+  type theory by introducing a programming language that uses each
+  kind of type system at its core and perform a critical analysis
+  and comparison of the systems, highlighting the differences by way
+  of example where possible.
+
+  Armed with our newly found knowledge we will develop a domain specific
+  language (DSL) for describing type systems, paying special attention
+  so as to not restrict the kinds of systems we can represent in this
+  language.
+
+  Finally we will put our DSL to good use by designing and
+  implementing a type-checker-generator in Agda. This will take the
+  form of a piece of software that receives, as its input, a
+  specification of a type-system written in our previously devloped
+  DSL and produces a type checker.
+
+  We will conclude by evaluating our type-checker-generator and our
+  design and implementation process. Finally, we speculate as to how
+  we might improve our software and finish by outlining possible areas
+  for future work.
+
+\end{abstract}

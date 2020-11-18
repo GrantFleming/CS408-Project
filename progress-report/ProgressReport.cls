@@ -18,13 +18,11 @@
 
 \newcommand*{\markingscheme}[1]{\gdef\@markingscheme{#1}}
 \newcommand*{\regnumber}[1]{\gdef\@regnumber{#1}}
+\newcommand*{\supervisor}[1]{\gdef\@supervisor{#1}}
 
 \renewcommand{\familydefault}{\sfdefault}
 
 \setlength{\parskip}{0.5em}
-
-% 								Custom title page
-%								---------------------------
 
 \renewcommand\maketitle{
 	\begin{titlepage}%
@@ -34,34 +32,27 @@
 		\null\vfil
 		\vskip 60\p@
 		\begin{center}%
-			{\LARGE \@title \par}%
-			\vskip 3em%
-			{\large
-				\lineskip .75em%
-				\begin{tabular}[t]{c}%
-					\@markingscheme
-				\end{tabular}\par}%
-			\vskip 1.5em%
-						{\large
-				\lineskip .75em%
-				\begin{tabular}[t]{c}%
-					\@regnumber
-				\end{tabular}\par}%
-			\vskip 1.5em%
-						{\large
-				\lineskip .75em%
-				\begin{tabular}[t]{c}%
-					\@author
-				\end{tabular}\par}%
-			\vskip 1.5em%
-			{\large Submitted for the Degree of B.Sc. in Computer Science \@date \par}%       % Set date in \large size.
-			\vskip 1.5em%
-			{\emph{Except where explicitly stated all work in this report, including appendices, is my own and was carried out during my final year. It has not been submitted for assessment in any other context.} \par}
-			\vskip 3em%
-			{ \begin{tabular}{@{}p{3.1em}p{18em}@{}}
-					Signed: & \hrulefill \\[1em]
-					& \centering{\@author} \\
-				\end{tabular} \par}
+                  {\LARGE Progress Report \par}
+                  \vskip 5em
+                  \begin{tabular}{@{}p{11em}p{14em}@{}}
+                    {\large Project Title:} & {\large \@title} \\[1em]
+                    {\large Marking Scheme:} & {\large \@markingscheme} \\[1em]
+                    {\large Student Name:} & {\large \@author} \\[1em]
+                    {\large Registration Number:} & {\large \@regnumber} \\[1em]
+                  \end{tabular}
+	          \vskip 5em
+		  {\large Submitted for the Degree of B.Sc. in Computer Science \@date \par}
+		  \vskip 1.5em
+		  {\emph{Except where explicitly stated all work in
+                      this report, including appendices, is my own and
+                      was carried out during my final year. It has not
+                      been submitted for assessment in any other context.} \par}
+		  \vskip 8em
+                  \begin{tabular}{@{}p{15em}p{18em}@{}}
+		     Signed:        & \hrulefill \\[1em]
+		     & \@author \\[1em]
+                     Supervised by: & \@supervisor \\[1em]
+		  \end{tabular}
 		\end{center}\par
 		\vfill
 		\noindent
@@ -76,9 +67,11 @@
 	\global\let\@regnumber\@empty
 	\global\let\@date\@empty
 	\global\let\@title\@empty
+        \global\let\@supervisor\@empty
 	\global\let\title\relax
 	\global\let\author\relax
 	\global\let\regnumber\relax
 	\global\let\date\relax
 	\global\let\and\relax
+        \global\let\supervisor\relax
 }

@@ -11,11 +11,17 @@
 \RequirePackage{biblatex}
 \RequirePackage{tgpagella}
 \RequirePackage[margin=1.2in]{geometry}
+\RequirePackage{amssymb}
+\RequirePackage{amsmath}
+\RequirePackage{ebproof}
+\RequirePackage[outputdir=out]{minted}
 
 \newcommand*{\markingscheme}[1]{\gdef\@markingscheme{#1}}
 \newcommand*{\regnumber}[1]{\gdef\@regnumber{#1}}
 
 \renewcommand{\familydefault}{\sfdefault}
+
+\setlength{\parskip}{0.5em}
 
 % 								Custom title page
 %								---------------------------

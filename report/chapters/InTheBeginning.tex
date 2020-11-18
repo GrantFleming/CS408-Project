@@ -1,0 +1,82 @@
+\chapter{In The Beginning}
+    Type systems, as with so many concepts in computer science,
+    were born from the primordial soup that is the study of
+    logic. There initial purpose was to resolve certain
+    inconsistencies in an underlying logic. 
+
+    Although originally proposed by Bertrand Russell in 1902 to
+    resolve a paradox he himself had discovered in a formalization of
+    Gottlob Frege's naive set theory in 1901 \cite{Russell1901}, much
+    introductory material on type theory begins the story with
+    Alonzo Church and his simply typed lambda calculus
+    \cite{church1940}.
+
+    Like Russell, Church was searching for a way to make his
+    previously define system of logic, the lambda calculus,
+    consistent. In 1940 he published his seminal paper that outlined a
+    type system and added an extra layer of contraint to his
+    previously defined system. Now, a term in lambda calclus is well
+    formed if and only if it is typeable.
+
+    A concrete, if informal, summation of Church's work here is that
+    in this new system, if a lambda abstraction is applied to a term,
+    the type of the term must be the same type as the binder in the
+    abstraction. As a consequence, previously well formed terms which
+    caused inconsitencies in the logic, such as
+    $ (\lambda x.xx)(\lambda x.xx)  $
+    were no longer well formed under the new system.
+
+    The importance of this particular work is due to it's influence in
+    the early years of programming language design that began around
+    the 1950s and exploded in the 1960s. As Church had noted
+    previously, his calculus had uses other than that of a logic
+    (citation needed). In fact, it turned out that this calculus could
+    be used as what we would now recognise as a Turing-complete model
+    of computation. This facilitated its use as a programming
+    language where the type system he later imposed on it would aid
+    programmers in avoiding certain classes of errors.
+
+    As the field of computer science developed in sophistication in
+    the late 1960s and 1970s, the great minds of the era were hard at
+    work on the next big development in type systems: parametric
+    polymorphism. It was noted that some functions had common
+    behaviour over differing types, and that the behaviour of these
+    functions did not depend on the types themselves. This lead to
+    redudent definitions such as having to define a function with the
+    same behaviour multiple times, once for each type you wish to
+    operate over. Under type systems akin to the simply typed lambda
+    calculus, the id function given by the term $\lambda
+    x_{\mathbb{N}}.x $ is only ever applicable to natural numbers. It
+    is clear that there was immense benefit in being able to define
+    functions such as id once and have them operate over any type.
+
+    One such solution to this problem came to be known as System F
+    or polymorphic lambda calculus. This system was independently
+    discovered by Jean-Yves Girard and John Reynolds in 1972 and 1974
+    respectively \cite{Girard1972,reynolds1974}.
+
+    In lambda calculus, a single binder $\lambda$ is used to bind variables
+    that range over values. In the simply typed lambda calculus, a
+    lambda term of the form $\lambda x_{\alpha}.M_{\beta}$ (where
+    $x_{\alpha}$ binds variables $x$ over a type $\alpha$ and
+    $M_{\beta}$ is some term of type $\beta $) has type
+    $\alpha\to\beta$ by modern notation. System F introduces a new
+    binder $\Lambda$ that is used to bind variables that range over
+    types. In this system, terms of the form $\Lambda t.M$ denotes a
+    function that takes as its first argument some type and returns a
+    term with all references to t replaced by that type. This function
+    has type $\Delta t.M^{t}$ where $M^t$ is is the type of $M$.
+
+    Under this system, we may write the id function as $\Lambda t
+    . \lambda x_t . x$ and thus have it operate over any type t,
+    so long as we supply it.
+
+    One limitation of this system is the lack of shades of typing
+    grey. There are only two choices in this model of polymorphism:
+    the bound type variables are applied to concrete types then the
+    function is used at that type. It can also be noted that under
+    this system we are required to supply the type of the binder in
+    every $\lambda$ expression, this could get quite tiresome. Perhaps
+    there is use for some shades of grey in our type system, and do we
+    really need to type our $\lambda$ binders?
+

@@ -1,6 +1,6 @@
 \NeedsTeXFormat{LaTeX2e}
 
-\ProvidesClass{FinalYearReport}[2020/09/15 4th Year Report]
+\ProvidesClass{ProgessReport}[2020/09/15 4th Year Report]
 
 \LoadClass[10pt, a4paper]{report}
 
@@ -34,7 +34,7 @@
 		\begin{center}%
                   {\LARGE Progress Report \par}
                   \vskip 5em
-                  \begin{tabular}{@{}p{11em}p{14em}@{}}
+                  \begin{tabular}{@{}p{11em}p{15em}@{}}
                     {\large Project Title:} & {\large \@title} \\[1em]
                     {\large Marking Scheme:} & {\large \@markingscheme} \\[1em]
                     {\large Student Name:} & {\large \@author} \\[1em]

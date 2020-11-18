@@ -1,0 +1,133 @@
+\begin{appendices}
+  
+  \section {Typing Rules}
+
+  \subsection {System F}
+  \label{appendix:sysFrules}
+  \[\begin{array}{c@{\qquad}c}
+      \mbox{\begin {prooftree}
+        \hypo{x:\sigma \in \Gamma}
+        \infer1[var]{\Gamma \vdash x:\sigma}
+      \end {prooftree}}
+      &
+      \mbox{\begin{prooftree}
+        \infer0[const]{\Gamma \vdash c:T}
+      \end{prooftree}}
+      \\\\
+      \mbox{\begin{prooftree}
+        \hypo{\Gamma, x:\sigma \vdash e : \tau}
+        \infer1[abs]{\Gamma \vdash (\lambda x_\sigma \cdot e) : \sigma
+          \to \tau}
+      \end{prooftree}}
+      &
+      \mbox{\begin{prooftree}
+        \hypo{\Gamma \vdash e_1 : \sigma \to \tau}
+        \hypo{\Gamma \vdash e_2 : \sigma}
+        \infer2[app]{\Gamma \vdash (e_1 e_2): \tau}
+      \end{prooftree}}
+      \\
+  \end{array} \]
+
+  Thus far the typing rules are the same as in the simply typed lambda
+  calculus, to complete his system Reynolds extends it with two more
+  rules to introduce parametric polymorphism:
+
+  \[\begin{array}{c@{\qquad}c}  
+      \mbox{\begin{prooftree}
+        \hypo{\Gamma \vdash M : \sigma}
+        \infer1[$\Delta$-abs]{\Gamma \vdash (\Lambda \alpha \cdot M) : \Delta
+        \alpha \cdot \sigma}
+      \end{prooftree}}
+      &
+      \mbox{\begin{prooftree}
+        \hypo{\Gamma \vdash M : \Delta \alpha \cdot \sigma}
+        \infer1[$\Delta$-app]{\Gamma \vdash (M \tau) : \sigma[\tau / \alpha]}
+      \end{prooftree}}
+      \\\\
+    \end{array} \]
+
+  Note that in these rules, $\alpha$ is a type variable.
+
+  \subsection {Hindley-Milner}
+  \label{appendix:HMrules}
+  
+  In Hindley-Milner, we have very similar rules for typing lambda
+  abstraction, application, free type variables and and type constants:
+
+  \[\begin{array}{c@{\qquad}c}  
+      \mbox{\begin{prooftree}
+        \hypo{x : \sigma \in \Gamma}
+        \infer1[var]{\Gamma \vdash x : \sigma}
+      \end{prooftree}}
+      &
+      \mbox{\begin{prooftree}
+        \infer0[const]{\Gamma \vdash c : T}
+      \end{prooftree}}
+      \\\\
+      \mbox{\begin{prooftree}
+        \hypo{\Gamma , x : \sigma \vdash e : \tau }
+        \infer1[abs]{\Gamma \vdash (\lambda x \cdot e) : \sigma \to \tau}
+      \end{prooftree}}
+      &
+      \mbox{\begin{prooftree}
+        \hypo{\Gamma \vdash e_1 : \sigma \to \tau}
+        \hypo{\Gamma \vdash e_2 : \sigma}
+        \infer2[app]{\Gamma \vdash (e_1 e_2) : \tau}
+      \end{prooftree}}
+      \\\\      
+  \end{array} \]
+
+  These rules are then extended to accomodate the 'let' language
+  construct:
+
+    \[\begin{array}{c}  
+      \mbox{\begin{prooftree}
+        \hypo{\Gamma \vdash e_1 : \sigma}
+        \hypo{\Gamma, x : \sigma \vdash e_2 : \tau }
+        \infer2[let]{\Gamma \vdash (let\; x = e_1\; in\; e_2) : \tau}
+      \end{prooftree}}
+      \\\\
+    \end{array} \]
+
+  Before we detail the last two rules detailing instantiation and
+  generification we first outline the meaning of a judgement $\sigma
+  \sqsubseteq \sigma'$. Intuitively this means that $\sigma$ is some
+  subtype of $\sigma'$ - we can create it by some substitution of the
+  quantified variables in $\sigma'$. More precisely it is defined as
+  follows:
+
+  \[\begin{array}{c@{\qquad}c}  
+      \mbox{\begin{prooftree}
+        \hypo{\tau' = \{\alpha_i \mapsto \tau_i\}\tau}
+        \hypo{\beta_i \notin free(\forall \alpha_1 \ldots \forall
+          \alpha_n \cdot \tau)}
+        \infer2[spec]{\forall \alpha_1 \ldots \forall \alpha_n \cdot
+          \tau \sqsubseteq \forall \beta_1 \ldots \forall
+          \beta_m \cdot \tau' }
+      \end{prooftree}}
+      \\\\
+  \end{array} \]  
+    
+  Lastly we have rules to instantiate a type scheme, or generify a
+  type (i.e. to make a type more specific and narrow, or less specific
+  and general):
+  
+  \[\begin{array}{c@{\qquad}c}  
+      \mbox{\begin{prooftree}
+        \hypo{\Gamma \vdash e : \sigma}
+        \hypo{\sigma' \sqsubseteq \sigma}
+        \infer2[inst]{\Gamma \vdash e : \sigma'}
+      \end{prooftree}}
+      &
+      \mbox{\begin{prooftree}
+        \hypo{\Gamma \vdash e : \sigma}
+        \hypo{\alpha \notin free(\Gamma)}
+        \infer2[gen]{\Gamma \vdash e : \forall \alpha \sigma}
+      \end{prooftree}}
+      \\\\
+  \end{array} \]
+
+  The latter three rules are the ones that capture the idea of
+  Hindley-Milner polymorphism.
+  
+\end{appendices}

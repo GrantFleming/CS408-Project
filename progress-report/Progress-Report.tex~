@@ -1,0 +1,31 @@
+\documentclass{FinalYearReport}[2020/09/15]
+
+\addbibresource{references.bib}
+
+\title{A Tale of Two Type Systems}
+\markingscheme{Experimental with Significant Software Development}
+\regnumber{201700435}
+\author{Grant G Fleming}
+\date{2020/2021}
+
+\begin{document}
+	\maketitle
+	\tableofcontents
+        
+        \input{chapters/Abstract.tex}
+        \part{Background \& Literature Review}
+	\input{chapters/WhatIsATypeSystem.tex}
+        \input{chapters/InTheBeginning.tex}  
+	\input{chapters/IntroducingTheTypeSystems.tex}
+	\input{chapters/TheSystemsInPractice.tex}
+	\input{chapters/ComparingTheSystems.tex}
+        \part{The Fun Bit}
+	\input{chapters/CorrectnessByConstruction.tex}
+	
+	\input{appendices.tex}
+	
+	\clearpage
+	\addcontentsline{toc}{chapter}{Bibliography}
+	\printbibliography
+	\nocite{*} % temporarily until I know what I'm using
+\end{document}

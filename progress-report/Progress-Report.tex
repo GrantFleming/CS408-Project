@@ -1,0 +1,64 @@
+\documentclass{FinalYearReport}[2020/09/15]
+
+\addbibresource{references.bib}
+
+\title{A Type-Checker-Generator - Progress Report}
+\markingscheme{Experimental with Significant Software Development}
+\regnumber{201700435}
+\author{Grant G Fleming}
+\date{2020/2021}
+
+\begin{document}
+	\maketitle
+	\tableofcontents
+        
+        \chapter{Aims and Objectives}
+
+        \section{Aim}
+
+        \begin{itemize}
+          \item To design, implementation and verify a
+            type-checker-generator capabale of generating a
+            type-checker given a specification of a type system and a
+            grammar of a language. 
+        \end{itemize}
+        
+        \section{Objectives}
+
+        \begin{itemize}
+          \item Complete initial readings on type-theory covering
+            Simply-Typed Lambda Calculus, System F, Hindley Milner,
+            Martin L\"{o}f and bi-directional type-theory along with
+            any other identified readings. \textbf{01/12/2020}
+          \item Identify all elements needed to fully and
+            unambigiously describe a type system. \textbf{14/12/2020} 
+          \item Verify sufficiency of identified elements by fully describing
+            System F, HM and Martin Lof in this new framework. \textbf{21/12/2020}
+          \item Formalize a syntax for expressing these elements. \textbf{04/01/2021}
+          \item Write a specification of a type-checker-generator. \textbf{11/01/2021}
+          \item Design a type-checker-generator. \textbf{18/01/2021} 
+          \item Implement a type-checker-generator. \textbf{01/03/2021}
+          \item Verify the implementation according to the
+            specification. \textbf{08/03/2021}
+          \item Evaluate the DSL and identify any limitations on the
+            kind of type systems that it can represent. \textbf{15/03/2021}
+        \end{itemize}
+        
+        \chapter{Related Work}
+        \chapter{Project Specification}
+        \chapter{Project Plan}
+
+        \chapter{Summary of Proposals}
+        \section{Development Methedology}
+        \section{Design}
+        \section{Implementation}
+        \section{Testing}
+        \section{Evaluation}
+	
+	\input{appendices.tex}
+	
+	\clearpage
+	\addcontentsline{toc}{chapter}{Bibliography}
+	\printbibliography
+	\nocite{*} % temporarily until I know what I'm using
+\end{document}

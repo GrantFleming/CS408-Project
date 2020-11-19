@@ -49,6 +49,8 @@
         
         \chapter{Related Work}
 
+        \section{Background, Lambda Calculus and System F}
+
           Type systems, as with so many concepts in computer science,
           were born from the primordial soup that is the study of
           logic. The initial purpose of type systems was to resolve
@@ -164,28 +166,25 @@
             He then proves that any term for which you can deduce a type scheme,
             has a p.t.s. and it is always possible to work out what the p.t.s. is
             up to \textit{trivial instances} - instances that are equal up to the
-            consistent renaming of type variables.
+            consistent renaming of type variables. Furthermore he
+            introduces an algorithm accomplish this type inference -
+            Algorithm W.
             
             The idea of being able to always infer the most general type of an
             expression is a defining feature of this type system. Let us take a
             moment to ponder the ramifications of this feature.
             
-            \subsection{Type Annotations}
-            
             In Hindley-Milner, there is no need for us to annotate the definitions
-            in our code with type information.
-            
-            Since we can always infer the p.t.s (most general type-scheme) of
-            expressions we, as programmers, need not supply this type information
-            in code when we make our definitions. This can result in cleaner
-            looking code in some circumstances however there is an argument that
-            providing type information explicitly in the syntax of the language
-            serves as important documentation.
-            
-            \subsection{Type Checking}
-            
+            in our code with type information. Since we can always
+            infer the p.t.s (most general type-scheme) of expressions
+            we, as programmers, need not supply this type information
+            in code when we make our definitions. This can result in
+            cleaner looking code in some circumstances however there
+            is an argument that providing type information explicitly
+            in the syntax of the language serves as important documentation.
+                        
             The type inference algorithm that is detailed in the Hindley-Milner
-            system is instrumental in the way types are checked.
+            system is also instrumental in the way types are checked.
             
             In a system like System F, whenever we wish to apply a polymorphic
             function, we must provide the type parameter first before providing
@@ -195,7 +194,8 @@
             most general type of the function, and check that the supplied
             argument is some instance of the functions input type. This is
             generally regarded as a good thing, less we end up with code that
-            contains so much type information as to be rendered unreadable.
+            contains so much type information as to be rendered
+            unreadable. \clearpage
             
             The classic example of such systems is the creation of lists in the
             standard $cons/[]$ way. In a language with a type system akin to
@@ -284,7 +284,7 @@
                \alpha \to \alpha$ (meaning that $\forall \alpha . \forall \beta \cdot
             (\alpha \to \beta) \to (\alpha \to \beta)$ can be derived
                from $\forall \alpha \cdot \alpha \to \alpha$ by
-               consistenfly substituting for $\alpha$ in its body.
+               consistently substituting for $\alpha$ in its body.
             
             If you wanted a term with an equivalent type in system F you would
             need to create a new term $\Lambda t_1 . \Lambda t_2 . \lambda x_{t_1
@@ -294,12 +294,199 @@
             available in appendices \ref{appendix:sysFrules} and
             \ref{appendix:HMrules} respectively.
                     
-          \section{Martin L\"{o}f}
-            
-          \section{Further planned related work exploration}
+          \section{Intuitionistic Type Theory}
+        
+          Intuitionistic type theory was devised by Per Martin-Löf
+          \cite{martinlof1980} originally in the 1970s although he
+          later revised the theory many times.
+
+          Martin-Löf was motivated, in part, by what we now call the
+          Curry-Howard isomorphism: the idea that statements in logic can be
+          thought of as types, and a proof of a logical statement can
+          be thought of as a program (consequently simplification of
+          proofs correspond to the execution of a program)
+          \cite{wadler2015}. He noted that despite this isomorphism,
+          computer scientists often developed their own
+          languages and type systems instead of using existing
+          logics and hence his theory of Intuitionistic types was
+          designed to have practical uses as both a logic and
+          programming language.
+
+          While the Curry-Howard isomorphism clearly had an existing
+          foot hold, relating function types to implication for
+          instance, Martin-Löf was the first to extend this to
+          predicate logic by having his types depend on values,
+          using dependent functions and dependent pairs to represent
+          universal and existential quantification respectively.
+
+          It was this introduction of `dependent types` that made this
+          theory different from previous type theories and allowing
+          the development of dependently typed languages with flexible
+          and powerful type systems such as Agda \cite{norell}.
+
+          Although Martin-Löf descibes many types in his descriptions
+          of this type-system, there are but a few 'key players' which
+          we will briefly describe here:
+
+          \begin{itemize}
+          \item Types of the form $( \Pi x \in A ) B(x)$ describe
+            dependent functions, where the type $B(x)$ of the co-domain
+            depends on the \emph{value} $x$ of the domain.
+          \item Types of the form $( \Sigma x \in A ) B(x)$ describe
+            dependent pairs, where the type $B(x)$ of the second
+            element of the pair depends on the \emph{value} $x$ of the
+            first element.
+          \item Type of the form $A + B$ represent the disjoint union
+            of two types $A$ and $B$
+          \item Types of the form $\mathbb{N}_n$ describe types
+            with finite numbers of values. For instance we could take
+            $\mathbb{N}_1$ to be unit, $\mathbb{N}_2$ to be booleans
+            etc.
+          \item Types of the form $I (A , a , b)$ encode propositional
+            equality. That is a value of this type represents proof
+            of that $a \equiv b \in A$
+          \item W-types are a little more complex. They have the form
+            $( W x \in A ) B(x)$ and represent \emph{wellorderings} (a
+            somewhat more intuitive explanation is that they represent
+            well-founded trees). This type allows us to define types
+            with complex structures that are inductive in nature. In fact,
+            some of the types that Martin-Löf includes in his
+            type-theory, such as that of Lists or $\mathbb{N}$ can be
+            defined as W-types.
+          \item Universes are introduces as a type of types, allowing
+            the transfinite types needed to talk about a "sets of
+            sets", Martin-Löf recognised the need to have this level
+            of expression when reasoning about certain areas of maths
+            such as category theory, and universe types are a paradox
+            avoiding way of accomplishing this.
+          \end{itemize}
+
+          There are far more types described in this system that are
+          listed here, however many of these types build on the types
+          described, some can be defined completely in terms of the
+          types mentioned.
+
+          One of the consequence of this, more powerful, type system,
+          is that unlike Hindley-Milner, we can no longer infer the
+          most general type of any expression.
+
+          Take, for example, a value of some dependent pair $(2 , [a :: b
+            :: nil])$ perhaps the type of the second element is
+          dependent on the first, and thus the $B$ in the type $(
+          \Sigma x \in A ) B(x)$ corresponds to some function $\lambda
+          n \to Vec \: X \: n$, but maybe it does not depend on the first
+          argument at all and $B$ simply corresponds to $\lambda n \to
+          Vec \: X \: 2$ - there is no way for us to definitively
+          deduce $B$ from the value alone, or as an alternative view:
+          the value could belong to many $\Sigma$ types, how should we
+          choose?
+  
+          \section{Related Work - Research in Progress}
+
+          This author believes he has completed the relevant
+          background reading on a variety of notable type systems
+          allowing him a very general background of the landscape of
+          type-theory.
+
+          With this reading conducted, time will now be focused on
+          further research into areas specific to creating
+          type-checkers and their various components. This involves
+          some related work that will be partly summarized here but
+          many of the readings described have yet not been fully
+          consumed.
+
+          \subsection{Contexts and Type Inference}
+
+          Gundry, McBride and McKinna present research detailing an
+          novel way of implementing unification and
+          type-inference \cite{TypeInferenceInContext}. An area of
+          particular interest is in their approach to the
+          \emph{context} - traditionally used to track the types of
+          term variables.
+
+          In this work, the authors propose a system of explictly
+          tracking type-variables in the context, even before they are
+          bound to a type-scheme. As well as allocating types
+          to these variables, the unification algorithm is also
+          able to pull these type-variables leftward to scope them
+          appropriately and resolve dependencies while it tries to
+          resolve unification constraints. It cannot pull these
+          variables rightward as it risks taking a variable out of
+          scope where it is needed, potentially undoing the work of a
+          previous constraint-solving step.
+
+          This leads to an interesting consequence in their approach to
+          generalization in let expressions. Now that type variables
+          can exist in the context, we are able to instantiate a type
+          scheme by introducing a new type variable to the context,
+          and removing the necessary $\forall$ quantifier in the
+          scheme. Consequently, to generalize, we can remove these
+          type-variables from the context and introduce and
+          appropriate $\forall$ quantifier. The authors explicily
+          place a third element into the context, a marker that delimits
+          generalization to an appropriate scope.
+
+          \subsection{Syntactic Universes}
+
+          More recently, the author has been exploring the concept of
+          universe constructions in building a syntactic universe
+          where we may build various mechanisms for accomplishing
+          static analysis regardless of the underlying syntax of the
+          language.
+
+          The concept of a syntactic universe was first introduce by
+          the author's supervisor, Conor McBride, and further general
+          material on universe constructions was obtained when covered
+          as a topic in an Advanced Function Programming class, taught
+          by Fredrik Nordvall Forsberg.
+
+          This idea is explored in a more in-depth context when we
+          explore work detailing how we might build a universe of
+          syntaxes that are both scope and type safe and abstractly
+          define common elements of their semantics such as
+          substitution \cite{DBLP:journals/corr/abs-2001-11001}.
+
+          This is an area that is clearly relevant to this authors
+          work, although - at the time of writing - progress has still
+          to be made by the author in fully understanding the paper.
+
+          \section{Related Work Still To Be Explored}
+
+          After the completion of current readings, the author has
+          plans to tackle several other papers that cover the
+          following areas:
+
+          \begin{itemize}
+          \item An implementation of a dependently typed lambda
+            calculus \cite{ATutorialImplementationOfDTLC}
+          \item Formalization of bi-directional dependent type systems \cite{TypesWhoSayNi}
+          \end{itemize}
+
+          Although there are other less critical papers that the
+          author may tackle if time allows.
+
+          
         
         \chapter{Project Specification}
         \chapter{Project Plan}
+
+          w/ regards to type-inference in context
+        
+          Given that the context is such a ubiqutous notion in
+          type-theories, it is likely that this notion of being
+          explicit about type-variables has uses extending beyond
+          Hindley-Milner and this is an area that this author will explore
+          further. This paper also details relevent unification and type
+          inference algorithms that could be helpful in the
+          development of a type-checker generator, should it be
+          possible to abstract the algorithms over a universe of
+          syntaxes and associated typing rules. Thought in this area
+          is an ongoing process.
+
+          w/ regards to syntactic universes
+
+          How do I choose a syntactic universe? What qualities should
+          it have?
 
         \chapter{Summary of Proposals}
         \section{Development Methodology}

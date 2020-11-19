@@ -38,7 +38,8 @@
                     {\large Project Title:} & {\large \@title} \\[1em]
                     {\large Marking Scheme:} & {\large \@markingscheme} \\[1em]
                     {\large Student Name:} & {\large \@author} \\[1em]
-                    {\large Registration Number:} & {\large \@regnumber} \\[1em]
+                    {\large Registration Number:} & {\large\@regnumber} \\[1em]
+                    {\large Supervised By:} & {\large \@supervisor} \\[1em]
                   \end{tabular}
 	          \vskip 5em
 		  {\large Submitted for the Degree of B.Sc. in Computer Science \@date \par}
@@ -51,7 +52,7 @@
                   \begin{tabular}{@{}p{15em}p{18em}@{}}
 		     Signed:        & \hrulefill \\[1em]
 		     & \@author \\[1em]
-                     Supervised by: & \@supervisor \\[1em]
+                     Date: & 23/11/2020 \\[1em]
 		  \end{tabular}
 		\end{center}\par
 		\vfill

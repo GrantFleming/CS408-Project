@@ -2,6 +2,8 @@
 
 \addbibresource{references.bib}
 
+\renewcommand{\arraystretch}{1.7}
+
 \title{Type-Checker Generation}
 \markingscheme{Software Development Based}
 \regnumber{201700435}
@@ -10,7 +12,8 @@
 \supervisor{Conor McBride}
 
 \begin{document}
-	\maketitle
+
+        \maketitle
 	\tableofcontents
         
         \chapter{Aims and Objectives}
@@ -464,10 +467,104 @@
 
           Although there are other less critical papers that the
           author may tackle if time allows.
-
-          
-        
+       
         \chapter{Project Specification}
+
+          \section{Overview}
+
+          Writing type-checkers for compilers is a key task in the
+          development and evolution of programming languages.
+
+          Despite huge variety in the kinds of languages in existance,
+          type-systems can often be described using the same kinds of
+          things such as typing rules. The descriptions are becoming
+          standardized enough for us to recognize common syntax for
+          describing these aspects in literature.
+
+          This project seeks to capitalize on this by abstracting
+          enough common elements and leaving only what is necessary
+          for describing a type-system up to a user. Given any
+          description of a type-system in a specified format, a
+          type-checker-generator should be able to generate a
+          type-checker for the type system.
+          
+          \section{Goal}
+
+          To design a DSL capable of describing type systems and to
+          write a piece of software that, given one of these
+          descriptions, is able to type-check code in the language
+          it describes.
+
+          \section{Artifacts}
+
+          At a minimum, the finished project will consist of:
+
+          \begin{itemize}
+          \item A type-checker generator as a standalone binary
+          \item At least one example specification in the DSL
+          \item At least two source code examples for each
+            specification, one which type-checks successfully and one
+            which does not
+          \item The final report
+          \end{itemize}
+          
+          \section{Scope}
+
+          \begin{center}
+          \begin{tabular}{p{20em}|p{18em}}
+            \large In Scope & \large Not In Scope \\ \hline \hline
+            Notification on whither the type-checking succeeds
+            or fails
+            & Detailed feedback from the type-checking process \\ \hline
+            Notifaction on whither or not the specification file is
+            successfully parsed
+            & Detailed feedback on the parsing of the specification file \\ \hline
+            Example specifications and checkable code for small 'toy' languages
+            & Example specifications and code for large 'real world' languages \\ \hline
+            Single usable feature of 'running' the generator on a
+            specification and piece of source code
+            & Quality of life / usability features or other niceties \\ \hline
+            High level reasoning on why the generated type-checkers
+            are likely to be sound and complete
+            & Formally proving the generator produces type-checkers
+            that are sound and complete\\
+          \end{tabular}            
+          \end{center}        
+          
+          \section{Milestones}
+
+          \begin{enumerate}
+          \item A DSL that we are able to use to describe existing
+            type checkers, used to write \emph{specifications} of type systems.
+          \item A type-checker able to check types for a generic syntax
+            in a syntactic universe under a \emph{fixed} set of typing rules
+            where syntaxes and checkable source code is supplied hard-coded.
+          \item A type-checker able to check types when full specifications
+            and checkable source code is hard-coded.
+          \item A type-checker  that checks types, reading
+            the specification and source code from files.
+          \end{enumerate}
+          
+          \section{Acceptance Criteria}
+
+          \begin{itemize}
+          \item The software can be ran from the command-line by
+            giving a simple command such as: $$\mbox{type-check} \;
+            <\emph{specification-file}> \;
+            <\emph{source-code-file}>$$
+          \item The software either succeds with a simple indication
+            message, or fails with one of two kinds of error:
+            \begin{itemize}
+            \item Failure to parse specification
+            \item Failure to successfully type-check source code
+            \end{itemize}
+          \item The software passes a fixed set of test cases (specifications and
+            source codes) - succeeding, failing and showing
+            appropriate errors as detailed in the test cases.
+          \item The software can generate type-checkers capable of
+            checking both non-dependent and dependent types.
+          \end{itemize}
+        
         \chapter{Project Plan}
 
           w/ regards to type-inference in context

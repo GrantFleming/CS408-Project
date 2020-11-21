@@ -22,7 +22,7 @@
 
         \begin{itemize}
           \item To design, implementation and verify a
-            type-checker-generator capabale of generating a
+            type-checker-generator capable of generating a
             type-checker given a specification of a type system and a
             grammar of a language. 
         \end{itemize}
@@ -37,7 +37,7 @@
           \item Complete specific readings relating to the design and
             implementation of various typesystems and components thereof.
           \item Identify all elements needed to fully and
-            unambigiously describe a type system and unify them under
+            unambiguously describe a type system and unify them under
             a common framework.
           \item Verify sufficiency of identified elements by fully describing
             two different type systems in the framework.
@@ -53,62 +53,52 @@
         \end{itemize}
 
         * The design and implementation sections have been combined
-        here as the idea is that this phase will be conducted in an
-        agile manner via scrum-style sprints.
+        here as this phase will be conducted in an agile manner via
+        scrum-style sprints.
         
         \chapter{Related Work}
 
         \section{Background, Lambda Calculus and System F}
 
           Type systems, as with so many concepts in computer science,
-          were born from the primordial soup that is the study of
-          logic. The initial purpose of type systems was to resolve
-          certain inconsistencies in an underlying logic. 
+          are a concept borrowed from the study of logic; their initial
+          purpose was to resolve certain inconsistencies in an
+          underlying logic. 
       
           Although originally proposed by Bertrand Russell in 1902 to
           resolve a paradox he himself had discovered in a formalization of
           Gottlob Frege's naive set theory in 1901 \cite{Russell1901}, much
-          introductory material on type theory begins the story with
-          Alonzo Church and his simply typed lambda calculus
-          \cite{church1940}.
-      
+          introductory material on type theory from a computer science
+          perspective begins with Alonzo Church and his simply typed
+          lambda calculus \cite{church1940}.
+          
           Like Russell, Church was searching for a way to make his
           previously define system of logic, the lambda calculus,
           consistent. In 1940 he published his seminal paper that outlined a
-          type system and added an extra layer of contraint to his
-          previously defined system. Now, a term in lambda calclus is well
-          formed if and only if it is typeable.
+          type system and added extra criteria to which a term must
+          conform in order to be considered well-formed - it must be typeable.
       
           A concrete, if informal, summation of Church's work here is that
           in this new system, if a lambda abstraction is applied to a term,
           the type of the term must be the same type as the binder in the
           abstraction. As a consequence, previously well formed terms which
-          caused inconsitencies in the logic, such as
+          caused inconsistencies in the logic, such as
           $ (\lambda x.xx)(\lambda x.xx)  $
           were no longer well formed under the new system.
       
-          The importance of this particular work is due to it's influence in
-          the early years of programming language design that began around
-          the 1950s and exploded in the 1960s. In fact, it turned out
-          that this calculus could be used as what we would now
-          recognise as a Turing-complete model of computation. This
-          facilitated its use as a programming language where the type
-          system he later imposed on it would aid programmers in
-          avoiding certain classes of errors. 
-      
           As the field of computer science developed in sophistication in
-          the late 1960s and 1970s, the great minds of the era were hard at
-          work on the next big development in type systems: parametric
+          the late 1960s and 1970s, prominent logicians and computer
+          scientists started to develop the notion of parametric
           polymorphism. It was noted that some functions had common
           behaviour over differing types, and that the behaviour of these
           functions did not depend on the types themselves. This lead to
-          redudent definitions such as having to define a function with the
+          redundant definitions such as having to define a function with the
           same behaviour multiple times, once for each type you wish to
           operate over. Under type systems akin to the simply typed lambda
-          calculus, the id function given by the term $\lambda
+          calculus, the \emph{id} function given by the term $\lambda
           x_{\mathbb{N}}.x $ is only ever applicable to natural numbers. It
           is clear that there was immense benefit in being able to define
-          functions such as id once and have them operate over any type.
+          functions such as \emph{id} once and have them operate over any type.
       
           One such solution to this problem came to be known as System F
           or polymorphic lambda calculus. This system was independently
@@ -127,71 +117,52 @@
           term with all references to t replaced by that type. This function
           has type $\Delta t.M^{t}$ where $M^t$ is is the type of $M$.
       
-          Under this system, we may write the id function as $\Lambda t
+          Under this system, we may write the \emph{id} function as $\Lambda t
           . \lambda x_t . x$ and thus have it operate over any type t,
           so long as we supply it.
       
-          One limitation of this system is the lack of shades of typing
-          grey. There are only two states in this model of polymorphism:
-          either a type variable has not been supplied to a binder,
-          and thus can potentially take on any type, or the bound type
-          variable is fully binded to a specific concrete type then the
-          function is used at exactly that type. It can also be noted that under
-          this system we are required to supply the type of the binder in
-          every $\lambda$ expression, this could get quite tiresome. Perhaps
-          there is use for some shades of grey in our type system, and do we
-          really need to type our $\lambda$ binders?
+          One disadvantage of this system is that terms become verbose
+          because of their explicit references to type
+          information. Another is that explicit quantification over
+          types can quickly become unwieldy when writing more complex
+          types for polymorphic functions.
 
           \section{Hindley-Milner}
-
-            Work on what we now refer to as the "Hindley-Milner" type system began
-            in the late 60s and grew to become the basis of many functional
+            An alternative approach to parametric polymorphism was
+            developed in the late 60s with the Hindley-Milner type
+            system which grew to become the basis of many functional
             languages such as ML and Haskell.
-            
-            This system, like System F, incorporates parametric polymorphism as a
-            first class feature. It does, however, deal with the gory details of
-            its formalization in a very different way, allowing it to glean some
-            desirable properties that System F cannot claim.
-            
-            Firstly, when we define polymorphic functions, we need not explictly
-            bind the type variables, and thus when we use them, we need not
-            explicitly provide a type parameter. Instead, Hindley introduces a
-            system of \textit{type-schemes} \cite{hindley1969} (types
-            that may contain quantified type variables) and defines a
-            type as being a type-scheme that contains no type
-            variables. Milner refers to these concepts as polytypes
-            and monotypes respectively \cite{milner1978}.
+                        
+            Hindley introduces a system of \textit{type-schemes}
+            \cite{hindley1969} (types that may contain quantified type
+            variables) and defines a type as being a type-scheme that
+            contains no such variables. Milner refers to these
+            concepts as polytypes and monotypes respectively
+            \cite{milner1978}. 
             
             This has the consequence that a given term may have any number of
             type-schemes, some more general than others, some more specific
-            allowing us some 'shades of grey' in our type system and allowing us
-            to commit to stating more or less about our values as the situation
-            requires. Hindley then presents the idea of a \textit{principle type
-              scheme} (p.t.s) or the most general polytype, where all possible
-            types for a given term are instances of the p.t.s. Consequently any
-            type-scheme of a term can be created by performing some consistent
-            substitution for the type variables in the p.t.s. 
+            allowing us to commit to stating more or less about our
+            values as the situation requires. Hindley then presents
+            the idea of a \textit{principle type scheme} (p.t.s) where
+            all possible type-schemes for a given term are instances
+            of the p.t.s. (that is, can be constructed by consistent
+            substitution for quantified variables in the p.t.s.).
             
             He then proves that any term for which you can deduce a type scheme,
-            has a p.t.s. and it is always possible to work out what the p.t.s. is
-            up to \textit{trivial instances} - instances that are equal up to the
-            consistent renaming of type variables. Furthermore he
-            introduces an algorithm accomplish this type inference -
-            Algorithm W.
+            has a p.t.s., that it is always possible to work out what the p.t.s. is
+            up to \textit{trivial instances} and introduces an
+            algorithm to accomplish this type inference - Algorithm W.
+
+            As a consequence of this system there is no need for us to
+            annotate the definitions in our code with type
+            information since we can always infer the p.t.s (most
+            general type-scheme) of our terms. This can result
+            in cleaner looking code in some circumstances however
+            there is an argument that providing type information
+            explicitly in the syntax of the language serves as
+            important documentation.
             
-            The idea of being able to always infer the most general type of an
-            expression is a defining feature of this type system. Let us take a
-            moment to ponder the ramifications of this feature.
-            
-            In Hindley-Milner, there is no need for us to annotate the definitions
-            in our code with type information. Since we can always
-            infer the p.t.s (most general type-scheme) of expressions
-            we, as programmers, need not supply this type information
-            in code when we make our definitions. This can result in
-            cleaner looking code in some circumstances however there
-            is an argument that providing type information explicitly
-            in the syntax of the language serves as important documentation.
-                        
             The type inference algorithm that is detailed in the Hindley-Milner
             system is also instrumental in the way types are checked.
             
@@ -201,10 +172,7 @@
             parameter. With Hindley-Milner, as a direct consequence of its type
             inference features, this is not necessary. Instead we can infer the
             most general type of the function, and check that the supplied
-            argument is some instance of the functions input type. This is
-            generally regarded as a good thing, less we end up with code that
-            contains so much type information as to be rendered
-            unreadable.
+            argument is some instance of the functions input type.
             
             The classic example of such systems is the creation of lists in the
             standard $cons/[]$ way. In a language with a type system akin to
@@ -224,18 +192,17 @@
             \end{minted}
             
             We can see this difference reflected in the typing rules of the
-            systems by way of the following example on id:
+            systems by way of the following example on \emph{id}:
             
             \[\begin{array}{c@{\qquad}|@{\qquad}c}
                   \mbox{Hindley-Milner}
                   &
                   \mbox{System F}
-                  \\\\
+                  \\
                   id : \forall \alpha \cdot \alpha \to \alpha
                   &
                   id : \Delta \alpha \cdot \alpha \to \alpha
-                  \\\\
-                  id = \lambda x \cdot x
+                  \\                  id = \lambda x \cdot x
                   &
                   id = \Lambda t . \lambda x_t \cdot x
             \end{array} \]
@@ -269,9 +236,8 @@
             
             In system F, this deduces the only type for $\Lambda t . \lambda x_t
             \cdot x$ (up to the renaming of bound variables) however note that
-            because of the 'shades of grey' allowable as a result of type
-            specialization and generalization in Hindley-Milner we may
-            also deduce other type (schemes) for $\lambda x \cdot x$:
+            in Hindley-Milner we may also deduce other type (schemes)
+            for $\lambda x \cdot x$: 
             
             \[\begin{array}{c}
             \mbox{\begin{prooftree}
@@ -287,21 +253,14 @@
                  \beta \cdot (\alpha \to \beta) \to (\alpha \to \beta)}
             \end{prooftree}}
             \end{array} \]
-            
-            Where $\forall \alpha . \forall \beta \cdot
-            (\alpha \to \beta) \to (\alpha \to \beta) \sqsubseteq \forall \alpha \cdot
-               \alpha \to \alpha$ (meaning that $\forall \alpha . \forall \beta \cdot
-            (\alpha \to \beta) \to (\alpha \to \beta)$ can be derived
-               from $\forall \alpha \cdot \alpha \to \alpha$ by
-               consistently substituting for $\alpha$ in its body.
-            
+                                   
             If you wanted a term with an equivalent type in system F you would
             need to create a new term $\Lambda t_1 . \Lambda t_2 . \lambda x_{t_1
               \to t_2} \cdot x$
             
-            A full list of the typing rules for System F and Hindley-Milner are
-            available in appendices \ref{appendix:sysFrules} and
-            \ref{appendix:HMrules} respectively.
+            A full list of the typing rules are available in
+            appendices \ref{appendix:sysFrules} and
+            \ref{appendix:HMrules} respectively. 
                     
           \section{Intuitionistic Type Theory}
         
@@ -333,9 +292,9 @@
           the development of dependently typed languages with flexible
           and powerful type systems such as Agda \cite{norell}.
 
-          Although Martin-Löf descibes many types in his descriptions
-          of this type-system, there are but a few 'key players' which
-          we will briefly describe here:
+          Although Martin-Löf describes many types in his descriptions
+          of this type-system, there are that are of particular
+          importance which we will briefly describe here:
 
           \begin{itemize}
           \item Types of the form $( \Pi x \in A ) B(x)$ describe
@@ -352,8 +311,8 @@
             $\mathbb{N}_1$ to be unit, $\mathbb{N}_2$ to be booleans
             etc.
           \item Types of the form $I (A , a , b)$ encode propositional
-            equality. That is a value of this type represents proof
-            of that $a \equiv b \in A$
+            equality where values of this type represent proofs
+            that $a \equiv b \in A$
           \item W-types are a little more complex. They have the form
             $( W x \in A ) B(x)$ and represent \emph{wellorderings} (a
             somewhat more intuitive explanation is that they represent
@@ -364,16 +323,9 @@
             defined as W-types.
           \item Universes are introduces as a type of types, allowing
             the transfinite types needed to talk about a "sets of
-            sets", Martin-Löf recognised the need to have this level
-            of expression when reasoning about certain areas of maths
-            such as category theory, and universe types are a paradox
-            avoiding way of accomplishing this.
-          \end{itemize}
-
-          There are far more types described in this system that are
-          listed here, however many of these types build on the types
-          described, some can be defined completely in terms of the
-          types mentioned.
+            sets", Martin-Löf recognised the need for such types when
+            reasoning about certain areas of maths such as category
+            theory \end{itemize}
 
           One of the consequence of this, more powerful, type system,
           is that unlike Hindley-Milner, we can no longer infer the
@@ -381,23 +333,16 @@
 
           Take, for example, a value of some dependent pair $(2 , [a :: b
             :: nil])$ perhaps the type of the second element is
-          dependent on the first, and thus the $B$ in the type $(
+          dependent on the first, and the $B$ in the type $(
           \Sigma x \in A ) B(x)$ corresponds to some function $\lambda
-          n \to Vec \: X \: n$, but maybe it does not depend on the first
+          n \to Vec \: X \: n$, and yet maybe it does not depend on the first
           argument at all and $B$ simply corresponds to $\lambda n \to
           Vec \: X \: 2$ - there is no way for us to definitively
-          deduce $B$ from the value alone, or as an alternative view:
-          the value could belong to many $\Sigma$ types, how should we
-          choose?
+          deduce $B$ from the value alone.
   
           \section{Related Work - Research in Progress}
 
-          This author believes he has completed the relevant
-          background reading on a variety of notable type systems
-          allowing him a very general background of the landscape of
-          type-theory.
-
-          With this reading conducted, time will now be focused on
+          With these initial readings conducted, time will now be focused on
           further research into areas specific to creating
           type-checkers and their various components. This involves
           some related work that will be partly summarized here but
@@ -413,16 +358,13 @@
           \emph{context} - traditionally used to track the types of
           term variables.
 
-          In this work, the authors propose a system of explictly
+          In this work, the authors propose a system of explicitly
           tracking type-variables in the context, even before they are
           bound to a type-scheme. As well as allocating types
           to these variables, the unification algorithm is also
           able to pull these type-variables leftward to scope them
-          appropriately and resolve dependencies while it tries to
-          resolve unification constraints. It cannot pull these
-          variables rightward as it risks taking a variable out of
-          scope where it is needed, potentially undoing the work of a
-          previous constraint-solving step.
+          appropriately and solve dependencies while it tries to
+          resolve unification constraints.
 
           This leads to an interesting consequence in their approach to
           generalization in let expressions. Now that type variables
@@ -443,10 +385,10 @@
           static analysis regardless of the underlying syntax of the
           language.
 
-          The concept of a syntactic universe was first introduce by
+          The concept of a syntactic universe was first introduced by
           the author's supervisor, Conor McBride, and further general
           material on universe constructions was obtained when covered
-          as a topic in an Advanced Function Programming class, taught
+          as a topic in an Advanced Functional Programming class, taught
           by Fredrik Nordvall Forsberg.
 
           This idea is explored in a more in-depth context when we
@@ -461,9 +403,8 @@
 
           \section{Related Work Still To Be Explored}
 
-          After the completion of current readings, the author has
-          plans to tackle several other papers that cover the
-          following areas:
+          There are several other papers to read in the following
+          areas of interest:
 
           \begin{itemize}
           \item An implementation of a dependently typed lambda
@@ -472,7 +413,7 @@
           \end{itemize}
 
           Although there are other less critical papers that the
-          author may tackle if time allows.
+          author may also tackle if time allows.
        
         \chapter{Project Specification}
 
@@ -481,7 +422,7 @@
           Writing type-checkers for compilers is a key task in the
           development and evolution of programming languages.
 
-          Despite huge variety in the kinds of languages in existance,
+          Despite huge variety in the kinds of languages in existence,
           type-systems can often be described using the same kinds of
           things such as typing rules. The descriptions are becoming
           standardized enough for us to recognize common syntax for
@@ -519,10 +460,10 @@
           \begin{center}
           \begin{tabular}{p{20em}|p{18em}}
             \large In Scope & \large Not In Scope \\ \hline \hline
-            Notification on whither the type-checking succeeds
+            Notification on whether the type-checking succeeds
             or fails
             & Detailed feedback from the type-checking process \\ \hline
-            Notifaction on whither or not the specification file is
+            Notification on whether or not the specification file is
             successfully parsed
             & Detailed feedback on the parsing of the specification file \\ \hline
             Example specifications and checkable code for small 'toy' languages
@@ -558,7 +499,7 @@
             giving a simple command such as: $$\mbox{type-check} \;
             <\emph{specification-file}> \;
             <\emph{source-code-file}>$$
-          \item The software either succeds with a simple indication
+          \item The software either succeeds with a simple indication
             message, or fails with one of two kinds of error:
             \begin{itemize}
             \item Failure to parse specification
@@ -575,6 +516,9 @@
 
         \section{Objective Timeline}
 
+        The following timeline assigned deadlines to the previously
+        identified objectives.
+        
         \begin{center}
         \begin{vtimeline}[description={text width=11cm}, 
          row sep=3em]
@@ -582,7 +526,7 @@
         30/11/2020 & Complete specific readings relating to the design and
           implementation of various type systems and components thereof.* \endlr
         07/12/2020 & Identify all elements needed to fully and
-          unambigiously describe a type system. \endlr
+          unambiguously describe a type system. \endlr
         14/12/2020 & Verify sufficiency of identified elements by fully describing
             two different type systems in the framework. \endlr
         21/12/2020 & Formalize a syntax for expressing these elements. \endlr
@@ -595,16 +539,15 @@
           kind of type systems that it can represent. \endlr
         \end{vtimeline}          
         \end{center}
-        * This is the target date of completion for currently planned
-        readings, it is likely that readings will be an ongoing
-        process as more are identified.
+        * This is the target date of completion for \emph{currently planned}
+        readings only
         
         \section{Current Progress}
 
           \subsection{Areas of action}
         
           Initial readings on general type-theories have been
-          completed and more specific in-depth readings on relavent
+          completed and more specific in-depth readings on relevant
           topics are currently underway.
 
           As an exercise, a previously presented unification algorithm
@@ -626,11 +569,11 @@
           thought is being given to how to best utilize this technique
           in this project.
           
-          Given that the context is such a ubiqutous notion in
-          type-theories, it is likely that this idea of being
-          explicit about type-variables has uses extending beyond
+          Given that the context is such a ubiquitous notion in
+          type-theories, it is likely that the idea of being
+          explicit about type-variables has uses outwith
           Hindley-Milner and this is an area that this author will explore
-          further. This paper also details relevent unification and type
+          further. This paper also details relevant unification and type
           inference algorithms that could be helpful in the
           development of a type-checker generator, should it be
           possible to abstract the algorithms over a universe of
@@ -645,10 +588,11 @@
           universe. In the context of this project, how might one
           choose a sensible abstraction? What qualities should our
           universe have? What level of detail do we require, and thus
-          force on our end user to specify?
-
+          force on our end user to specify? Do we need to give
+          special consideration if we are putting the onus on a user
+          to 'wire up' a syntax to our syntactic generalization?
           
-        \chapter{Summary of Proposals}
+        \chapter{The Development Process}
         \section{Development Methodology}
 
         In this project, although the primary goal is the production
@@ -658,7 +602,7 @@
         describe type systems), the design and implementation of the
         type-checker-generator (the software development element) and
         the verification of the software (again somewhat theoretical
-        in nature as we look at soundness and completeness).
+        in nature where we look at soundness and completeness).
         
         In the development phase of the project, an agile approach to
         development will be employed. 
@@ -683,7 +627,7 @@
 
         As we are working in a functional language, there are many
         prevalent concepts that, although present in design literature
-        in general, are not nearly as relavent in this context. For
+        in general, are not as relevant in this context. For
         instance, object-oriented programming places an emphasis on
         the concepts of "design patterns", this is a concept discussed
         far less with regards to functional programming - some might
@@ -698,7 +642,7 @@
 
         It is hoped that with careful consideration of types, the
         author might identify areas to better verify correctness of
-        implementing code by introducing invarients that guarantee desirable
+        implementing code by introducing invariants that guarantee desirable
         properties and reduce the number of possible incorrect
         implementations - although this is an area of research in its
         own right and is certainly not the focus of this project.
@@ -711,7 +655,7 @@
         It is the aim of this project to utilize the type system in
         order to help verify correctness at the level of component
         functions (as described when discussing type-driven design
-        above).
+        previously).
 
         In addition, high level test cases (in other paradigms
         referred to as integration tests) will be conducted by
@@ -720,8 +664,8 @@
         will be small in nature as the the expected outcome needs to
         be calculated by hand.
 
-        Finally, we aim to explore the likelyhood that generated
-        type-checkers are correct and complete by reasoning about our
+        Finally, we aim to explore the likelihood that generated
+        type-checkers are sound and complete by reasoning about our
         software. 
         	
 	\input{appendices.tex}

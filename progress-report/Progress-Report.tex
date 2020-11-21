@@ -37,18 +37,24 @@
           \item Complete specific readings relating to the design and
             implementation of various typesystems and components thereof.
           \item Identify all elements needed to fully and
-            unambigiously describe a type system.
+            unambigiously describe a type system and unify them under
+            a common framework.
           \item Verify sufficiency of identified elements by fully describing
-            System F, HM and Martin Lof in this new framework
+            two different type systems in the framework.
           \item Formalize a syntax for expressing these elements.
-          \item Write a specification of a type-checker-generator.
-          \item Design a type-checker-generator.
-          \item Implement a type-checker-generator.
+          \item Write a specification of a type-checker-generator
+            including identifying areas for verification and/or
+            testing. 
+          \item Design and implement a type-checker-generator.*
           \item Verify the implementation according to the
             specification.
           \item Evaluate the DSL and identify any limitations on the
             kind of type systems that it can represent.
         \end{itemize}
+
+        * The design and implementation sections have been combined
+        here as the idea is that this phase will be conducted in an
+        agile manner via scrum-style sprints.
         
         \chapter{Related Work}
 
@@ -198,7 +204,7 @@
             argument is some instance of the functions input type. This is
             generally regarded as a good thing, less we end up with code that
             contains so much type information as to be rendered
-            unreadable. \clearpage
+            unreadable.
             
             The classic example of such systems is the creation of lists in the
             standard $cons/[]$ way. In a language with a type system akin to
@@ -567,10 +573,61 @@
         
         \chapter{Project Plan}
 
-          w/ regards to type-inference in context
+        \section{Objective Timeline}
+
+        \begin{center}
+        \begin{vtimeline}[description={text width=11cm}, 
+         row sep=3em]
+        16/11/2020 & Complete initial readings on type-theory. \endlr
+        30/11/2020 & Complete specific readings relating to the design and
+          implementation of various type systems and components thereof.* \endlr
+        07/12/2020 & Identify all elements needed to fully and
+          unambigiously describe a type system. \endlr
+        14/12/2020 & Verify sufficiency of identified elements by fully describing
+            two different type systems in the framework. \endlr
+        21/12/2020 & Formalize a syntax for expressing these elements. \endlr
+        04/01/2021 & Write a specification of a type-checker-generator,
+        including identifying areas for verification and/or testing. \endlr
+        01/03/2021 & Design and implement a type-checker-generator. \endlr
+        15/03/2021 & Verify the implementation according to the
+          specification. \endlr
+        22/03/2021 & Evaluate the DSL and identify any limitations on the
+          kind of type systems that it can represent. \endlr
+        \end{vtimeline}          
+        \end{center}
+        * This is the target date of completion for currently planned
+        readings, it is likely that readings will be an ongoing
+        process as more are identified.
         
+        \section{Current Progress}
+
+          \subsection{Areas of action}
+        
+          Initial readings on general type-theories have been
+          completed and more specific in-depth readings on relavent
+          topics are currently underway.
+
+          As an exercise, a previously presented unification algorithm
+          \cite{TypeInferenceInContext} has been adapted and
+          re-written in Agda (the author's implementation language of
+          choice).
+
+          Writing has begun on various sections of the final report,
+          including a review of the literature, somewhat similar to
+          the "Related Work" section in this report.
+
+          Some coding exercise have been conducted exploring the
+          concept of using universe constructions to program generically.
+        
+          \subsection{Areas of thought}
+
+          After reading about the idea of storing type-variables
+          explicitly in the context \cite{TypeInferenceInContext} more
+          thought is being given to how to best utilize this technique
+          in this project.
+          
           Given that the context is such a ubiqutous notion in
-          type-theories, it is likely that this notion of being
+          type-theories, it is likely that this idea of being
           explicit about type-variables has uses extending beyond
           Hindley-Milner and this is an area that this author will explore
           further. This paper also details relevent unification and type
@@ -580,18 +637,93 @@
           syntaxes and associated typing rules. Thought in this area
           is an ongoing process.
 
-          w/ regards to syntactic universes
+          Thought is also being given to the concept of syntactic
+          universes. It is clear that this idea allows us to create
+          our software generalizing over the kinds of syntax to which it
+          will be applied. However the author would like to gain a
+          deeper understanding about how best to design a syntactic
+          universe. In the context of this project, how might one
+          choose a sensible abstraction? What qualities should our
+          universe have? What level of detail do we require, and thus
+          force on our end user to specify?
 
-          How do I choose a syntactic universe? What qualities should
-          it have?
-
+          
         \chapter{Summary of Proposals}
         \section{Development Methodology}
+
+        In this project, although the primary goal is the production
+        of software, much of the work is theoretical in nature. With
+        that in mind, it is proposed to split the project in three:
+        initial theoretical work (such as formalizing a language to
+        describe type systems), the design and implementation of the
+        type-checker-generator (the software development element) and
+        the verification of the software (again somewhat theoretical
+        in nature as we look at soundness and completeness).
+        
+        In the development phase of the project, an agile approach to
+        development will be employed. 
+
+        The author will take a Scrum-style approach to the development
+        process, adapting the usual teamwork-focused elements to be
+        more suited to a single developer environment.
+
+        Of the four identified milestones, the last three of these
+        will make up the epics under this system, where these will be
+        broken down into more granular tickets for each sprint.
+
+        The development section of the project has been allocated 8
+        weeks, this will be split into four sprints each lasting two
+        weeks. 
+        
         \section{Design}
-        \section{Implementation}
-        \section{Testing}
-        \section{Evaluation}
-	
+
+        As we are working within a scrum-style agile framework, the
+        design will take place in small increments within each
+        sprint.
+
+        As we are working in a functional language, there are many
+        prevalent concepts that, although present in design literature
+        in general, are not nearly as relavent in this context. For
+        instance, object-oriented programming places an emphasis on
+        the concepts of "design patterns", this is a concept discussed
+        far less with regards to functional programming - some might
+        argue because it is a more efficient paradigm that does not
+        require them, others might argue that their use is implicit.
+
+        One area of particular interest to the author is type driven
+        design - where much of the type information is filled in
+        first, and the implementation details often follow
+        afterward. This style of development could aid us in making
+        better use of Agda's dependent type system.
+
+        It is hoped that with careful consideration of types, the
+        author might identify areas to better verify correctness of
+        implementing code by introducing invarients that guarantee desirable
+        properties and reduce the number of possible incorrect
+        implementations - although this is an area of research in its
+        own right and is certainly not the focus of this project.
+        
+        \section{Testing/Verification}
+
+        The testing and verification process is multi-faceted in
+        nature.
+
+        It is the aim of this project to utilize the type system in
+        order to help verify correctness at the level of component
+        functions (as described when discussing type-driven design
+        above).
+
+        In addition, high level test cases (in other paradigms
+        referred to as integration tests) will be conducted by
+        supplying example source code to the type-checker where the
+        expected outcome is known in advance. Clearly these examples
+        will be small in nature as the the expected outcome needs to
+        be calculated by hand.
+
+        Finally, we aim to explore the likelyhood that generated
+        type-checkers are correct and complete by reasoning about our
+        software. 
+        	
 	\input{appendices.tex}
 	
 	\clearpage

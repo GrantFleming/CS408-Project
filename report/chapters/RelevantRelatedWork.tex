@@ -1,0 +1,72 @@
+\chapter{Relevant Related Work}
+
+In the previous chapter, we explored material designed to give a
+general background of type-theory. Here we will explore some more
+modern works which will help us in the construction of a
+type-checker-generator.
+
+\section{Contexts and Type Inference}
+
+Gundry, McBride and McKinna present research detailing an
+novel way of implementing unification and
+type-inference \cite{TypeInferenceInContext}. An area of
+particular interest is in their approach to the
+\emph{context} - traditionally used to track the types of
+term variables.
+
+In this work, the authors propose a system of explicitly
+tracking type-variables in the context, even before they are
+bound to a type-scheme. As well as allocating types
+to these variables, the unification algorithm is also
+able to pull these type-variables leftward to scope them
+appropriately and resolve dependencies, while it tries to
+solve unification constraints.
+
+This leads to an interesting consequence in their approach to
+generalization in let expressions. Now that type variables
+can exist in the context, we are able to instantiate a type
+scheme by introducing a new type variable to the context,
+and removing the necessary $\forall$ quantifier in the
+scheme. Consequently, to generalize, we can remove these
+type-variables from the context and introduce and
+appropriate $\forall$ quantifier. The authors explicily
+place a third element into the context, a marker that delimits
+generalization to an appropriate scope.
+
+\section{Syntactic Universes}
+
+More recently, this project has began an exploration into the concept of
+universe constructions. These may be used in building a syntactic universe
+where we define various mechanisms for accomplishing
+static analysis independent of the underlying syntax of the
+language.
+
+The concept of a syntactic universe was first introduced by
+the author's supervisor, Conor McBride, and further general
+material on universe constructions was obtained when covered
+as a topic in an Advanced Functional Programming class, taught
+by Fredrik Nordvall Forsberg.
+
+This idea is explored in a more in-depth context when we
+explore work detailing how we might build a universe of
+syntaxes that are both scope and type safe and abstractly
+define common elements of their semantics such as
+substitution \cite{DBLP:journals/corr/abs-2001-11001}.
+
+This is an area that is clearly relevant to this authors
+work, although - at the time of writing - progress has still
+to be made by the author in fully understanding the paper.
+
+\section{Related Work Still To Be Explored}
+
+There are several other papers to read in the following
+areas of interest:
+
+\begin{itemize}
+\item An implementation of a dependently typed lambda
+  calculus \cite{ATutorialImplementationOfDTLC}
+\item Formalization of bi-directional dependent type systems \cite{TypesWhoSayNi}
+\end{itemize}
+
+Although there are other less critical papers that the
+author may also tackle if time allows.

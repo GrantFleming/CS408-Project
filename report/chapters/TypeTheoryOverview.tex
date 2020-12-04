@@ -1,0 +1,287 @@
+\chapter{An Overview of Type Theory}
+
+        \section{Background, Lambda Calculus and System F}
+
+          Type systems, as with so many concepts in computer science,
+          are a concept borrowed from the study of logic. Their initial
+          purpose was to resolve certain inconsistencies in an
+          underlying logic. 
+      
+          Although originally proposed by Bertrand Russell in 1902 to
+          resolve a paradox he himself had discovered in a formalization of
+          Gottlob Frege's naive set theory in 1901 \cite{Russell1901}, much
+          introductory material on type theory from a computer science
+          perspective begins with Alonzo Church and his Simply Typed
+          Lambda Calculus \cite{church1940}.
+          
+          Like Russell, Church was searching for a way to make his
+          previously defined system of logic, the lambda calculus,
+          consistent. In 1940 he published his seminal paper that outlined a
+          type system and added extra criteria to which a term must
+          conform in order to be considered well-formed - it must be typeable.
+      
+          A concrete, if informal, summation of Church's work here is that
+          in this new system, if a lambda abstraction is applied to a term,
+          the type of the term must be the same type as the binder in the
+          abstraction. As a consequence, previously well formed terms which
+          caused inconsistencies in the logic, such as
+          $ (\lambda x.xx)(\lambda x.xx)  $
+          were no longer well formed under the new system.
+      
+          As the field of computer science developed in sophistication in
+          the late 1960s and 1970s, prominent logicians and computer
+          scientists started to develop the notion of parametric
+          polymorphism. It was noted that some functions had common
+          behaviour over differing types, and that the behaviour of these
+          functions did not depend on the types themselves. This lead to
+          redundant definitions, such as having to define a function with the
+          same behaviour multiple times, once for each type you wish to
+          operate over. Under type systems akin to the simply typed lambda
+          calculus, the \emph{id} function given by the term $\lambda
+          x_{\mathbb{N}}.x $ is only ever applicable to natural numbers. It
+          is clear that there was immense benefit in being able to define
+          functions such as \emph{id} once and have them operate over any type.
+      
+          One such solution to this problem came to be known as System F
+          or polymorphic lambda calculus. This system was independently
+          discovered by Jean-Yves Girard and John Reynolds in 1972 and 1974
+          respectively \cite{Girard1972,reynolds1974}.
+      
+          In lambda calculus, a single binder $\lambda$ is used to bind variables
+          that range over values. In the simply typed lambda calculus, a
+          lambda term of the form $\lambda x_{\alpha}.M_{\beta}$ (where
+          $x_{\alpha}$ binds variables $x$ over a type $\alpha$ and
+          $M_{\beta}$ is some term of type $\beta $) has type
+          $\alpha\to\beta$ by modern notation. System F introduces a new
+          binder $\Lambda$ that is used to bind variables that range over
+          types. In this system, terms of the form $\Lambda t.M$ denotes a
+          function that takes as its first argument some type and returns a
+          term with all references to t replaced by that type. This function
+          has type $\Delta t.M^{t}$ where $M^t$ is is the type of $M$.
+      
+          Under this system, we may write the \emph{id} function as $\Lambda t
+          . \lambda x_t . x$ and thus have it operate over any type t,
+          so long as we supply it.
+      
+          One disadvantage of this system is that terms become verbose
+          because of their explicit references to type
+          information. Another is that explicit quantification over
+          types can quickly become unwieldy when writing more complex
+          types for polymorphic functions.
+
+          \section{Hindley-Milner}
+            An alternative approach to parametric polymorphism was
+            developed in the late 60s with the Hindley-Milner type
+            system which grew to become the basis of many functional
+            languages such as ML and Haskell.
+                        
+            Hindley introduced a system of \textit{type-schemes}
+            \cite{hindley1969} (types that may contain quantified type
+            variables) and defined a type as being a type-scheme that
+            contains no such variables. Milner refered to these
+            concepts as polytypes and monotypes respectively
+            \cite{milner1978}. 
+            
+            This has the consequence that a given term may have any number of
+            type-schemes, some more general than others, some more specific,
+            allowing us to commit to stating more or less about our
+            values as the situation requires. Hindley then presents
+            the idea of a \textit{principle type scheme} (p.t.s) where
+            all possible type-schemes for a given term are instances
+            of the p.t.s. (that is, can be constructed by consistent
+            substitution for quantified variables in the p.t.s.).
+            
+            He then proves that any term for which you can deduce a type scheme,
+            has a p.t.s., that it is always possible to work out what the p.t.s. is
+            up to \textit{trivial instances} and introduces an
+            algorithm to accomplish this type inference - Algorithm W.
+
+            As a consequence of this system there is no need for us to
+            annotate the definitions in our code with type
+            information since we can always infer the p.t.s (most
+            general type-scheme) of our terms. This can result
+            in cleaner looking code in some circumstances however
+            there is an argument that providing type information
+            explicitly in the syntax of the language serves as
+            important documentation.
+            
+            The type inference algorithm that is detailed in the Hindley-Milner
+            system is also instrumental in the way types are checked.
+            
+            In a system like System F, whenever a polymorphic
+            function is applied, it must first be provided the type
+            parameter before being provided
+            the value parameter so that the value may be
+            type-checked. With Hindley-Milner, as a direct consequence
+            of its type inference features, this is not
+            necessary. Instead the
+            most general type of the function can be inferred, and it
+            is then possible to check that the type of the supplied
+            value parameter is some instance of the input type of the function.
+            
+            The classic example of such systems is the creation of lists in the
+            standard $cons/[]$ way. In a language with a type system akin to
+            System F, this may look
+            something like:
+            
+            \begin{minted}{haskell}
+              (cons Number 1 (cons Number 9 (cons Number 6 [])))  
+            \end{minted}
+            
+            whereas if we can infer the most general type of $cons$ and
+            subsequently verify that the supplied input is some instance of this
+            type as in Hindley-Milner, the same expression might be written as:
+            
+            \begin{minted}{haskell}
+              (cons 1 (cons 9 (cons 6 [])))  
+            \end{minted}
+            
+            We can see this difference reflected in the typing rules of the
+            systems by way of the following example on \emph{id}:
+            
+            \[\begin{array}{c@{\qquad}|@{\qquad}c}
+                  \mbox{Hindley-Milner}
+                  &
+                  \mbox{System F}
+                  \\
+                  id : \forall \alpha \cdot \alpha \to \alpha
+                  &
+                  id : \Delta \alpha \cdot \alpha \to \alpha
+                  \\                  id = \lambda x \cdot x
+                  &
+                  id = \Lambda t . \lambda x_t \cdot x
+            \end{array} \]
+            
+            The type in the Hindley-Milner system can be proven by:
+            
+            
+            \[\begin{array}{c}
+            \mbox{\begin{prooftree}
+                    \hypo{x : \alpha \in x : \alpha}   
+                  \infer1[var]{x : \alpha \vdash x : \alpha}
+                \infer1[abs]{\vdash \lambda x \cdot x : \alpha \to \alpha}
+                \hypo{\alpha \notin free(\epsilon)}
+               \infer2[gen]{\vdash \lambda x \cdot x : \forall \alpha \cdot
+               \alpha \to \alpha}
+            \end{prooftree}}
+            \end{array} \]
+            
+            
+            The equivalent type in System F can be proven by:
+            
+            \[\begin{array}{c}
+            \mbox{\begin{prooftree}
+                  \hypo{x : \alpha \in x : \alpha}
+                \infer1[var]{x : \alpha \vdash x : \alpha}
+               \infer1[abs]{\vdash \lambda x_t \cdot x : \alpha \to \alpha}
+               \infer1[$\Delta$-abs]{\vdash \Lambda t . \lambda x_t \cdot
+                 x : \Delta \alpha \cdot \alpha \to \alpha}
+            \end{prooftree}}
+            \end{array} \]
+            
+            In system F, this deduces the only type for $\Lambda t . \lambda x_t
+            \cdot x$ (up to the renaming of bound variables) however note that
+            in Hindley-Milner we may also deduce other type (schemes)
+            for $\lambda x \cdot x$: 
+            
+            \[\begin{array}{c}
+            \mbox{\begin{prooftree}
+                        \hypo{x : \alpha \to \beta \in x : \alpha \to \beta}
+                    \infer1[var]{x : \alpha \to \beta \vdash x : \alpha \to \beta}   
+                    \infer1[abs]{\vdash \lambda x \cdot x : (\alpha \to \beta) \to
+                    (\alpha \to \beta)}
+                    \hypo{\beta \notin free(\epsilon)}        
+                \infer2[gen]{\vdash \lambda x \cdot x : \forall \beta \cdot
+                  (\alpha \to \beta) \to (\alpha \to \beta)}
+                \hypo{\alpha \notin free(\epsilon)}
+               \infer2[gen]{\vdash \lambda x \cdot x : \forall \alpha . \forall
+                 \beta \cdot (\alpha \to \beta) \to (\alpha \to \beta)}
+            \end{prooftree}}
+            \end{array} \]
+                                   
+            If you wanted a term with an equivalent type in system F you would
+            need to create a new term $\Lambda t_1 . \Lambda t_2 . \lambda x_{t_1
+              \to t_2} \cdot x$
+            
+            A full list of the typing rules are available in
+            appendices \ref{appendix:sysFrules} and
+            \ref{appendix:HMrules}. 
+                    
+          \section{Intuitionistic Type Theory}
+        
+          Intuitionistic type theory was devised by Per Martin-Löf
+          \cite{martinlof1980} originally in the 1970s, although
+          several variations have been devised since.
+
+          Martin-Löf was motivated, in part, by what we now call the
+          Curry-Howard isomorphism: the idea that statements in logic can be
+          thought of as types, and a proof of a logical statement can
+          be thought of as a program (consequently simplification of
+          proofs correspond to the execution of a program)
+          \cite{wadler2015}. He noted that despite this isomorphism,
+          computer scientists often developed their own
+          languages and type systems instead of using existing
+          logics and hence his theory of Intuitionistic types was
+          designed to have practical uses as both a logic and
+          programming language.
+
+          While the Curry-Howard isomorphism clearly had an existing
+          foothold, relating function types to implication for
+          instance, Martin-Löf was the first to extend this to
+          predicate logic by having his types depend on values,
+          using dependent functions and dependent pairs to encode
+          universal and existential quantification respectively.
+
+          It was this introduction of `dependent types` that made this
+          theory different from previous type theories and allowing
+          the development of dependently typed languages with flexible
+          and powerful type systems such as Agda \cite{norell}.
+
+          Although Martin-Löf describes many types in this system,
+          there are that a few that are of particular importance which we will
+          briefly describe here: 
+
+          \begin{itemize}
+          \item Types of the form $( \Pi x \in A ) B(x)$ describe
+            dependent functions, where the type $B(x)$ of the co-domain
+            depends on the \emph{value} $x$ of the domain.
+          \item Types of the form $( \Sigma x \in A ) B(x)$ describe
+            dependent pairs, where the type $B(x)$ of the second
+            element of the pair depends on the \emph{value} $x$ of the
+            first element.
+          \item Type of the form $A + B$ represent the disjoint union
+            of two types $A$ and $B$.
+          \item Types of the form $\mathbb{N}_n$ describe types
+            with finite numbers of values. For instance we could take
+            $\mathbb{N}_1$ to be unit, $\mathbb{N}_2$ to be booleans
+            etc.
+          \item Types of the form $I (A , a , b)$ encode propositional
+            equality where values of this type represent proofs
+            that $a \equiv b \in A$.
+          \item W-types are a little more complex. They have the form
+            $( W x \in A ) B(x)$ and represent \emph{wellorderings} (a
+            somewhat more intuitive explanation is that they represent
+            well-founded trees). This type allows us to define types
+            with complex structures that are inductive in nature. In fact,
+            some of the types that Martin-Löf includes in his
+            type-theory, such as that of Lists or $\mathbb{N}$ can be
+            defined as W-types.
+          \item Universes are introduces as a type of types, allowing
+            the transfinite types needed to talk about a "sets of
+            sets", Martin-Löf recognised the need for such types when
+            reasoning about certain areas of maths such as category
+            theory.
+          \end{itemize}
+
+          One of the consequence of this, more powerful, type system,
+          is that unlike Hindley-Milner, we can no longer infer the
+          most general type of any expression.
+
+          Take, for example, a value of some dependent pair $(2 , [a :: b
+            :: nil])$ perhaps the type of the second element is
+          dependent on the first, and the $B$ in the type $(
+          \Sigma x \in A ) B(x)$ corresponds to some function $\lambda
+          n \to Vec \: X \: n$, and yet maybe it does not depend on the first
+          argument at all and $B$ simply corresponds to $\lambda n \to
+          Vec \: X \: 2$ - there is no way for us to definitively
+          deduce $B$ from the value alone.

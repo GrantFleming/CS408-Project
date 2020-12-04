@@ -2,11 +2,15 @@
 
 \addbibresource{references.bib}
 
-\title{A Tale of Two Type Systems}
-\markingscheme{Experimental with Significant Software Development}
+\renewcommand{\arraystretch}{1.7}
+
+\title{Type-Checker Generation}
+\markingscheme{Software Development Based}
 \regnumber{201700435}
 \author{Grant G Fleming}
 \date{2020/2021}
+\supervisor{Dr Conor McBride}
+\secondmarker{Dr Clemens Kupke}
 
 \begin{document}
 	\maketitle
@@ -15,12 +19,11 @@
         \input{chapters/Abstract.tex}
         \part{Background \& Literature Review}
 	\input{chapters/WhatIsATypeSystem.tex}
-        \input{chapters/InTheBeginning.tex}  
-	\input{chapters/IntroducingTheTypeSystems.tex}
-	\input{chapters/TheSystemsInPractice.tex}
-	\input{chapters/ComparingTheSystems.tex}
-        \part{The Fun Bit}
-	\input{chapters/CorrectnessByConstruction.tex}
+        \input{chapters/TypeTheoryOverview.tex}        
+	\input{chapters/RelevantRelatedWork.tex}
+        \part{Building A Type-Checker-Generator}
+	\input{chapters/ProjectPlan.tex}
+	\input{chapters/ALanguageForDescribingTypeSystems.tex}        
 	
 	\input{appendices.tex}
 	

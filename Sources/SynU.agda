@@ -62,3 +62,4 @@ fun body = con (lam , body)
 
 apply : forall {G S T} -> Tm G (S >> T) -> Tm G S -> Tm G T
 apply f s = con (app , (_ , (f , s)))
+

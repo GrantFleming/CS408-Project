@@ -55,6 +55,8 @@ const : Set → (A → Set)
 const P x = P
 
 -- the type that quantifies over a predicate
+-- i.e. wrap at the end to "add" the scope and get
+-- rid of the List I (or whatever the context may be)
 ∀[_] : (A → Set) → Set
 ∀[ P ] = ∀ {x} → P x
 

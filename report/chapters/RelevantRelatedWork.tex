@@ -35,27 +35,55 @@ generalization to an appropriate scope.
 
 \section{Syntactic Universes}
 
-More recently, this project has began an exploration into the concept of
-universe constructions. These may be used in building a syntactic universe
-where we define various mechanisms for accomplishing
-static analysis independent of the underlying syntax of the
-language.
-
 The concept of a syntactic universe was first introduced by
 the author's supervisor, Conor McBride, and further general
 material on universe constructions was obtained when covered
 as a topic in an Advanced Functional Programming class, taught
 by Fredrik Nordvall Forsberg.
 
+Universe constructions are a way of programming generically by
+computing over descriptions of data, rather than the data itself. Thus
+we design descriptions carefully to capture the properties of
+everything in our universe, create the required computations on the
+descriptions, and couple this with the ability to create descriptions
+and retrieve the \emph{meaning} of descriptions - get ahold of
+the actual entity they are describing.
+
 This idea is explored in a more in-depth context when we
 explore work detailing how we might build a universe of
 syntaxes that are both scope and type safe and abstractly
-define common elements of their semantics such as
-substitution \cite{DBLP:journals/corr/abs-2001-11001}.
+define common semantics such as substitution (which is defined in this
+paper to work over arbitrary descriptions) and type-checking (which is
+defined in this paper to work over a specific description only).
+\cite{DBLP:journals/corr/abs-2001-11001}.
 
-This is an area that is clearly relevant to this authors
-work, although - at the time of writing - progress has still
-to be made by the author in fully understanding the paper.
+In this paper, the authors detail a universe of type and scope safe
+syntaxes. Firstly they created the concept of well scoped entities by
+way of a family of types as well as useful combinators and required machinery
+for representing environments. They also introduce the idea of a
+generic notion of semanitics for a language and demonstrate its use by
+defining several operations in terms of this generic semantics.
+
+After priming the reader on previous work in creating a universe of
+data types \cite{DBLP:conf/icfp/ChapmanDMM10} they then go on to
+modify the descriptions used in this work in order to be instead used
+to describe a universe of scope safe and well-kinded syntaxes.
+
+With this concept of descriptions in place, the previous notion of
+semantics is replaced by a more generic notion which is not
+syntax-specific and can be used to represent a semantics for any
+language that we might \emph{describe}. Finally, with these mechanics
+provided they are able to show true syntax-generic programming by
+forming functionality as semantics over a generic description
+\emph{d}.
+
+Later in this paper, the authors broach the subject of type-checking
+and elaboration. In particular, their section on elaboration provides
+a concrete example of creating an elaborator?? as a semantics over a
+description of bidirectional lambda calculus. The purpose of this
+project is akin to producing such an elaborator for for a
+generic description \emph{d} instead of a concrete description as in
+this paper.
 
 \section{Related Work Still To Be Explored}
 

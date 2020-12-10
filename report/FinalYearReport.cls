@@ -82,6 +82,20 @@
         \global\let\supervisor\relax
 }
 
+% For literate agda files
+
+\usepackage{fancyvrb}
+
+\DefineVerbatimEnvironment
+    {code}{Verbatim}{}
+
+\usepackage{newunicodechar}
+\newunicodechar{λ}{\ensuremath{\mathnormal\lambda}}
+\newunicodechar{←}{\ensuremath{\mathnormal\from}}
+\newunicodechar{→}{\ensuremath{\mathnormal\to}}
+\newunicodechar{∀}{\ensuremath{\mathnormal\forall}}
+\newunicodechar{ℕ}{\ensuremath{\mathbb{N}}}
+
 %timeline stuff
 \usepackage{charter}
 \usepackage{environ}
@@ -164,4 +178,6 @@
 \end{tikzpicture}
 }
 % end timeline stuff
+
+
 

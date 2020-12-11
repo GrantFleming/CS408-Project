@@ -1,2 +1,70 @@
 \chapter{A Language for Describing Type Systems}
 
+In order for a user to provide the necessary input so that the
+software can generate the required type-checker, it is clearly
+necessary that they describe the type-system. In this chapter, we will
+look at the general case of describing type systems and provide a
+domain specific language that may be used to provide a formal
+structure for providing these elements under a single specification.
+
+\section{Describing Type Systems}
+
+There are several elements required to describe a type-system
+sufficiently for type checking. Firstly we require \emph{judgement
+  forms}. These describe the nature of statements we are allowed to
+make. The number of judgement forms varies between type-systems,
+although there are similar forms used in nearly all such systems.
+
+Simply type-systems may be represented with just a single judgement
+form:
+$$\boxed{\Gamma \vdash x : \tau}$$
+Which states that in a given context $\Gamma$ the syntactic entity
+$x$ has type $\tau$. To be instantiated at uses of the judgement form.
+More sophisticated type-systems often need to be able to make
+statements other than just stating a type. For instance, in Martif
+L\"of type theory, as well as having a judgement for to make
+statements about the types of values, we can also make statements
+about what is considered a type, the equivalence of types, and the
+equivalence of values under a type:
+$$\boxed{\tau \; Set} \qquad \boxed{\sigma = \tau} \qquad \boxed{x = y
+  \in \tau}$$
+
+Judgement forms are then used to make \emph{judgements} when we create
+\emph{typing rules}. These typing rules make up the core meaning of a
+type system. They describe when an entity can be said to have a
+particular type associated with it. For example, in the Simply Typed
+Lambda Calculus, the following rule describes how a type is associated
+with a lambda abstraction:
+
+$$\boxed{
+\mbox{\begin {prooftree}
+  \hypo{\Gamma , x : \sigma \vdash t : \tau}
+  \infer1[]{\Gamma \vdash \lambda x . t : \sigma \to \tau}
+\end {prooftree}}
+}$$
+
+The judgments that are combined to form this rule have already been
+discussed, however in place of the variables that existed in the
+judgement forms there are now various language constructs.
+
+$\lambda x . t$ is clearly a lambda abstraction, but it is also worth
+noting that in this rule, it is not a specific abstraction. We must be
+careful to note that $x$ is a placeholder for an arbirary binder and
+$t$ for an arbitrary body that may contain occurences bound by $x$.
+
+There are also type-variables $\sigma$ and $tau$ used, although these
+also exist at our higher 'meta' level, and a usage of the $\to$ type
+constructor. Although the typing rules are at the core of describing a
+type-system, there are other supporting descriptions that are needed
+in order for them to make sense.
+
+We must provide the associated grammars for our language. We need the
+grammar of the terms we wish to type-check, and also of the types we
+can construct (in a dependently typed language, these are all terms
+and so we may not have types specifically in the grammar).
+
+This project will specify grammars in Backus-Naur form as shown by the
+following example describing untyped lambda calculus:
+
+\section{The Domain Specific Language}
+

@@ -15,6 +15,7 @@
 \RequirePackage{amsmath}
 \RequirePackage{ebproof}
 \RequirePackage[outputdir=out]{minted}
+\RequirePackage{agda}
 
 \newcommand*{\markingscheme}[1]{\gdef\@markingscheme{#1}}
 \newcommand*{\regnumber}[1]{\gdef\@regnumber{#1}}
@@ -22,6 +23,8 @@
 \newcommand*{\secondmarker}[1]{\gdef\@secondmarker{#1}}
 
 \renewcommand{\familydefault}{\sfdefault}
+
+\input{unicode.tex}
 
 \setlength{\parskip}{0.5em}
 
@@ -81,20 +84,6 @@
 	\global\let\and\relax
         \global\let\supervisor\relax
 }
-
-% For literate agda files
-
-\usepackage{fancyvrb}
-
-\DefineVerbatimEnvironment
-    {code}{Verbatim}{}
-
-\usepackage{newunicodechar}
-\newunicodechar{λ}{\ensuremath{\mathnormal\lambda}}
-\newunicodechar{←}{\ensuremath{\mathnormal\from}}
-\newunicodechar{→}{\ensuremath{\mathnormal\to}}
-\newunicodechar{∀}{\ensuremath{\mathnormal\forall}}
-\newunicodechar{ℕ}{\ensuremath{\mathbb{N}}}
 
 %timeline stuff
 \usepackage{charter}
@@ -179,4 +168,5 @@
 }
 % end timeline stuff
 
-
+% for ignoring blocks of agda code we don't wish to talk about
+\newcommand{\hide}[1]{}

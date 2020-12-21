@@ -4,74 +4,48 @@
 \begin{code}%
 \>[0]\AgdaKeyword{module}\AgdaSpace{}%
 \AgdaModule{Context}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaBound{VarName}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaPrimitiveType{Set}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaBound{T}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaPrimitiveType{Set}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaKeyword{where}\<%
-\end{code}
-}
-
-We begin by outlining the internal representation of contexts that will be used
-heavily thoughout. Although a simple list captures the required functionality of
-an ordered collection, we choose a more careful representation so that life is
-a little easier down the line.
-
-In preparation for constraint solving and polymorphism in future, we design our
-contexts to make this process easier. Taking inspiration from Gundry, McBride
-and McKinna \cite{TypeInferenceInContext} we use our context to explicitly track
-type variables, and allow the contexts to container a marker for delimiting
-Hindley-Milner style generalization later. We construct this entire module
-generalizing over a representation of variable names (VarName) and types (T).
-
-We firstly outline a context entry, allowing it to be attached to no declaration
-so that we might introduce fresh variables.
-
-\begin{code}%
-\>[0]\AgdaKeyword{data}\AgdaSpace{}%
-\AgdaDatatype{Decl}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaPrimitiveType{Set}\AgdaSpace{}%
-\AgdaKeyword{where}\<%
-\\
-\>[0][@{}l@{\AgdaIndent{0}}]%
-\>[2]\AgdaInductiveConstructor{‼}%
-\>[5]\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaBound{T}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaDatatype{Decl}\<%
-\\
-%
-\>[2]\AgdaInductiveConstructor{⁇}%
-\>[5]\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaDatatype{Decl}\<%
 \\
 %
 \\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaKeyword{data}\AgdaSpace{}%
-\AgdaDatatype{Entry}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaPrimitiveType{Set}\AgdaSpace{}%
-\AgdaKeyword{where}\<%
+\>[0]\AgdaKeyword{open}\AgdaSpace{}%
+\AgdaKeyword{import}\AgdaSpace{}%
+\AgdaModule{Data.Unit}\AgdaSpace{}%
+\AgdaKeyword{using}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaRecord{⊤}\AgdaSymbol{;}\AgdaSpace{}%
+\AgdaInductiveConstructor{tt}\AgdaSymbol{)}\<%
 \\
-\>[0][@{}l@{\AgdaIndent{0}}]%
-\>[2]\AgdaOperator{\AgdaInductiveConstructor{\AgdaUnderscore{}∷=\AgdaUnderscore{}}}%
-\>[8]\AgdaSymbol{:}%
-\>[11]\AgdaBound{VarName}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaDatatype{Decl}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaDatatype{Entry}\<%
+\>[0]\AgdaKeyword{open}\AgdaSpace{}%
+\AgdaKeyword{import}\AgdaSpace{}%
+\AgdaModule{Data.Nat}\AgdaSpace{}%
+\AgdaKeyword{using}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaDatatype{ℕ}\AgdaSymbol{;}\AgdaSpace{}%
+\AgdaInductiveConstructor{suc}\AgdaSymbol{)}\<%
 \\
-%
-\>[2]\AgdaInductiveConstructor{∥}%
-\>[8]\AgdaSymbol{:}%
-\>[11]\AgdaDatatype{Entry}\<%
+\>[0]\AgdaKeyword{open}\AgdaSpace{}%
+\AgdaKeyword{import}\AgdaSpace{}%
+\AgdaModule{Data.Product}\AgdaSpace{}%
+\AgdaKeyword{using}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}×\AgdaUnderscore{}}}\AgdaSymbol{;}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{\AgdaUnderscore{},\AgdaUnderscore{}}}\AgdaSymbol{)}\<%
+\\
+\>[0]\AgdaKeyword{open}\AgdaSpace{}%
+\AgdaKeyword{import}\AgdaSpace{}%
+\AgdaModule{Data.Maybe}\AgdaSpace{}%
+\AgdaKeyword{using}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaDatatype{Maybe}\AgdaSymbol{;}\AgdaSpace{}%
+\AgdaInductiveConstructor{just}\AgdaSymbol{)}\<%
+\\
+\>[0]\AgdaKeyword{open}\AgdaSpace{}%
+\AgdaKeyword{import}\AgdaSpace{}%
+\AgdaModule{Category.Monad.State}\AgdaSpace{}%
+\AgdaKeyword{using}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaFunction{StateT}\AgdaSymbol{)}\<%
 \end{code}
+}
 
-We then define our contexts as backward lists of these entries.
+In our initial work, we begin with a simple notion of contexts, defining
+them as backwards lists of types.
 
 \begin{code}%
 \>[0]\AgdaKeyword{data}\AgdaSpace{}%
@@ -85,13 +59,13 @@ We then define our contexts as backward lists of these entries.
 \\
 \>[0][@{}l@{\AgdaIndent{0}}]%
 \>[2]\AgdaInductiveConstructor{ε}%
-\>[8]\AgdaSymbol{:}\AgdaSpace{}%
+\>[7]\AgdaSymbol{:}\AgdaSpace{}%
 \AgdaDatatype{Bwd}\AgdaSpace{}%
 \AgdaBound{A}\<%
 \\
 %
-\>[2]\AgdaOperator{\AgdaInductiveConstructor{\AgdaUnderscore{}-,\AgdaUnderscore{}}}%
-\>[8]\AgdaSymbol{:}\AgdaSpace{}%
+\>[2]\AgdaOperator{\AgdaInductiveConstructor{\AgdaUnderscore{}-,\AgdaUnderscore{}}}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
 \AgdaDatatype{Bwd}\AgdaSpace{}%
 \AgdaBound{A}\AgdaSpace{}%
 \AgdaSymbol{→}\AgdaSpace{}%
@@ -99,19 +73,7 @@ We then define our contexts as backward lists of these entries.
 \AgdaSymbol{→}\AgdaSpace{}%
 \AgdaDatatype{Bwd}\AgdaSpace{}%
 \AgdaBound{A}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaFunction{Context}\AgdaSpace{}%
-\AgdaSymbol{=}\AgdaSpace{}%
-\AgdaDatatype{Bwd}\AgdaSpace{}%
-\AgdaDatatype{Entry}\<%
 \end{code}
-
-Now we reconcile this notion of contexts with that of type and scope safe
-syntax outlined by G. Allais et al. \cite{DBLP:journals/corr/abs-2001-11001} by
-definining our free variables in terms of a context, except we have a concept
-of variable names and we must ensure these match.
 
 \hide{
 \begin{code}%
@@ -121,57 +83,57 @@ of variable names and we must ensure these match.
 \>[2]\AgdaKeyword{variable}\<%
 \\
 \>[2][@{}l@{\AgdaIndent{0}}]%
-\>[4]\AgdaGeneralizable{Γ}%
-\>[7]\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaFunction{Context}\<%
+\>[4]\AgdaGeneralizable{X}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaPrimitiveType{Set}\<%
+\\
+%
+\>[4]\AgdaGeneralizable{σ}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaGeneralizable{X}\<%
+\\
+%
+\>[4]\AgdaGeneralizable{Γ}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaDatatype{Bwd}\AgdaSpace{}%
+\AgdaGeneralizable{X}\<%
 \end{code}
 }
 
+We use a de-bruijn index representation of variables.
+
 \begin{code}%
 \>[0]\AgdaKeyword{data}\AgdaSpace{}%
-\AgdaDatatype{FVar}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaBound{v}\AgdaSpace{}%
+\AgdaDatatype{Var}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{τ}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
-\AgdaBound{VarName}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaBound{t}\AgdaSpace{}%
+\AgdaGeneralizable{X}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
-\AgdaBound{T}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaFunction{Context}\AgdaSpace{}%
+\AgdaDatatype{Bwd}\AgdaSpace{}%
+\AgdaBound{X}\AgdaSpace{}%
 \AgdaSymbol{→}\AgdaSpace{}%
 \AgdaPrimitiveType{Set}\AgdaSpace{}%
 \AgdaKeyword{where}\<%
 \\
 \>[0][@{}l@{\AgdaIndent{0}}]%
-\>[2]\AgdaInductiveConstructor{top}%
-\>[9]\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaDatatype{FVar}\AgdaSpace{}%
-\AgdaBound{v}\AgdaSpace{}%
-\AgdaBound{t}\AgdaSpace{}%
+\>[2]\AgdaInductiveConstructor{ze}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaDatatype{Var}\AgdaSpace{}%
+\AgdaBound{τ}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaGeneralizable{Γ}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{-,}}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaBound{v}\AgdaSpace{}%
-\AgdaOperator{\AgdaInductiveConstructor{∷=}}\AgdaSpace{}%
-\AgdaInductiveConstructor{‼}\AgdaSpace{}%
-\AgdaBound{t}\AgdaSymbol{))}\<%
+\AgdaBound{τ}\AgdaSymbol{)}\<%
 \\
 %
-\>[2]\AgdaInductiveConstructor{under}%
-\>[9]\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaSymbol{∀}\AgdaSpace{}%
-\AgdaSymbol{\{}\AgdaBound{e}\AgdaSymbol{\}}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaDatatype{FVar}\AgdaSpace{}%
-\AgdaBound{v}\AgdaSpace{}%
-\AgdaBound{t}\AgdaSpace{}%
+\>[2]\AgdaInductiveConstructor{su}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaDatatype{Var}\AgdaSpace{}%
+\AgdaBound{τ}\AgdaSpace{}%
 \AgdaGeneralizable{Γ}\AgdaSpace{}%
 \AgdaSymbol{→}\AgdaSpace{}%
-\AgdaDatatype{FVar}\AgdaSpace{}%
-\AgdaBound{v}\AgdaSpace{}%
-\AgdaBound{t}\AgdaSpace{}%
+\AgdaDatatype{Var}\AgdaSpace{}%
+\AgdaBound{τ}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaGeneralizable{Γ}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{-,}}\AgdaSpace{}%
-\AgdaBound{e}\AgdaSymbol{)}\<%
+\AgdaGeneralizable{σ}\AgdaSymbol{)}\<%
 \end{code}
-
-

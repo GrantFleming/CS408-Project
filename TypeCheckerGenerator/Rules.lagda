@@ -1,4 +1,4 @@
-\section{Representing Rules}
+\section{Representing Judgements and Rules}
 
 \begin{code}
 module Rules where

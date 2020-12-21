@@ -3,20 +3,16 @@
 \hide{
 \begin{code}
 module Context where
-
-open import Data.Unit using (⊤; tt)
-open import Data.Nat using (ℕ; suc)
-open import Data.Product using (_×_; _,_)
-open import Data.Maybe using (Maybe; just)
-open import Category.Monad.State using (StateT)
+open import Level
 \end{code}
 }
 
 In our initial work, we begin with a simple notion of contexts, defining
-them as backwards lists of types.
+them as backwards lists of types. We take care to produce a universe independent
+implementation so that we might use it with our notion of Pattern.
 
 \begin{code}
-data Bwd (A : Set) : Set where
+data Bwd {ℓ} (A : Set ℓ) : Set ℓ where
   ε    : Bwd A
   _-,_ : Bwd A → A → Bwd A
 \end{code}
@@ -25,7 +21,8 @@ data Bwd (A : Set) : Set where
 \begin{code}
 private
   variable
-    X : Set
+    ℓ : Level
+    X : Set ℓ
     σ : X
     Γ : Bwd X
 \end{code}

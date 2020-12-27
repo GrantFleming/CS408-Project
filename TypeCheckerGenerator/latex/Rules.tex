@@ -1,7 +1,123 @@
 \section{Representing Judgements and Rules}
 
+\hide{
 \begin{code}%
 \>[0]\AgdaKeyword{module}\AgdaSpace{}%
 \AgdaModule{Rules}\AgdaSpace{}%
 \AgdaKeyword{where}\<%
+\\
+%
+\\[\AgdaEmptyExtraSkip]%
+\>[0]\AgdaKeyword{open}\AgdaSpace{}%
+\AgdaKeyword{import}\AgdaSpace{}%
+\AgdaModule{Pattern}\AgdaSpace{}%
+\AgdaKeyword{using}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaRecord{Pattern}\AgdaSymbol{)}\<%
+\\
+\>[0]\AgdaKeyword{open}\AgdaSpace{}%
+\AgdaModule{Pattern.Pattern}\<%
+\\
+\>[0]\AgdaKeyword{open}\AgdaSpace{}%
+\AgdaKeyword{import}\AgdaSpace{}%
+\AgdaModule{Data.List}\AgdaSpace{}%
+\AgdaKeyword{using}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaDatatype{List}\AgdaSymbol{;}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{\AgdaUnderscore{}∷\AgdaUnderscore{}}}\AgdaSymbol{;}\AgdaSpace{}%
+\AgdaInductiveConstructor{[]}\AgdaSymbol{)}\<%
+\\
+\>[0]\AgdaKeyword{open}\AgdaSpace{}%
+\AgdaKeyword{import}\AgdaSpace{}%
+\AgdaModule{Context}\AgdaSpace{}%
+\AgdaKeyword{using}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaFunction{Context}\AgdaSymbol{;}\AgdaSpace{}%
+\AgdaFunction{Ty}\AgdaSymbol{)}\<%
+\\
+\>[0]\AgdaKeyword{open}\AgdaSpace{}%
+\AgdaKeyword{import}\AgdaSpace{}%
+\AgdaModule{undefined}\<%
+\end{code}
+}
+
+We now look at representing judgements and rules in our software.
+
+We provide two judgements from which users can build the rules of their
+type-system: one for type synthesis and another for type checking. These
+are implemented as instances of our Pattern record type.
+
+\begin{code}%
+\>[0]\AgdaComment{-- type synthesis}\<%
+\\
+\>[0]\AgdaComment{-- Γ : a ∈ A}\<%
+\\
+\>[0]\AgdaFunction{syn}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaRecord{Pattern}\<%
+\\
+\>[0]\AgdaField{name}%
+\>[6]\AgdaFunction{syn}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaNumber{0}\<%
+\\
+\>[0]\AgdaField{holes}\AgdaSpace{}%
+\AgdaFunction{syn}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaFunction{Context}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaPostulate{undefined}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaFunction{Ty}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaInductiveConstructor{[]}\<%
+\\
+%
+\\[\AgdaEmptyExtraSkip]%
+\>[0]\AgdaComment{-- type checking}\<%
+\\
+\>[0]\AgdaComment{-- Γ : A ∋ a}\<%
+\\
+\>[0]\AgdaFunction{chk}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaRecord{Pattern}\<%
+\\
+\>[0]\AgdaField{name}\AgdaSpace{}%
+\AgdaFunction{chk}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaNumber{1}\<%
+\\
+\>[0]\AgdaField{holes}\AgdaSpace{}%
+\AgdaFunction{chk}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaFunction{Context}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaFunction{Ty}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaPostulate{undefined}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaInductiveConstructor{[]}\<%
+\end{code}
+
+We not show how we may construct rules from these judgements.
+
+
+But we need the ability to have metavariables between patterns.
+\begin{code}%
+\>[0]\AgdaKeyword{record}\AgdaSpace{}%
+\AgdaRecord{Rule}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaPrimitiveType{Set₁}\AgdaSpace{}%
+\AgdaKeyword{where}\<%
+\\
+\>[0][@{}l@{\AgdaIndent{0}}]%
+\>[2]\AgdaKeyword{field}\<%
+\\
+\>[2][@{}l@{\AgdaIndent{0}}]%
+\>[4]\AgdaField{premise}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaDatatype{List}\AgdaSpace{}%
+\AgdaRecord{Pattern}\<%
+\\
+%
+\>[4]\AgdaField{conclusion}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaRecord{Pattern}\<%
 \end{code}

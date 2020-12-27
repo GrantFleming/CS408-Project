@@ -8,9 +8,9 @@ module SyntacticUniverse where
 \begin{code}
 open import Data.Product using (_×_; Σ-syntax; _,_)
 open import Data.Nat using (ℕ)
-open import Pattern using (Pattern)
-open import Context using (Bwd; ε; _-,_; Var)
+open import Context using (Bwd; ε; _-,_; Var; Ty)
 open import Level
+open import undefined
 \end{code}
 }
 
@@ -47,51 +47,32 @@ data ⊤ : Set₁ where
 ⟦ term x ⟧      Ρ Γ  = Ρ x Γ
 ⟦ pair D¹ D² ⟧  Ρ Γ  = ⟦ D¹ ⟧ Ρ Γ × ⟦ D² ⟧ Ρ Γ
 ⟦ unit ⟧        Ρ Γ  = ⊤
-
 \end{code}
 
 \begin{code}
-data Term (describe : X → Desc X)(x : X)(Γ : Bwd X) : Set₁ where
-  var  : Var x Γ → Term describe x Γ
-  con  : ⟦ describe x ⟧ (Term describe) Γ  → Term describe x Γ
+data Term (F : X → Desc X)(x : X)(Γ : Bwd X) : Set₁ where
+  var  : Var x Γ → Term F x Γ
+  con  : ⟦ F x ⟧ (Term F) Γ  → Term F x Γ
 \end{code}
 
 \subsection{Describing a Generic Language}
 
 We now have the required elements to describe a generic language.
 
-
 \begin{code}
--- types are just patterns with a single hole
--- type constructors are patterns with multiple holes
-Ty = Pattern
-
 data IorE : Set₁ where intro elim : IorE
 
 desc-intro : Ty → Desc Ty
-desc-intro = {!!}
+desc-intro = undefined
 
 desc-elim : Ty → Desc Ty
-desc-elim = {!!}
+desc-elim = undefined
 
 lang : Ty → Desc Ty
 lang τ = tag IorE (λ where
-                     intro → tag Ty {!!}
-                     elim  → tag Ty {!!})
+                     intro → tag Ty desc-intro
+                     elim  → tag Ty desc-elim)
 
 Tm : Bwd Ty → Ty → Set₁
 Tm Γ τ = Term lang τ Γ
-\end{code}
-
-\begin{code}
-
-open import Data.List using (List; _∷_; [])
-
-lamTy : Pattern
-Pattern.name  lamTy = 0
-Pattern.holes lamTy = {!!} ∷ []
-
-idFunc : Tm ε lamTy
-idFunc = con (intro , {!!})
-
 \end{code}

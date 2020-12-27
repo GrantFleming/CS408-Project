@@ -6,10 +6,12 @@ module Pattern where
 
 open import Data.List using (List; []; _∷_)
 open import Data.Product using (Σ-syntax; _,_; proj₁)
+open import Data.Sum using (_⊎_)
 open import Data.Nat using (ℕ; _≡ᵇ_)
 open import Data.List.Relation.Unary.All
 open import Function using (id)
 open import Data.Bool using (Bool)
+
 \end{code}
 }
 

@@ -14,6 +14,7 @@
 \RequirePackage{amssymb}
 \RequirePackage{amsmath}
 \RequirePackage{ebproof}
+\RequirePackage{fancyvrb}
 \RequirePackage[outputdir=out]{minted}
 \RequirePackage{agda}
 

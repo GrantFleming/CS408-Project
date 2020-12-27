@@ -7,13 +7,115 @@ look at the general case of describing type systems and provide a
 domain specific language that may be used to provide a formal
 structure for providing these elements under a single specification.
 
-\section{Describing Type Systems}
+There are several elements that need defining: Types, Terms Semantics
+and Typing Rules. In the specification file, each of these sections is
+denoted by appearing, prefixed by a '\#' and a space on a line of its
+own (\# types, \# terms etc). The beginning of a new section ends the
+previous section and the sections must appear in the following order:
 
-There are several elements required to describe a type-system
-sufficiently for type checking. Firstly we require \emph{judgement
-  forms}. These describe the nature of statements we are allowed to
-make. The number of judgement forms varies between type-systems,
-although there are similar forms used in nearly all such systems.
+\begin{enumerate}
+  \item \# types
+  \item \# terms
+  \item \# semantics
+  \item \# rules
+\end{enumerate}
+
+The '\# semantics' section may be optionally omitted if the user does
+not intend to use equivalence. In the specification file, lines beginning
+with '- -' are ignored. 
+
+Example specifications files are available in appendix \ref{appendix:examplespecifications}.
+
+\section{Specifying A Grammar}
+
+We specify a general structure of a grammar, but we leave key elements
+to be specified by the user. We require a user to provide definitions
+for three aspects of a languages grammar: definitions, terms and
+types. In this initial iteration, we keep terms and types strictly
+separate - however in future iterations we may allow Types to contain
+Terms and vice versa. 
+
+\subsection{Types}
+
+A specification of the types begins with the string '\# types' on
+a line of its own.
+
+We make a distinction between base types and type constructors, the user
+must supply any of each they wish to be part of their type system, at
+a minimum, a single base type is expected.
+
+Base type definitions are optionally supplied in pairs along with their values,
+the values are automatically included as inferrable terms in the
+grammar and for a given base type $B$ with value $b$ the judgments
+$\boxed{\Gamma \vdash b \in B}$ and $\boxed{\Gamma \vdash B \ni b}$
+are axiomatic.
+
+Base types are given names that identify them and values separated by
+a whitespace. A 'values' declaration following a 'base'
+declaration associates the values with the type but is not mandatory,
+it is possible to supply the type name only and define the values later
+using typing rules.
+
+An example of a base type definition is that of the booleans:
+
+\begin{verbatim}
+base   Bool
+values True False
+\end{verbatim}
+
+Type constructors are defined as a series of tokens and whitespace
+where arguments are denoted by '@' as in the following examples:
+
+\begin{verbatim}
+constructor  @ -> @
+constructor  @ + @
+constructor  Maybe @
+\end{verbatim}
+
+
+\subsection{Terms}
+
+A specification of terms begins with the string '$\# \; terms$' on a
+line of its own.
+
+A user can visualise the following snippet of grammar describing terms:
+
+\begin{align*}
+<\mbox{check}> &::= <\mbox{infer}> | ... \\
+<\mbox{infer}> &::= <\mbox{var}> | ...
+\end{align*}
+
+where they must fill in the ellipses. We specify two main classes of
+terms, that for which the type is inferrable, and that for which the
+type is checkable. All inferrable types are checkable (if we wish to
+check the type, we merely synthesize the type then check if it matches
+the given type we are checking against). Thus a user must supply a
+definition for $<\mbox{infer}>$ at a minimum with $<\mbox{check}>$
+being optional if a user cannot or will not provide an inference rule
+for certain terms. Users need not specify $<\mbox{check}> &::=
+<\mbox{infer}>$ or $<\mbox{infer}> &::= <\mbox{var}>$, this is handled
+implicitly.
+
+To allow for type annotation, the non-terminal symbol $<\mbox{type}>$
+is allowed when specifying the grammar of terms although definitions
+such as $<\mbox{infer}> <\mbox{check}> ::= <\mbox{type}>$ are not.
+
+The definition: $<\mbox{infer}> ::= <\mbox{check}>$ is not allowed.
+
+\section{Operational Semantics}
+
+When we later come back to include dependent types, it will become
+necessary to define a syntax for describing operational semantics here.
+
+\section{Typing Rules}
+
+A specification of the typing rules begins with the string '\# rules'
+on a line of it's own.
+
+Firstly we require \emph{judgement forms}. These describe the nature
+of statements we are allowed to make. The number of judgement forms
+varies between type-systems, although there are similar forms used in
+nearly all such systems.
 
 Simply type-systems may be represented with just a single judgement
 form:
@@ -43,6 +145,7 @@ $$\boxed{
 \end {prooftree}}
 }$$
 
+
 The judgments that are combined to form this rule have already been
 discussed, however in place of the variables that existed in the
 judgement forms there are now various language constructs.
@@ -52,19 +155,141 @@ noting that in this rule, it is not a specific abstraction. We must be
 careful to note that $x$ is a placeholder for an arbirary binder and
 $t$ for an arbitrary body that may contain occurences bound by $x$.
 
-There are also type-variables $\sigma$ and $tau$ used, although these
+There are also type-variables $\sigma$ and $\tau$ used, although these
 also exist at our higher 'meta' level, and a usage of the $\to$ type
-constructor. Although the typing rules are at the core of describing a
-type-system, there are other supporting descriptions that are needed
-in order for them to make sense.
+constructor.
 
-We must provide the associated grammars for our language. We need the
-grammar of the terms we wish to type-check, and also of the types we
-can construct (in a dependently typed language, these are all terms
-and so we may not have types specifically in the grammar).
+Our approach is based on a formalization of bi-directional type-theory
+\cite{TypesWhoSayNi} and so we begin our first iteration by providing
+just two judgement forms, the first for synthesizing types, and the
+second for checking types:
 
-This project will specify grammars in Backus-Naur form as shown by the
-following example describing untyped lambda calculus:
+$$\boxed{\Gamma \vdash t \in \sigma} \qquad \boxed{\Gamma \vdash \sigma
+  \ni e}}$$
 
-\section{The Domain Specific Language}
+Where t is an arbitrary term in the lanaguage and \sigma is some type.
+
+When we create judgements from these judgement forms, it is helpful to
+be specific about exactly what is a meta-level variable, so we specify
+that meta-level term variables be surrounded in \{\}, meta-level type
+variables in [] and meta-level variable variables (yikes!) are
+quoted (as in the meta variable 'x'). It is important to make these
+distinctions so that we know, for instance, that an arbitrary term
+does not end up in the context, or to ensure that a meta-level
+variable variable is not used where a meta-level type variable is
+expected. 
+
+We also follow a convention of not mentioning the context unless we
+are being explicit about it being extended in some way, and even then
+only mentioning the extension. Extensions are comma separated lists of
+entries matching types (or meta-level type variables) to variables or
+meta-level variable variables:
+
+\begin{verbatim}
+'x' : [s] , 'y' : Bool , ...
+\end{verbatim}
+
+The context is separated from the rest of the judgement by a verticle
+bar, and the characters $\in$ and $\ni$ are encoded as $<<$ and $>>$
+respectively.
+
+The part of the judgement that specifies the type is surrounded by
+parenthesis, this is for a clear switch of context when parsing, we
+may using $>>$ or $<<$ as type constructors or language constructs if
+we wish. The part specifying the term is also surrounded in standard
+parenthesis for the same reason.
+
+For example, the judgement:
+$$\Gamma, y : \sigma \to \sigma \vdash \sigma \to \sigma \ni \lambda x
+. y x$$
+is written in our specification file as:
+\begin{verbatim}
+'y' : [s] -> [s] | ( [s] -> [s] ) >> ( \ 'x' . 'y' 'x' )
+\end{verbatim}
+
+Typing rules are then defined as follows:
+\begin{itemize}
+  \item Each typing rule starts with a line denoted by two or more '='
+    characters in a row and nothing else except whitespace
+  \item The premise come first, each judgement on a line on its own
+  \item a line of two or more '-' characters separate the premise from
+    the conclusion
+  \item The conclusion judgement appears on a line by itself
+  \item The typing rule end is denoted by a line with two or more '='
+    characters in a row and nothing else except whitespace
+\end{itemize}
+
+For example, the typing rule:
+
+$$\boxed{
+\mbox{\begin {prooftree}
+    \hypo{\Gamma \vdash f \in \sigma \to \tau}
+    \hypo{\Gamma \vdash \sigma \ni x}
+  \infer2[]{\Gamma \vdash f x \in \tau}
+\end {prooftree}}
+}$$
+
+is denoted in our syntax as:
+
+\begin{center}
+\begin{BVerbatim}
+=====================================
+| ( {f}     ) << ( [sigma] -> [tau] )
+| ( [sigma] ) >> ( {x} )
+-------------------------------------
+| ( {f} {x} ) << ( [tau] )
+=====================================
+\end{BVerbatim}
+\end{center}
+
+and the typing rule:
+
+$$\boxed{
+\mbox{\begin {prooftree}
+  \hypo{\Gamma , x : \sigma \vdash \tau \ni t }
+  \infer1[]{\Gamma \vdash \sigma \to \tau \ni \lambda x . t}
+\end {prooftree}}
+}$$
+
+is denoted:
+
+\begin{center}
+\begin{BVerbatim}
+=========================================
+'x' : [sigma] | ( [tau] ) >> ( {t} )
+-----------------------------------------
+| ( [sigma] -> [tau] ) >> ( \ 'x' . {t} )
+=========================================
+\end{BVerbatim}
+\end{center}
+
+Meta-level variables are scoped across the whole typing rule, each
+occurence of the same variable is a reference to the same
+type/term/variable. The rules are 'read' differently depending on the
+judgement form, this is important as variables are instantiated in
+different places. Variables are instantiated where they are 'read'
+first, subseqent occurances are references to the instantiation.
+
+When the conclusion of a rule is a type synthesis judgement,
+$$\textbf{\emph{some-term}} << \textbf{\emph{some-type}}$$ then first
+\textbf{\emph{some-term}} is read, then each of the premise is consumed
+left-to-right, top-top-bottom, and finally \textbf{\emph{some-type}}
+where there should be no meta-level type variable instantiations in
+\textbf{\emph{some-type}} - any in existence here should refer to
+instantiations in the premise.
+
+** Instantiation points different in premise and conclusion ...
+
+However, when the conclusion of a rule is a type checking judgement,
+$$\textbf{\emph{some-type}} >> \textbf{\emph{some-term}}$$ then first
+the entire conclusion is read left-to-right then the premise are read
+left-to-right, top-to-bottom.
+
+** Instantiation points different in premise and conclusion ...
+
+It is also worth noting that due to the way to specify different types
+of meta-level variables \{t\} and [t] are different variables.
+
+\section{Discussion}
+
 

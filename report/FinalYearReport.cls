@@ -17,6 +17,7 @@
 \RequirePackage{fancyvrb}
 \RequirePackage[outputdir=out]{minted}
 \RequirePackage{agda}
+\RequirePackage{soul}
 
 \newcommand*{\markingscheme}[1]{\gdef\@markingscheme{#1}}
 \newcommand*{\regnumber}[1]{\gdef\@regnumber{#1}}

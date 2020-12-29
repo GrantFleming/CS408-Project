@@ -104,8 +104,10 @@ The definition: $<\mbox{infer}> ::= <\mbox{check}>$ is not allowed.
 
 \section{Operational Semantics}
 
-When we later come back to include dependent types, it will become
-necessary to define a syntax for describing operational semantics here.
+\hl{When we later come back to include dependent types, it will become
+necessary to define a syntax for describing operational semantics
+here. We may also think about the benefits of reducing terms to
+head-normal form and the implications of this.}
 
 \section{Typing Rules}
 
@@ -163,7 +165,7 @@ A specification of the typing rules begins with the string '\# rules'
 on a line of it's own.
 
 Our approach is based on a formalization of bi-directional type-theory
-\cite{TypesWhoSayNi} and so we begin our first iteration by providing
+\cite{TypesWhoSayNi} hl{( <- is it?) and so we begin our first iteration by providing
 just three judgement forms, the first two judgement forms are for
 synthesizing and checking types respectively:
 
@@ -440,4 +442,14 @@ types will be revisited later.
 Go back and see if we can work in types to the constructors.
 
 Most of this work only discusses two type constructors, it will need
-expanded. 
+expanded.
+
+Will we enforce restrictions on the type systems? Will we check for
+stability under substitution or subject reduction?
+
+Will we check operational semantics? What about checking that a
+language is strongly normalizing?
+
+\cite{TypesWhoSayNi} page 6 introduces \emph{expressions} in rules as
+well as specifying the benifits of being specific about information
+flow in the rules the way we have.

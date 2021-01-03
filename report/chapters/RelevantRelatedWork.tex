@@ -88,20 +88,34 @@ this paper.
 \section{Bi-directional dependent type theory}
 
 While bi-directional typing is not new
-\cite{DBLP:journals/toplas/PierceT00}, formalization of the meta
-theory is \cite{TypesWhoSayNi}. 
+\cite{DBLP:journals/toplas/PierceT00}, formalization of the metatheory
+is \cite{TypesWhoSayNi}. 
 
-Check introduction forms, infer elimination forms.
+The work in this paper formalizes the metatheory for a whole class of
+bi-directional dependently typed languages. It demonstrates how
+desirable properties of type systems may be enforced by construction,
+outlines pitfalls that might be encountered when combining type
+checking with type synthesis, as well as providing an object-level
+syntax split into carefully chosen grammatical classes.
 
-\section{Related Work Still To Be Explored}
+It then emphasises the importance of precisely tracking information
+flow as it defines judgement forms, patterns, expressions and typing
+rules and determines a method for approaching the \emph{schematic
+  variables} that appear in \emph{formal judgements} in the typing
+rules.
 
-There are several other papers to read in the following
-areas of interest:
+It is from this work that it is made clear that by carefully paying
+careful attention to the construction of the building blocks for
+describing a type theory, we may minimize the amount of information
+the user is required to give, and better validate the information that
+they do give to ensure the resulting system has desirable
+properties. It also provides a rather useful framework for approaching
+this project as a whole.
+
+\section{Other works read ...}
 
 \begin{itemize}
 \item An implementation of a dependently typed lambda
   calculus \cite{ATutorialImplementationOfDTLC}
 \end{itemize}
 
-Although there are other less critical papers that the
-author may also tackle if time allows.

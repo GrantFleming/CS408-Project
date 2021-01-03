@@ -1,0 +1,69 @@
+\chapter{An Alternative Language for Describing Type Systems}
+
+Syntactic constructs are build in stages.
+
+Firstly, for each construct we define the introduction form and
+assocated type \emph{checking} rule.
+
+An optional rule may be provided to judge when the construct is a
+\emph{type} (of any universe). 
+
+We then define a syntax for elimination using the symbols $<construct>$
+and $<eliminator>$ (although not every $<eliminator>$ need to contain
+another language construct, it may be an atom (like $proj_l$ and
+pair), internally all elimination forms are represented as
+pairs. Elimination is optional and need not be provided, and we can
+also supply more than one elimination for per construct. We must be
+able to synthesize a type for $<construct>$ therefore rather than
+being the raw introduction form, it is either another (synthesizable)
+computation, or an introduction form paired with a type
+annotation. Only a maximum of one $<eliminator>$ is allowed, however
+this can be of arbirary complexity, i.e. in the rule you could specify
+that the eliminator be a list of things.
+
+\cite{TypesWhoSayNi} page 18 - we are free to write synthesis rules
+ONLY for eliminators, we must name the target but not peek at its
+structure. The first premise of the elimination rule must synthesize
+the target's type. So what information do we really need for our
+elimination rules internally? Well, we will need to give a pattern
+that we wish to match against the target's type synthesis, we will
+need to specify the type at which we are checking the $<eliminator>$
+and finally the synthesized type we are returning. The target in an
+elimination must be \emph{radical} - i.e be a synthesizable term
+(computation) or a construction with a type annotation.
+
+We will need to supply a $\beta$ rule for each elimination we
+give. Actually in \cite{TypesWhoSayNi} page 18/19, for the beta rule,
+it is almost enough to just the term it reduces to, we can work out
+much of the beta rule information from the typing rules!
+
+Type checking may be required to validate user-given $\beta$ rules!
+Specifically, we may need to employ previously defined $\beta$ rules
+and allow some computation.
+
+In \cite{TypesWhoSayNi} all $\beta$-rules have form:
+$$(t:T)\;s \rightsquigarrow_{\beta} (t' : T')$$
+and t, T and s can demand only essential construction structure
+
+A type synthesis rule for the elimination form must also be provided.
+
+If an elimination form is provided, small step semantics must also be
+provided (reduction to weak-head-normal form).
+
+\section{Thoughts on check vs synthesize}
+
+What is checkable?
+
+\begin{itemize}
+\item Introduction forms
+\item Constants
+\item Anything synthesizable
+\end{itemize}
+
+What is synthesizable?
+
+\begin{itemize}
+\item Variables
+\item \emph{Valid} elimination forms (where eliminatee is synthesizable)
+\item Anything checkable if it is annotated
+\end{itemize}

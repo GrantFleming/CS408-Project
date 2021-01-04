@@ -41,11 +41,11 @@ _∘_ : γ₁ ⊑ γ₂ → γ₂ ⊑ γ₃ → γ₁ ⊑ γ₃
 (θ I) ∘ (ϕ I) = (θ ∘ ϕ) I
 
 -- variables are thinnable
-_⟨_ : Var γ → γ ⊑ δ → Var δ
-ze   ⟨ (θ O)  = su (ze ⟨ θ)
-ze   ⟨ (θ I)  = ze
-su v ⟨ (θ O)  = su (su v ⟨ θ)
-su v ⟨ (θ I)  = su (v ⟨ θ)
+_⟨var_ : Var γ → γ ⊑ δ → Var δ
+ze   ⟨var (θ O)  = su (ze ⟨var θ)
+ze   ⟨var (θ I)  = ze
+su v ⟨var (θ O)  = su (su v ⟨var θ)
+su v ⟨var (θ I)  = su (v ⟨var θ)
 
 -- variables are singleton thinnings
 ⟦_⟧var : Var γ → 1 ⊑ γ
@@ -61,16 +61,16 @@ private
     n : ℕ
 
 -- terms are thinnable
-_⟪_ : Term l d γ → γ ⊑ δ → Term l d δ
-_⟪_ {ess} {const} (` x) θ       = ` x
-_⟪_ {ess} {const} (s ∙ t) θ     = (s ⟪ θ) ∙ (t ⟪ θ)
-_⟪_ {ess} {const} (bind t) θ    = bind (t ⟪ (θ I))
-_⟪_ {ess} {compu} (var x) θ     = var (x ⟨ θ)
-_⟪_ {ess} {compu} (elim e s) θ  = elim (e ⟪ θ) (s ⟪ θ)
-_⟪_ {lib} {const} (ess x) θ     = ess (x ⟪ θ)
-_⟪_ {lib} {const} (thunk x) θ   = thunk (x ⟪ θ)
-_⟪_ {lib} {compu} (ess x) θ     = ess (x ⟪ θ)
-_⟪_ {lib} {compu} (t ∷ T) θ     = (t ⟪ θ) ∷ (T ⟪ θ)
+_⟨term_ : Term l d γ → γ ⊑ δ → Term l d δ
+_⟨term_ {ess} {const} (` x) θ       = ` x
+_⟨term_ {ess} {const} (s ∙ t) θ     = (s ⟨term θ) ∙ (t ⟨term θ)
+_⟨term_ {ess} {const} (bind t) θ    = bind (t ⟨term (θ I))
+_⟨term_ {ess} {compu} (var x) θ     = var (x ⟨var θ)
+_⟨term_ {ess} {compu} (elim e s) θ  = elim (e ⟨term θ) (s ⟨term θ)
+_⟨term_ {lib} {const} (ess x) θ     = ess (x ⟨term θ)
+_⟨term_ {lib} {const} (thunk x) θ   = thunk (x ⟨term θ)
+_⟨term_ {lib} {compu} (ess x) θ     = ess (x ⟨term θ)
+_⟨term_ {lib} {compu} (t ∷ T) θ     = (t ⟨term θ) ∷ (T ⟨term θ)
 
 -- selection
 data BwdVec (X : Set) : ℕ → Set where
@@ -113,12 +113,12 @@ private
   variable
     δ` : Scope
 
-_⟪⟨_ : (γ ⇒ δ) → (δ ⊑ δ`) → (γ ⇒ δ`)
-ε        ⟪⟨ θ = ε
-(σ -, x) ⟪⟨ θ = (σ ⟪⟨ θ) -, (x ⟪ θ)
+_⟨σ_ : (γ ⇒ δ) → (δ ⊑ δ`) → (γ ⇒ δ`)
+ε        ⟨σ θ = ε
+(σ -, x) ⟨σ θ = (σ ⟨σ θ) -, (x ⟨term θ)
 
 _^` : (γ ⇒ δ) → γ ⇒ (suc δ)
-σ ^` = σ ⟪⟨ ↑
+σ ^` = σ ⟨σ ↑
 
 -- action of a substitution
 _/_ : Term l d γ → γ ⇒ δ → Term lib d δ

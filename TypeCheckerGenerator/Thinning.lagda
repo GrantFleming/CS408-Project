@@ -98,8 +98,11 @@ _▹_ : (γ : Scope) → (δ : Scope) → δ ⊑ (δ + γ)
 γ ▹ suc δ  = (γ ▹ δ) I
 
 -- substitution
+_⇒[_]_ : Scope → (Scope → Set) → Scope → Set
+γ ⇒[ X ] δ = BwdVec (X δ) γ
+
 _⇒_ : Scope → Scope → Set
-γ ⇒ δ = BwdVec (Term lib compu δ) γ
+γ ⇒ δ = γ ⇒[ Term lib compu ] δ
 
 -- weakening
 ↑ : γ ⊑ (suc γ)

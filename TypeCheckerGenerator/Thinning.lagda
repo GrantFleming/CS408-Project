@@ -24,14 +24,14 @@ data _⊑_ : Scope → Scope → Set where
   _I  : (θ : γ ⊑ δ) → suc γ ⊑ suc δ
 
 -- identity thinning
-ι : (γ : Scope) → γ ⊑ γ
-ι zero = ε
-ι (suc γ) = ι γ I
+ι : {γ : Scope} → γ ⊑ γ
+ι {zero}  = ε
+ι {suc γ} = ι I
 
 -- empty thinning
-Ø : (γ : Scope) → 0 ⊑ γ
-Ø zero = ε
-Ø (suc γ) = Ø γ O
+Ø : {γ : Scope} → 0 ⊑ γ
+Ø {zero}  = ε
+Ø {suc γ} = Ø O
 
 -- thinning composition
 _∘_ : γ₁ ⊑ γ₂ → γ₂ ⊑ γ₃ → γ₁ ⊑ γ₃
@@ -49,7 +49,7 @@ su v ⟨ (θ I)  = su (v ⟨ θ)
 
 -- variables are singleton thinnings
 ⟦_⟧var : Var γ → 1 ⊑ γ
-⟦_⟧var {suc s} ze     = Ø s I
+⟦_⟧var {suc s} ze     = Ø I
 ⟦_⟧var {suc s} (su v) = ⟦ v ⟧var O
 
 private
@@ -90,11 +90,11 @@ _!_ : γ ⊑ δ  → BwdVec X δ → BwdVec X γ
 
 -- injections
 _◃_ : (γ : Scope) → (δ : Scope) → γ ⊑ (δ + γ)
-γ ◃ zero   = ι γ
+γ ◃ zero   = ι
 γ ◃ suc δ  = (γ ◃ δ) O
 
 _▹_ : (γ : Scope) → (δ : Scope) → δ ⊑ (δ + γ)
-γ ▹ zero   = Ø γ
+γ ▹ zero   = Ø
 γ ▹ suc δ  = (γ ▹ δ) I
 
 -- substitution
@@ -103,7 +103,7 @@ _⇒_ : Scope → Scope → Set
 
 -- weakening
 ↑ : γ ⊑ (suc γ)
-↑ {γ} = ι γ O
+↑ {γ} = ι O
 
 _^ : γ ⊑ δ → γ ⊑ (suc δ)
 θ ^ = θ ∘ ↑
@@ -139,7 +139,7 @@ _/_ {lib} {compu} (t ∷ T)     σ  = (t / σ) ∷ (T / σ)
 -- identity substitution
 ι⇒ : γ ⇒ γ
 ι⇒ {zero}  = ε
-ι⇒ {suc γ} = (ι⇒ {γ} ^`) -, ess (var ze)
+ι⇒ {suc γ} = (ι⇒ ^`) -, ess (var ze)
 
 -- substitution composition
 _∘ₛ_ : (γ₁ ⇒ γ₂) → (γ₂ ⇒ γ₃) → (γ₁ ⇒ γ₃)

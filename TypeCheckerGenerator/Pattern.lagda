@@ -8,7 +8,7 @@ module Pattern where
 
 \begin{code}
 open import CoreLanguage
-open import Thinning using (_⊑_; _∘_; ι; _I; _⟨term_; _⇒[_]_)
+open import Thinning using (_⊑_; _∘_; ι; _I; _⟨term_; _⇒[_]_; ↑)
 open import Data.Char using (Char)
 open import Data.Nat using (suc)
 open import Data.Nat.Properties using (_≟_)
@@ -50,6 +50,10 @@ bind t  ⟨pat θ = bind (t ⟨pat (θ I))
 place ϕ ⟨pat θ = place (ϕ ∘ θ)
 ⊥       ⟨pat θ = ⊥
 
+-- and can be weakened
+_^pat : Pattern γ → Pattern (suc γ)
+_^pat p = p ⟨pat ↑
+
 private
   variable
     p : Pattern γ
@@ -62,6 +66,17 @@ data _-Env {γ : Scope} : Pattern γ → Set where
   _∙_    : q -Env → r -Env → (q ∙ r) -Env
   bind   : t -Env → (bind t) -Env
   thing  : {θ : δ ⊑ γ} → Term lib const δ → (place θ) -Env
+
+-- environments are thinnable
+_⟨env_ : {p : Pattern δ} → p -Env → (θ : δ ⊑ γ) → ((p ⟨pat θ) -Env)
+`       ⟨env θ  = `
+(s ∙ t) ⟨env θ  = (s ⟨env θ) ∙ (t ⟨env θ)
+bind t  ⟨env θ  = bind (t ⟨env (θ I))
+thing x ⟨env θ  = thing x
+
+-- and can be weakened
+_^env : p -Env → (p ^pat) -Env
+_^env e = e ⟨env ↑
 
 -- No maybe, just can't call it with incorrect args!
 ⟦_⟧env : (p : Pattern γ) → p -Env → Term lib const γ
@@ -99,39 +114,70 @@ match _ _                     = nothing
 private
   variable
     θ : δ ⊑ γ
- 
-data svar : Pattern γ → Scope → Set where
-  ⋆    : {θ : δ ⊑ γ} → svar (place θ) δ -- ⋆ marks the spot
-  _∙   : svar p γ → svar (p ∙ q) γ
-  ∙_   : svar q γ → svar (p ∙ q) γ
-  bind : svar t γ → svar (bind t) γ
+    γ⁺ : Scope
+
+-- γ ⊑ γ⁺ is the scope extension so far in the pattern
+
+data svar : Pattern γ → {Scope} → Set where
+  ⋆    : {θ : δ ⊑ γ} → svar (place θ) {δ} -- ⋆ marks the spot
+  _∙   : svar p {δ} → svar (p ∙ q) {δ}
+  ∙_   : svar q {δ} → svar (p ∙ q) {δ}
+  bind : svar t {δ} → svar (bind t) {δ}
 
 -- for example, for some pattern
 open import Thinning using (ε; _O; _I)
-testPattern : Pattern 2
-testPattern = (place (ε O I) ∙ place (ε I O)) ∙ bind (place (ε O O I) ∙ place (ε O I O))
+testPattern : Pattern 0
+testPattern = (place ε ∙ place ε) ∙ bind (place (ε I) ∙ place (ε O))
 -- we can refer to aspects of it structurally:
-var1 : svar testPattern 1
+var1 : svar testPattern
 var1 = (⋆ ∙) ∙
 
-var2 : svar testPattern 1
+var2 : svar testPattern
 var2 = (∙ ⋆) ∙
 
-var3 : svar testPattern 1
+var3 : svar testPattern
 var3 = ∙ bind (⋆ ∙)
 
-var4 : svar testPattern 1
+var4 : svar testPattern
 var4 = ∙ bind (∙ ⋆)
 
 -- crucually, we can now look up terms in an environment
-_‼_ : svar p δ → p -Env → Term lib const δ
+_‼_ : svar p {δ} → p -Env → Term lib const δ
 ⋆      ‼ thing x   = x
 (v ∙)  ‼ (p ∙ q)   = v ‼ p
 (∙ v)  ‼ (p ∙ q)   = v ‼ q
 bind v ‼ bind t    = v ‼ t
+
+{-
+  
+  TESTING!!!
+
+-}
+
+-- λ f → λ x → x y
+tm : Term lib const 0
+tm = ess (ess (` 'λ') ∙ ess (bind (ess ((ess (` 'λ')) ∙ (ess (bind (thunk (elim (ess (var (su ze))) (thunk (var ze))))))))))
+
+open import Thinning using (ε; _O; _I; ι)
+
+pat : Pattern 0
+pat = ` 'λ' ∙ bind (` 'λ' ∙ bind (place (ε O I)))
+
+result = match tm pat
+
+myvar : svar pat
+myvar = ∙ bind (∙ bind ⋆)
+
+mlook : svar p → Maybe (p -Env) → Maybe (Term lib const δ)
+mlook v nothing = nothing
+mlook v (just x) = just (v ‼ x)
+
+otherresult = mlook myvar result
+
 \end{code}
 
 \begin{code}
+{-
 s-scope = Scope × (Pattern 0)
 
 private
@@ -161,5 +207,6 @@ toExpr {ess} {const} t = t
 toExpr {lib} {compu} t = t
 toExpr {ess} {compu} t = ess-compu t
 toExpr {lib} {const} t = lib-const t
+-}
 \end{code}
 

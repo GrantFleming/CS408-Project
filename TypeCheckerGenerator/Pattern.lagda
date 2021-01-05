@@ -177,7 +177,6 @@ otherresult = mlook myvar result
 \end{code}
 
 \begin{code}
-{-
 s-scope = Scope × (Pattern 0)
 
 private
@@ -191,7 +190,7 @@ Expr : s-scope → Lib → Dir → Scope → Set
 
 data Expr-Lib-Const δ γ : Set where
   lib-const  : Lib-Const γ → Expr-Lib-Const δ γ
-  _/_        : svar p⁰ γ' → γ' ⇒[ Expr (δ , p⁰) lib compu ] γ → Expr-Lib-Const δ γ
+  _/_        : svar p⁰ {γ'} → γ' ⇒[ Expr (δ , p⁰) lib compu ] γ → Expr-Lib-Const δ γ
 
 data Expr-Ess-Compu δ γ : Set where
   ess-compu  : Ess-Compu γ → Expr-Ess-Compu δ γ
@@ -207,6 +206,5 @@ toExpr {ess} {const} t = t
 toExpr {lib} {compu} t = t
 toExpr {ess} {compu} t = ess-compu t
 toExpr {lib} {const} t = lib-const t
--}
 \end{code}
 

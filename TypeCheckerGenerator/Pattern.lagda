@@ -9,7 +9,7 @@ module Pattern where
 \begin{code}
 open import CoreLanguage
 open import Thinning using (_⊑_; _∘_; ι; _I; _⟨term_; _⇒[_]_; ↑; Scoped; Thinnable; Weakenable; weaken)
-open import Data.Char using (Char)
+open import Data.Char using (Char) renaming (_≟_ to _is_)
 open import Data.Nat using (suc)
 open import Data.Nat.Properties using (_≟_)
 open import Data.Maybe using (Maybe; just; nothing)
@@ -98,7 +98,9 @@ _^env e = e ⟨env ↑
  something like δ ⊑ δ'? **
 -}
 match : Term lib const δ → (p : Pattern γ) → Maybe (p -Env)
-match (ess (` a)) (` c)       = just `
+match (ess (` a)) (` c) with a is c
+... | true because ofʸ refl = just `
+... | _                     = nothing
 match (ess (s ∙ t)) (p ∙ q)   = do
                                   x ← match s p
                                   y ← match t q

@@ -7,6 +7,7 @@ open import CoreLanguage
 open import Data.Nat using (ℕ; zero; suc; _+_)
 open import Data.Bool using (Bool)
 open import Data.Empty renaming (⊥ to bot)
+open import Data.Unit renaming (⊤ to top)
 \end{code}
 
 \begin{code}
@@ -26,6 +27,10 @@ Scoped = Scope → Set
 -- ⊥ scope
 ⊥ : Scoped
 ⊥ = λ _ → bot
+
+-- ⊤ scope
+⊤ : Scoped
+⊤ = λ _ → top
 
 -- a thinning
 data _⊑_ : Scope → Scope → Set where

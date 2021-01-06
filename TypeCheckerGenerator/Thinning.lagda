@@ -6,6 +6,7 @@ module Thinning where
 open import CoreLanguage
 open import Data.Nat using (ℕ; zero; suc; _+_)
 open import Data.Bool using (Bool)
+open import Data.Empty renaming (⊥ to bot)
 \end{code}
 
 \begin{code}
@@ -21,6 +22,10 @@ private
 
 -- things can be scoped
 Scoped = Scope → Set
+
+-- ⊥ scope
+⊥ : Scoped
+⊥ = λ _ → bot
 
 -- a thinning
 data _⊑_ : Scope → Scope → Set where
@@ -133,7 +138,7 @@ Weakening = ∀ {γ} → γ ⊑ (suc γ)
 ↑ : Weakening
 ↑ {γ} = ι O
 
--- a Weakening has an action on a Weakonable thing
+-- a Weakening has an action on a Weakenable thing
 Weakenable : Scoped → Set
 Weakenable T = ∀ {γ} → T γ → T (suc γ)
 

@@ -8,7 +8,7 @@ module Pattern where
 
 \begin{code}
 open import CoreLanguage
-open import Thinning using (_⊑_; _∘_; ι; _I; _⟨term_; _⇒[_]_; ↑)
+open import Thinning using (_⊑_; _∘_; ι; _I; _⟨term_; _⇒[_]_; ↑; Scoped; Thinnable; Weakenable; weaken)
 open import Data.Char using (Char)
 open import Data.Nat using (suc)
 open import Data.Nat.Properties using (_≟_)
@@ -43,16 +43,16 @@ infixr 20 _∙_
 -- ⊥ = ⊥ ∙ q = p ∙ ⊥ = bind ⊥
 
 -- patterns are thinnable
-_⟨pat_ : Pattern δ → (δ ⊑ γ) → Pattern γ
+_⟨pat_ : Thinnable Pattern
 ` x     ⟨pat θ = ` x
 (s ∙ t) ⟨pat θ = (s ⟨pat θ) ∙ (t ⟨pat θ)
 bind t  ⟨pat θ = bind (t ⟨pat (θ I))
 place ϕ ⟨pat θ = place (ϕ ∘ θ)
 ⊥       ⟨pat θ = ⊥
 
--- and can be weakened
-_^pat : Pattern γ → Pattern (suc γ)
-_^pat p = p ⟨pat ↑
+-- and can therefore be weakened
+_^pat : Weakenable Pattern
+_^pat = weaken _⟨pat_
 
 private
   variable
@@ -67,7 +67,7 @@ data _-Env {γ : Scope} : Pattern γ → Set where
   bind   : t -Env → (bind t) -Env
   thing  : {θ : δ ⊑ γ} → Term lib const δ → (place θ) -Env
 
--- environments are thinnable
+-- environments are thinnable by thinning the patterns
 _⟨env_ : {p : Pattern δ} → p -Env → (θ : δ ⊑ γ) → ((p ⟨pat θ) -Env)
 `       ⟨env θ  = `
 (s ∙ t) ⟨env θ  = (s ⟨env θ) ∙ (t ⟨env θ)
@@ -118,31 +118,31 @@ private
 
 -- γ ⊑ γ⁺ is the scope extension so far in the pattern
 
-data svar : Pattern γ → {Scope} → Set where
-  ⋆    : {θ : δ ⊑ γ} → svar (place θ) {δ} -- ⋆ marks the spot
-  _∙   : svar p {δ} → svar (p ∙ q) {δ}
-  ∙_   : svar q {δ} → svar (p ∙ q) {δ}
-  bind : svar t {δ} → svar (bind t) {δ}
+data svar : Pattern γ → Scope → Set where
+  ⋆    : {θ : δ ⊑ γ} → svar (place θ) δ -- ⋆ marks the spot
+  _∙   : svar p δ → svar (p ∙ q) δ
+  ∙_   : svar q δ → svar (p ∙ q) δ
+  bind : svar t δ → svar (bind t) δ
 
 -- for example, for some pattern
 open import Thinning using (ε; _O; _I)
-testPattern : Pattern 0
-testPattern = (place ε ∙ place ε) ∙ bind (place (ε I) ∙ place (ε O))
+testPattern : Pattern 2
+testPattern = (place (ε O I) ∙ place (ε I O)) ∙ bind (place (ε O O I) ∙ place (ε I I I))
 -- we can refer to aspects of it structurally:
-var1 : svar testPattern
+var1 : svar testPattern 1
 var1 = (⋆ ∙) ∙
 
-var2 : svar testPattern
+var2 : svar testPattern 1
 var2 = (∙ ⋆) ∙
 
-var3 : svar testPattern
+var3 : svar testPattern 1
 var3 = ∙ bind (⋆ ∙)
 
-var4 : svar testPattern
+var4 : svar testPattern 3
 var4 = ∙ bind (∙ ⋆)
 
 -- crucually, we can now look up terms in an environment
-_‼_ : svar p {δ} → p -Env → Term lib const δ
+_‼_ : svar p δ → p -Env → Term lib const δ
 ⋆      ‼ thing x   = x
 (v ∙)  ‼ (p ∙ q)   = v ‼ p
 (∙ v)  ‼ (p ∙ q)   = v ‼ q
@@ -165,10 +165,10 @@ pat = ` 'λ' ∙ bind (` 'λ' ∙ bind (place (ε O I)))
 
 result = match tm pat
 
-myvar : svar pat
+myvar : svar pat 1
 myvar = ∙ bind (∙ bind ⋆)
 
-mlook : svar p → Maybe (p -Env) → Maybe (Term lib const δ)
+mlook : svar p δ → Maybe (p -Env) → Maybe (Term lib const δ)
 mlook v nothing = nothing
 mlook v (just x) = just (v ‼ x)
 
@@ -186,11 +186,11 @@ private
     l : Lib
     d : Dir
 
-Expr : s-scope → Lib → Dir → Scope → Set
+Expr : s-scope → Lib → Dir → Scoped
 
 data Expr-Lib-Const δ γ : Set where
   lib-const  : Lib-Const γ → Expr-Lib-Const δ γ
-  _/_        : svar p⁰ {γ'} → γ' ⇒[ Expr (δ , p⁰) lib compu ] γ → Expr-Lib-Const δ γ
+  _/_        : svar p⁰ γ' → γ' ⇒[ Expr (δ , p⁰) lib compu ] γ → Expr-Lib-Const δ γ
 
 data Expr-Ess-Compu δ γ : Set where
   ess-compu  : Ess-Compu γ → Expr-Ess-Compu δ γ
@@ -200,6 +200,9 @@ Expr (δ , p) ess const γ = Ess-Const γ
 Expr (δ , p) ess compu γ = Expr-Ess-Compu δ γ
 Expr (δ , p) lib const γ = Expr-Lib-Const δ γ
 Expr (δ , p) lib compu γ = Lib-Compu γ
+
+Expression : Scoped
+Expression γ = ∀ {δ} {p} {l} {d} → Expr (δ , p) l d γ
 
 toExpr : Term l d γ → Expr (0 , ` '⊤') l d γ
 toExpr {ess} {const} t = t

@@ -9,7 +9,7 @@ module Context where
 \hide{
 \begin{code}
 open import CoreLanguage
-open import Thinning using (_⇒[_]_; _⇒_; BwdVec; ε; _⊑_; _-,_; ⟦_⟧var; _!_; Thinnable; ⟨sub; _⟨term_; _/term_; _^term; ↑)
+open import Thinning using (_⇒[_]_; _⇒_; BwdVec; ε; _⊑_; _-,_; ⟦_⟧var; _!_; Thinnable; ⟨sub; _⟨term_; _/term_; _^term; ↑; Weakenable; weaken)
 open import Data.Nat using (ℕ; zero; suc)
 \end{code}
 }
@@ -38,6 +38,18 @@ v ‼V Γ with ⟦ v ⟧var ! Γ
 _⟨Γ_ : Thinnable (δ ⇒[ Term lib const ]_)
 Γ ⟨Γ θ = ⟨sub _⟨term_ Γ θ
 
+-- and therefore _⇒[ Term lib const ]_  can be weakened
+-- (thus contexts can be weakened but are no longer contexts)
+_^Γ : Weakenable (δ ⇒[ Term lib const ]_)
+_^Γ = weaken _⟨Γ_
+
+-- Which means we can define context extension
+_,_ : Context γ → Term lib const γ → Context (suc γ)
+Γ , t = (Γ -, t) ^Γ
+
+-- Now if we only ever use ε and _,_ context extension, we are
+-- guaranteed that our contexts WILL BE VALID AND PRE-THINNED
+
 -- and we can apply substitutions generally to _⇒[ Term lib const ]_
 -- but we are not guaranteed that the result will be a Context
 -- unless γ = γ'
@@ -45,16 +57,8 @@ _/Γ_ : δ ⇒[ Term lib const ] γ → γ ⇒ γ' → δ ⇒[ Term lib const ] 
 ε /Γ σ = ε
 (Γ -, x) /Γ σ = (Γ /Γ σ) -, (x /term σ)
 
--- determin if something is a type (TEMPORARY - SWITCH ME WITH ACTUAL IMPLEMENTATION DOWN THE ROAD)
-data Type : Term lib const γ → Set where
-
--- validity of contexts
--- im not sure if this is the best way or if I should just introduce
--- a test 'isValid' or a judgement do do this etc
-data ValidContext : Context γ → Set where
-  ε : ValidContext ε
-  -- still need to work in that we should ensure t is a type
-  _-,[_ , _] : {Γ : Context δ} → ValidContext Γ → (t : Term lib const δ) → Type t → ValidContext ((Γ ⟨Γ ↑) -, (t ^term))
+-- Later, we will need a way to validate a context, this is to be
+-- added here. TO DO
 
 \end{code}
 

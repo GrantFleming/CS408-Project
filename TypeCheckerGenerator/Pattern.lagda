@@ -8,7 +8,7 @@ module Pattern where
 
 \begin{code}
 open import CoreLanguage
-open import Thinning using (_⊑_; _∘_; ι; _I; _⟨term_; _⇒[_]_; ↑; Scoped; Thinnable; Weakenable; weaken)
+open import Thinning using (_⊑_; _∘_; ι; _I; _O; _⟨term_; _⇒[_]_; ↑; Scoped; Thinnable; Weakenable; weaken)
 open import Data.Char using (Char) renaming (_≟_ to _is_)
 open import Data.Nat using (suc)
 open import Data.Nat.Properties using (_≟_)
@@ -116,7 +116,7 @@ match _ _                     = nothing
 private
   variable
     θ : δ ⊑ γ
-    γ⁺ : Scope
+    γ' : Scope
 
 -- γ ⊑ γ⁺ is the scope extension so far in the pattern
 
@@ -124,7 +124,14 @@ data svar : Pattern γ → Scope → Set where
   ⋆    : {θ : δ ⊑ γ} → svar (place θ) δ -- ⋆ marks the spot
   _∙   : svar p δ → svar (p ∙ q) δ
   ∙_   : svar q δ → svar (p ∙ q) δ
-  bind : svar t δ → svar (bind t) δ
+  bind : svar q δ → svar (bind q) δ
+
+-- svar is thinnable (but slightly differently so we can't use "Thinnable"
+_⟨svar_ : ∀ {γ} {p : Pattern γ} {δ} → svar p δ → (θ : γ ⊑ γ') → svar {γ'} (p ⟨pat θ ) δ
+⋆ {_} {_} {ϕ}  ⟨svar θ = ⋆ {_} {_} {ϕ ∘ θ}
+(v ∙)  ⟨svar θ = (v ⟨svar θ) ∙
+(∙ v)  ⟨svar θ = ∙ (v ⟨svar θ)
+bind v ⟨svar θ = bind (v ⟨svar (θ I))
 
 -- for example, for some pattern
 open import Thinning using (ε; _O; _I)
@@ -183,33 +190,59 @@ s-scope = Scope × (Pattern 0)
 
 private
   variable
-    p⁰ : Pattern 0
-    γ' : Scope
     l : Lib
     d : Dir
 
-Expr : s-scope → Lib → Dir → Scoped
+module Expression where
 
-data Expr-Lib-Const δ γ : Set where
-  lib-const  : Lib-Const γ → Expr-Lib-Const δ γ
-  _/_        : svar p⁰ γ' → γ' ⇒[ Expr (δ , p⁰) lib compu ] γ → Expr-Lib-Const δ γ
-
-data Expr-Ess-Compu δ γ : Set where
-  ess-compu  : Ess-Compu γ → Expr-Ess-Compu δ γ
-  scvar      : Var δ → Expr-Ess-Compu δ γ
-
-Expr (δ , p) ess const γ = Ess-Const γ
-Expr (δ , p) ess compu γ = Expr-Ess-Compu δ γ
-Expr (δ , p) lib const γ = Expr-Lib-Const δ γ
-Expr (δ , p) lib compu γ = Lib-Compu γ
-
-Expression : Scoped
-Expression γ = ∀ {δ} {p} {l} {d} → Expr (δ , p) l d γ
-
-toExpr : Term l d γ → Expr (0 , ` '⊤') l d γ
-toExpr {ess} {const} t = t
-toExpr {lib} {compu} t = t
-toExpr {ess} {compu} t = ess-compu t
-toExpr {lib} {const} t = lib-const t
+  Expr : s-scope → Lib → Dir → Scoped
+  
+  data econ (δ : Scope) (p : Pattern 0) (γ : Scope) : Set
+  data lcon (δ : Scope) (p : Pattern 0) (γ : Scope) : Set
+  data ecom (δ : Scope) (p : Pattern 0) (γ : Scope) : Set
+  data lcom (δ : Scope) (p : Pattern 0) (γ : Scope) : Set
+  
+  data econ δ p γ where
+    `      : Char → econ δ p γ
+    _∙_   : lcon δ p γ → lcon δ p γ → econ δ p γ
+    bind   : lcon δ p (suc γ) → econ δ p γ
+  
+  infixr 20 _∙_ 
+  
+  data lcon δ p γ where
+    ess    : econ δ p γ → lcon δ p γ
+    thunk  : ecom δ p γ → lcon δ p γ
+    _/_    : svar p γ' → γ' ⇒[ Expr (δ , p) lib compu ] γ → lcon δ p γ
+    
+  
+  data ecom δ p γ where
+    var    : Var γ → ecom δ p γ
+    elim   : lcom δ p γ → lcon δ p γ → ecom δ p γ
+  
+  data lcom δ p γ where
+    ess    : ecom δ p γ → lcom δ p γ
+    _∷_    : lcon δ p γ → lcon δ p γ → lcom δ p γ
+  
+  Expr (δ , p) ess const γ = econ δ p γ
+  Expr (δ , p) ess compu γ = ecom δ p γ
+  Expr (δ , p) lib const γ = lcon δ p γ
+  Expr (δ , p) lib compu γ = lcom δ p γ
+  
+  Expression : Scoped
+  Expression γ = ∀ {δ} {p} {l} {d} → Expr (δ , p) l d γ
+  
+  toExpr : Term l d γ → Expr (0 , ` '⊤') l d γ
+  toExpr {ess} {const} (` x)    = ` x
+  toExpr {ess} {const} (s ∙ t)  = (toExpr s) ∙ (toExpr t)
+  toExpr {ess} {const} (bind x) = bind (toExpr x)
+  
+  toExpr {lib} {compu} (ess x) = ess (toExpr x)
+  toExpr {lib} {compu} (t ∷ T) = (toExpr t) ∷ (toExpr T)
+  
+  toExpr {ess} {compu} (var x)    = var x
+  toExpr {ess} {compu} (elim e s) = elim (toExpr e) (toExpr s)
+  
+  toExpr {lib} {const} (ess x)   = ess   (toExpr x)
+  toExpr {lib} {const} (thunk x) = thunk (toExpr x)
 \end{code}
 

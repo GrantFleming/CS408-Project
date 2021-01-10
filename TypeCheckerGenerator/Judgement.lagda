@@ -6,14 +6,20 @@ module Judgement where
 
 \begin{code}
 open import CoreLanguage
-open import Pattern using (Pattern; Expression; svar)
+import Pattern as Pat
+open Pat using (Pattern; svar)
+open Pat.Expression using (Expression)
 open import Thinning using (Scoped; _⊑_; ⊥; ⊤)
 open import Context using (Context)
 open import Data.List using (List; []; _∷_; map)
 open import Data.Maybe using (Maybe; just; nothing)
 open import Data.Product using (_,_)
 open import Data.Unit using (tt)
-open import Data.Nat using (suc)
+open import Data.Nat using (ℕ; zero; suc; _+_; _*_)
+open import Data.Vec using (Vec; []; _∷_; map)
+open import Data.Sum using (_⊎_; inj₁; inj₂)
+open import Relation.Nullary using (_because_)
+open import Data.Bool using (Bool; true; false)
 \end{code}
 
 \begin{code}
@@ -27,15 +33,32 @@ private
     I : Scoped
     S : Scoped
     O : Scoped
+    n : ℕ
+    m : ℕ
+    X : Set
+    Y : Set
+    M : Set → Set
 
-record Judgement (I : Scoped) (S : Scoped) (O : Scoped) (γ : Scope) : Set where
+
+data Judgements (I : Scoped) (S : Scoped) (O : Scoped) (γ : Scope) : (length : ℕ) → (Vec (Maybe (S γ)) length) → Set
+record Judgement (I : Scoped) (S : Scoped) (O : Scoped) (γ : Scope) (s : Maybe (S γ)) : Set
+
+record Judgement I S O γ s where
   inductive
   field
-    precond   : Maybe (List (Judgement I I ⊥ γ))
-    input     : Maybe (List (I γ))
-    subject   : Maybe (S γ)
-    output    : Maybe (List (O γ))
-    postcont  : Maybe (List (Judgement I O ⊥ γ))
+    ino       : ℕ
+    input     : Vec (I γ) ino
+    precond   : Judgements I I ⊥ γ ino (Data.Vec.map just input)
+    ono       : ℕ
+    output    : Vec (O γ) ono
+    postcond  : Judgements I O ⊥ γ ono (Data.Vec.map just output)
+
+data Judgements I S O γ where
+  ε    : Judgements I S O γ 0 []
+  _,_ : {s : Maybe (S γ)} {n : ℕ}{l : Vec (Maybe (S γ)) n} →
+        Judgement I S O γ s →
+        Judgements I S O γ n l →
+        Judgements I S O γ (suc n) (s ∷ l)
 
 open Judgement
 
@@ -43,65 +66,88 @@ open Judgement
 
 -- Type
 
-TYPE : S γ → Judgement I S O γ
-precond   (TYPE s) = nothing
-input     (TYPE s) = nothing
-subject   (TYPE s) = just s
-output    (TYPE s) = nothing
-postcont  (TYPE s) = nothing
+TYPE : (s : S γ) → Judgement I S O γ (just s)
+ino       (TYPE s) = 0
+input     (TYPE s) = []
+precond   (TYPE s) = ε
+ono       (TYPE s) = 0
+output    (TYPE s) = []
+postcond  (TYPE s) = ε
+
 
 -- Universe
-UNIV : I γ → Judgement I S O γ
-precond   (UNIV i) = just (TYPE i ∷ [])
-input     (UNIV i) = just (i ∷ [])
-subject   (UNIV i) = nothing
-output    (UNIV i) = nothing
-postcont  (UNIV i) = nothing
+UNIV : I γ → Judgement I S O γ nothing
+ino       (UNIV s) = 1
+input     (UNIV i) = i ∷ []
+precond   (UNIV i) = TYPE i , ε
+ono       (UNIV s) = 0
+output    (UNIV i) = []
+postcond  (UNIV i) = ε
 
 -- Type checking
-_∋_ : I γ → S γ → Judgement I S O γ
-precond   (T ∋ t) = just (TYPE T ∷ [])
-input     (T ∋ t) = just (T ∷ [])
-subject   (T ∋ t) = just t
-output    (T ∋ t) = nothing
-postcont  (T ∋ t) = nothing
+_∋_ : I γ → (s : S γ) → Judgement I S O γ (just s)
+ino       (T ∋ t) = 1
+input     (T ∋ t) = T ∷ []
+precond   (T ∋ t) = TYPE T , ε
+ono       (T ∋ t) = 0
+output    (T ∋ t) = []
+postcond  (T ∋ t) = ε
+
 
 -- Type Synthesis
-_∈_ : S γ → O γ → Judgement I S O γ
-precond   (t ∈ T) = nothing
-input     (t ∈ T) = nothing
-subject   (t ∈ T) = just t
-output    (t ∈ T) = just (T ∷ [])
-postcont  (t ∈ T) = just (TYPE T ∷ [])
+_∈_ : (s : S γ) → O γ → Judgement I S O γ (just s)
+ino       (t ∈ T) = 0
+input     (t ∈ T) = []
+precond   (t ∈ T) = ε
+ono       (t ∈ T) = 1
+output    (t ∈ T) = T ∷ []
+postcond  (t ∈ T) = TYPE T , ε
+
 
 -- Type Lookup
-_:!:_ : S γ → O γ → Judgement I S O γ
-precond   (x :!: T) = nothing
-input     (x :!: T) = nothing
-subject   (x :!: T) = just x
-output    (x :!: T) = just (T ∷ [])
-postcont  (x :!: T) = just (TYPE T ∷ [])
+_:!:_ : (s : S γ) → O γ → Judgement I S O γ (just s)
+ino       (x :!: T) = 0
+input     (x :!: T) = []
+precond   (x :!: T) = ε
+ono       (x :!: T) = 1
+output    (x :!: T) = T ∷ []
+postcond  (x :!: T) = TYPE T , ε
+
 
 -- Type Equality
-_≡_ : I γ → I γ → Judgement I S O γ
-precond  (T ≡ T') = just (TYPE T ∷ TYPE T' ∷ [])
-input    (T ≡ T') = just (T ∷ T' ∷ [])
-subject  (T ≡ T') = nothing
-output   (T ≡ T') = nothing
-postcont (T ≡ T') = nothing
+_≡_ : I γ → I γ → Judgement I S O γ nothing
+ino       (T ≡ T') = 2
+input     (T ≡ T') = T ∷ T' ∷ []
+precond   (T ≡ T') = TYPE T , TYPE T' , ε
+ono       (T ≡ T') = 0
+output    (T ≡ T') = []
+postcond  (T ≡ T') = ε
+
 
 -- this feels like some structure that already exists
 maybemap : {X : Set} {Y : Set} → (X → Y) → Maybe (List X) → List Y
 maybemap f nothing  = []
-maybemap f (just x) = map f x
+maybemap f (just x) = Data.List.map f x
 
--- Context Extension - DANGER! Not Guaranteed to Terminate
-{-# NON_TERMINATING #-}
-_⊢_ : I γ → Judgement I S O (suc γ) → Judgement I S O γ
-precond   (x ⊢ j) = just (TYPE x ∷ maybemap (x ⊢_) (precond j))
-input     (x ⊢ j) = just (x ∷ [])
-subject   (x ⊢ j) = nothing
-output    (x ⊢ j) = nothing
-postcont  (x ⊢ j) = just (maybemap (x ⊢_) (postcont j))
+
+
+-- Context Extension
+_⊢_ : I γ →
+      (j : {s : S (suc γ)} → Judgement I S O (suc γ) (just s)) →
+      Judgement I (λ γ' → {s' : S (suc γ')} → Judgement I S O (suc γ') (just s')) O γ (just j)
+ino       (S ⊢ j) = 1
+input     (S ⊢ j) = S ∷ []
+precond   (S ⊢ j) = TYPE S , ε
+ono       (S ⊢ j) = 0
+output    (S ⊢ j) = []
+postcond  (S ⊢ j) = ε
+
+{-
+  IMPORTANT - for _⊢_ to work, when we are processing the Judgements, we must
+  check if the subject is another judgement, and recursivly check the preconditions
+  and postconditions of the subject.
+
+  I.e. we don't (can't) bake in the preconditions and postconditions
+-}
 
 \end{code}

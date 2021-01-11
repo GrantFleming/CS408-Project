@@ -90,37 +90,44 @@ strip (just x) = x
 Conclusion : Maybe (Pattern 0) → Set
 Conclusion p = Judgement Pattern Pattern Expression 0 p
 
-record Rule {p' : Pattern 0} (e : Scope) (p₀ : Pattern 0) : Set where
+private
+  variable
+    p₀ : Pattern 0
+
+record ConstRule {p' : Pattern 0} (p₀ : Pattern 0) : Set where
   field
     subject    : Maybe (Pattern 0)
     conclusion : Conclusion subject
-    premises   : Prems e p₀ (strip subject) p'
-open Rule
+    premises   : Prems 0 p₀ (strip subject) p'
+open ConstRule
 
-{-record ElimRule : Set where
+record ElimRule {p' : Pattern 0} : Set where
   field
-    target     : {!!}
-    eliminator : {!!}
-    premises   : {!!}-}
+    target     : Scope
+    targetPat  : Pattern 0
+    eliminator : Pattern 0
+    premises   : Prems target targetPat eliminator p'
+    output     : Expr (target , p') lib const 0
+
 
 -- Types of certain rules (these are ones that users might need supply
 
-TypeRule : (q : Pattern 0) → Prems 0 (` '⊤') q p' → Rule 0 (` '⊤')
+TypeRule : (q : Pattern 0) → Prems 0 (` '⊤') q p' → ConstRule (` '⊤')
 subject    (TypeRule q prems) = just q
 conclusion (TypeRule q prems) = TYPE q
 premises   (TypeRule q prems) = prems
 
-CheckRule : (T : Pattern 0) → (t : Pattern 0) → Prems 0 T t p' → Rule 0 T
+CheckRule : (T : Pattern 0) → (t : Pattern 0) → Prems 0 T t p' → ConstRule T
 subject    (CheckRule T t prems) = just t
 conclusion (CheckRule T t prems) = T ∋ t
 premises   (CheckRule T t prems) = prems
 
-UnivRule : (p : Pattern 0) → Prems 0 p (` '⊤') p' → Rule 0 p
+UnivRule : (p : Pattern 0) → Prems 0 p (` '⊤') p' → ConstRule p
 subject    (UnivRule p prems) = nothing
 conclusion (UnivRule p prems) = UNIV p
 premises   (UnivRule p prems) = prems
 
---ElRule : (e : Pattern 0) → Prems 0 {!!} {!!} {!!} → Rule 0 p
+--ElRule : (e : Pattern 0) → Prems 0 {!!} {!!} {!!} → CompRule 
 --ElRule e prems = {!!}
 
 -- There are certain rules that exist regardless of the type theory:
@@ -149,6 +156,8 @@ premises   (UnivRule p prems) = prems
 -- These rules are stored together in some structure
 
 -- TO DO
+-- we have introduction rules
+-- and seperately we have elimination rules
 
 
 \end{code}

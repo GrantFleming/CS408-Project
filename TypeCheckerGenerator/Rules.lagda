@@ -11,15 +11,19 @@ open import CoreLanguage
 open import Judgement
 open import Thinning using (_⊑_; Scoped; Ø; ι; ε; _⇒[_]_; _O)
 import Pattern as Pat
-open Pat using (Pattern; svar; bind; _∙; ∙_; place; ⋆; _∙_; `; ⊥; s-scope; _⟨svar_; _-Env; match; _-_)
+open Pat using (Pattern; svar; bind; _∙; ∙_; place; ⋆; _∙_; `; ⊥; s-scope; _⟨svar_; _-Env; match; match-all; _-_)
 open Pat.Expression using (Expression; Expr; econ; lcon; ecom; lcom; _/_; ess; `) renaming (_∙_ to _∘_)
-open import Data.Product using (_,_; proj₂; proj₁; Σ-syntax)
+open import Data.Product using (_×_; _,_; proj₂; proj₁; Σ-syntax)
 open import Data.Sum using (_⊎_; inj₁; inj₂)
 open import Data.Char
-open import Data.Nat using (suc)
+open import Data.Nat using (ℕ; zero; suc)
 open import Data.Maybe using (Maybe; just; nothing; map; _>>=_)
 open import Data.Empty renaming (⊥ to bot)
 open import Data.Unit using (⊤; tt)
+open import Data.Vec using (Vec; []; _∷_)
+open import Data.Vec.Relation.Unary.All using (All; []; _∷_)
+open import Judgement using (Judgement)
+open Judgement.Judgement
 \end{code}
 
 \begin{code}
@@ -70,6 +74,7 @@ private
     p' : Pattern 0
     q₁ : Pattern 0
     p₂ : Pattern 0
+    n : ℕ
 
 -- and a chain of Premises
 
@@ -103,13 +108,30 @@ private
   variable
     X : Set
 
-menv : Maybe (Pattern 0) → Set
-menv nothing  = ⊤
-menv (just x) = Maybe (x -Env)
+menv : ConstRule → Set
+menv rule with subject rule
+... | nothing = ⊤
+... | just x  = x -Env
 
-match-rule : (rule : ConstRule) → Term lib const δ → menv (subject rule)
-match-rule record { subject = nothing } t = tt
-match-rule record { subject = (just p)} t = match t p
+out : ConstRule → Set
+out rule = Maybe ((menv rule) × All _-Env (input (conclusion rule)))
+
+--match t p
+-- matching a ConstRule should match the subject and the inputs
+match-rule : (rule : ConstRule) → (subject : Maybe (Term lib const δ)) → (inputs : Vec (Term lib const δ) n) → out rule
+match-rule record { subject = nothing } (just x) ins = nothing
+match-rule record { subject = just x } nothing ins = nothing
+match-rule record { subject = nothing;
+                    conclusion = record {input = inputs}}
+           nothing ins = do
+                           ins ← match-all ins inputs
+                           just (tt , ins)
+match-rule record { subject = (just p) ;
+                    conclusion = record { input = inputs }}
+           (just x) ins = do
+                            s ← match x p
+                            ins ← match-all ins inputs
+                            just (s , ins)
 
 record ElimRule : Set where
   field

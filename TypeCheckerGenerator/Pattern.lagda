@@ -18,6 +18,8 @@ open import Relation.Nullary using (does; _because_; proof; ofʸ; ofⁿ)
 open import Relation.Binary.PropositionalEquality using (refl)
 open import Data.Product using (_×_; _,_)
 open import Data.Nat using (ℕ; zero; suc; _+_)
+open import Data.Vec using (Vec; []; _∷_)
+open import Data.Vec.Relation.Unary.All using (All; []; _∷_)
 \end{code}
 
 \begin{code}
@@ -110,6 +112,21 @@ match {δ} {γ} t (place {δ'} θ) with δ ≟ δ'
 ... | .true because ofʸ refl  = just (thing t)
 ... | _                       = nothing
 match _ _                     = nothing
+
+-- we can match a bunch of patterns if we wish
+-- i deliberatly allow m ≠ n for the vectors here
+-- we want to supply any list of inputs, if ther are not the same length
+-- then there is no match
+-- where we use this, we will not know for sure
+match-all : Vec (Term lib const δ) m → (ps : Vec (Pattern γ) n) → Maybe (All _-Env ps)
+match-all [] (_ ∷ _) = nothing
+match-all (_ ∷ _) [] = nothing
+match-all [] [] = just []
+match-all (i ∷ ins) (p ∷ pats)
+  = do
+      e ← match i p
+      es ← match-all ins pats
+      just (e ∷ es)
 
 private
   variable

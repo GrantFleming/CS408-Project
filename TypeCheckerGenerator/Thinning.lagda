@@ -4,7 +4,7 @@
 module Thinning where
 
 open import CoreLanguage
-open import Data.Nat using (ℕ; zero; suc; _+_)
+open import Data.Nat using (ℕ; zero; suc; _+_; _∸_)
 open import Data.Bool using (Bool)
 open import Data.Empty renaming (⊥ to bot)
 open import Data.Unit renaming (⊤ to top)
@@ -49,12 +49,16 @@ data _⊑_ : Scope → Scope → Set where
 Ø {suc γ} = Ø O
 
 -- Thinnability
-Thinnable : (Scope → Set) → Set
+Thinnable : Scoped → Set
 Thinnable X = ∀ {δ} {γ} → X δ → (δ ⊑ γ) → X γ
 
 -- Selectability (the opposite of thinning)
-Selectable : (Scope → Set) → Set
+Selectable : Scoped → Set
 Selectable X = ∀ {δ} {γ} → (δ ⊑ γ) → X γ → X δ
+
+-- Composability
+Composable : (Scope → Scope → Set) → Set
+Composable X = ∀ {γ} {γ'} {γ''} → (X γ γ') → (X γ' γ'') → (X γ γ'')
 
 -- thinning composition
 -- action of a thinning on a thining
@@ -107,10 +111,17 @@ map : (X → Y) → BwdVec X n → BwdVec Y n
 map f ε = ε
 map f (xs -, x) = map f xs -, f x
 
+-- trim m things off the front
+trim : (m : ℕ) → BwdVec X n → BwdVec X (n ∸ m)
+trim zero    v        = v
+trim (suc m)  ε       = ε
+trim (suc m) (v -, x) = trim m v
+
 _!_ : Selectable (BwdVec X)
 ε     ! ε         = ε
 (θ O) ! (xs -, x) = θ ! xs
 (θ I) ! (xs -, x) = (θ ! xs)-, x
+
 
 -- injections
 _◃_ : (γ : Scope) → (δ : Scope) → γ ⊑ (δ + γ)
@@ -129,6 +140,20 @@ _⇒_ : Scope → Scope → Set
 γ ⇒ δ = γ ⇒[ Term lib compu ] δ
 
 -- we can select from substitions using _!_
+
+-- we can lookup things in substitutions
+lookup : (T : Scoped) → δ ⇒[ T ] γ → Var δ → T γ
+lookup T (σ -, x) ze = x
+lookup T (σ -, x) (su v) = lookup T σ v
+
+-- Substitutability
+Substitutable : Scoped → Set
+Substitutable T = ∀ {γ} {γ'} → T γ → γ ⇒[ T ] γ' → T γ'
+
+-- substitution composability
+[_]_∘σ_ : ∀ {T} → Substitutable T → Composable _⇒[ T ]_
+[ / ]  ε       ∘σ σ' = ε
+[ / ] (σ -, x) ∘σ σ' = ([ / ] σ ∘σ σ') -, / x σ'
 
 -- and substitutions are thinnable
 -- if the thing it is substituting is thinnable
@@ -151,16 +176,20 @@ Weakenable T = ∀ {γ} → T γ → T (suc γ)
 weaken : {T : Scoped} → Thinnable T → Weakenable T
 weaken {T} ⟨ t = ⟨ t ↑
 
+-- variables are weakenable
+_^var : Weakenable Var
+_^var = weaken _⟨var_
+
 -- so for a start we can weaken thinnings themselves
 _^ : Weakenable (γ ⊑_)
 _^ = weaken _∘_
 
 -- substitutions are Weakenable if the thing
--- the substitute is Weakenable
+-- they substitute is Thinnable
 
-{-^sub : ∀ {T} → Weakenable T → Weakenable (δ ⇒[ T ]_)
-^sub ^T ε        = ε
-^sub ^T {γ} (σ -, x) = {!!} -- ^sub {!!} σ -, ^T x --⟨sub ^T σ θ -, ^T x θ-}
+^sub : ∀ {T} → Thinnable T → Weakenable (δ ⇒[ T ]_)
+^sub ⟨T ε                  = ε
+^sub ⟨T {γ} (_-,_ {n} σ x) = (^sub ⟨T {γ} σ) -, weaken ⟨T x
 
 -- 'Term lib compu' substitutions are thinnable
 private

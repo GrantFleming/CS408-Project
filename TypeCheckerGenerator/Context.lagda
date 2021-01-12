@@ -57,8 +57,7 @@ _/Γ_ : δ ⇒[ Term lib const ] γ → γ ⇒ γ' → δ ⇒[ Term lib const ] 
 ε /Γ σ = ε
 (Γ -, x) /Γ σ = (Γ /Γ σ) -, (x /term σ)
 
--- Later, we will need a way to validate a context, this is to be
--- added here. TO DO
-
+-- since contexts are just substitutions, we can look up variables in
+-- contexts using 'Thinning.lookup'
 \end{code}
 

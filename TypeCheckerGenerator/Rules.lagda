@@ -11,12 +11,15 @@ open import CoreLanguage
 open import Judgement
 open import Thinning using (_⊑_; Scoped; Ø; ι; ε; _⇒[_]_; _O)
 import Pattern as Pat
-open Pat using (Pattern; svar; bind; _∙; ∙_; place; ⋆; _∙_; `; ⊥; s-scope; _⟨svar_ )
+open Pat using (Pattern; svar; bind; _∙; ∙_; place; ⋆; _∙_; `; ⊥; s-scope; _⟨svar_; _-Env; match; _-_)
 open Pat.Expression using (Expression; Expr; econ; lcon; ecom; lcom; _/_; ess; `) renaming (_∙_ to _∘_)
-open import Data.Product using (_,_; proj₂; proj₁)
+open import Data.Product using (_,_; proj₂; proj₁; Σ-syntax)
+open import Data.Sum using (_⊎_; inj₁; inj₂)
 open import Data.Char
 open import Data.Nat using (suc)
-open import Data.Maybe using (Maybe; just; nothing)
+open import Data.Maybe using (Maybe; just; nothing; map; _>>=_)
+open import Data.Empty renaming (⊥ to bot)
+open import Data.Unit using (⊤; tt)
 \end{code}
 
 \begin{code}
@@ -29,12 +32,6 @@ private
     p : Pattern 0
     p` : Pattern (suc γ)
     q` : Pattern 0
-    
-_-_ : (p : Pattern γ) → svar p δ → Pattern γ
-(p ∙ q) - (ξ ∙)  = (p - ξ) ∙ q
-(p ∙ q) - (∙ ξ)  = p ∙ (q - ξ)
-bind p  - bind ξ = bind (p - ξ)
-place x - ⋆      = ` '⊤' 
 
 data Prem (s : s-scope) (q : Pattern 0) (γ : Scope) : (p' : Pattern γ) → (q' : Pattern 0) → Set where
    type : (ξ : svar q δ) → (θ : δ ⊑ γ) → Prem s q γ (place θ) (q - ξ)
@@ -94,70 +91,52 @@ private
   variable
     p₀ : Pattern 0
 
-record ConstRule {p' : Pattern 0} (p₀ : Pattern 0) : Set where
+record ConstRule : Set where
   field
     subject    : Maybe (Pattern 0)
     conclusion : Conclusion subject
-    premises   : Prems 0 p₀ (strip subject) p'
+    trusted    : Pattern 0
+    premises   : Σ[ p' ∈ Pattern 0 ] Prems 0 trusted (strip subject) p'
 open ConstRule
 
-record ElimRule {p' : Pattern 0} : Set where
+private
+  variable
+    X : Set
+
+menv : Maybe (Pattern 0) → Set
+menv nothing  = ⊤
+menv (just x) = Maybe (x -Env)
+
+match-rule : (rule : ConstRule) → Term lib const δ → menv (subject rule)
+match-rule record { subject = nothing } t = tt
+match-rule record { subject = (just p)} t = match t p
+
+record ElimRule : Set where
   field
     target     : Scope
     targetPat  : Pattern 0
     eliminator : Pattern 0
-    premises   : Prems target targetPat eliminator p'
-    output     : Expr (target , p') lib const 0
+    premises   : Σ[ p' ∈ Pattern 0 ] Prems target targetPat eliminator p'
+    output     : Expr (target , proj₁ premises) lib const 0
 
 
 -- Types of certain rules (these are ones that users might need supply
 
-TypeRule : (q : Pattern 0) → Prems 0 (` '⊤') q p' → ConstRule (` '⊤')
-subject    (TypeRule q prems) = just q
-conclusion (TypeRule q prems) = TYPE q
-premises   (TypeRule q prems) = prems
+TypeRule : (q : Pattern 0) → (p' : Pattern 0) → Prems 0 (` '⊤') q p' → ConstRule
+subject    (TypeRule q  p' prems) = just q
+conclusion (TypeRule q  p' prems) = TYPE q
+trusted    (TypeRule q  p' prems) = ` '⊤'
+premises   (TypeRule q  p' prems) = p' , prems
 
-CheckRule : (T : Pattern 0) → (t : Pattern 0) → Prems 0 T t p' → ConstRule T
-subject    (CheckRule T t prems) = just t
-conclusion (CheckRule T t prems) = T ∋ t
-premises   (CheckRule T t prems) = prems
+CheckRule : (T : Pattern 0) → (t : Pattern 0) → (p' : Pattern 0) → Prems 0 T t p' → ConstRule
+subject    (CheckRule T t p' prems) = just t
+conclusion (CheckRule T t p' prems) = T ∋ t
+trusted    (CheckRule T t p' prems) = T
+premises   (CheckRule T t p' prems) = p' , prems
 
-UnivRule : (p : Pattern 0) → Prems 0 p (` '⊤') p' → ConstRule p
-subject    (UnivRule p prems) = nothing
-conclusion (UnivRule p prems) = UNIV p
-premises   (UnivRule p prems) = prems
-
---ElRule : (e : Pattern 0) → Prems 0 {!!} {!!} {!!} → CompRule 
---ElRule e prems = {!!}
-
--- There are certain rules that exist regardless of the type theory:
-
--- There are two globally presented rules (rules which explicitly talk about the context)
--- There are context extension and type lookup
-
--- you can synthesize the type of a variable
-
--- TO DO
-
--- you can synthesize the type of anything with a type annotation
-
--- you can embed synthesizable things in checkable things
-
--- TO DO
-
--- if n is in a Universe then it is a type
-
--- TO DO (afterwards clean up the STLC example unnecessary rules)
-
--- reflexivity
-
--- TO DO
-
--- These rules are stored together in some structure
-
--- TO DO
--- we have introduction rules
--- and seperately we have elimination rules
-
-
+UnivRule : (u : Pattern 0) → (p' : Pattern 0) → Prems 0 u (` '⊤') p' → ConstRule
+subject    (UnivRule u p' prems) = nothing
+conclusion (UnivRule u p' prems) = UNIV u
+trusted    (UnivRule u p' prems) = u
+premises   (UnivRule u p' prems) = p' , prems
 \end{code}

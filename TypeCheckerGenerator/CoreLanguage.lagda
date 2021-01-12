@@ -21,6 +21,10 @@ data Var : Scope → Set where
   ze : {s : Scope} → Var (suc s)
   su : {s : Scope} → Var s → Var (suc s)
 
+toNum : ∀{γ} → Var γ → ℕ
+toNum ze     = 0
+toNum (su v) = suc (toNum v)
+
 data Ess-Const (γ : Scope) : Set
 data Lib-Const (γ : Scope) : Set
 data Ess-Compu (γ : Scope) : Set
@@ -45,7 +49,7 @@ data Lib-Compu γ where
   ess    : Ess-Compu γ → Lib-Compu γ
   _∷_    : Lib-Const γ → Lib-Const γ → Lib-Compu γ
 
-↠_ : ∀ {γ} → Lib-Compu γ → Lib-Const γ
+↠ : ∀ {γ} → Lib-Compu γ → Lib-Const γ
 ↠ (ess x) = thunk x
 ↠ (t ∷ T) = t
 

@@ -10,9 +10,10 @@ open import Failable
 open import Data.Maybe using (Maybe; just; nothing)
 open import Context using (Context)
 open import Data.List using (List; []; _∷_)
-open import Rules using (ConstRule; ElimRule; match-crule; match-erule; menv)
+open import Rules
 import Pattern as Pat
-open Pat using (Pattern; _-Env)
+open Pat using (Pattern; _-Env; _∙_; thing; `; bind; s-scope; svar; _‼_; _-penv_)
+open Pat.Expression using (Expression; Expr; lcon; toTerm; e-Env; _^eenv)
 open import Data.Unit using (⊤; tt)
 open import Data.Vec using (Vec; _∷_; [])
 open import Data.Vec.Relation.Unary.All using (All)
@@ -20,9 +21,11 @@ open import Data.Nat using (ℕ)
 open import Data.Product using (_,_)
 open import Judgement using (J-Type; TY; NI; UNI)
 open Judgement.Judgement using (input)
-open import Context using (Context; _‼V_)
+open import Context using (Context; _‼V_) renaming (_,_ to _-,_)
 open import Data.Char using (_==_)
 open import Data.Bool using (Bool; true; false)
+open import Data.Product using (_×_; proj₁; proj₂)
+open import Thinning using (_⟨term_; ε)
 \end{code}
 
 \begin{code}
@@ -32,15 +35,77 @@ private
     d : Dir
     γ : Scope
     p : Pattern 0
+    p' : Pattern γ    
+    q : Pattern 0
+    q' : Pattern 0
     n : ℕ
+    δ : Scope
+    s : s-scope
+    
 
 open ConstRule
 
+
+∋-check : List ConstRule                  →
+          (subject : Maybe (Lib-Const γ)) →
+          (inputs : Vec (Lib-Const γ) n)  →
+          Failable ⊤
+
+type-check : List ConstRule                  →
+             (subject : Maybe (Lib-Const γ)) →
+             Failable ⊤
+
+univ-check : List ConstRule →
+             Lib-Const γ    →
+             Failable ⊤
+
+_≡_ : Term l d γ → Term l d γ → Failable ⊤
+
+
+
+
+
+
+
+-- TO-DO - store each kind of rule seperatly (∋, TYPE and UNIV)
 c-rules : List ConstRule
 c-rules = []
 
 e-rules : List ElimRule
 e-rules = []
+
+check-premise : (proj₂ s) -Env    →
+                e-Env (proj₁ s) γ →
+                q -Env            →
+                Prem s q γ p' q'  →
+                Failable (p' -Env × q' -Env)
+check-premise penv γenv qenv (type ξ θ)
+  = do
+      _ ← type-check c-rules (just ((ξ ‼ qenv) ⟨term θ))
+      succeed (thing (ξ ‼ qenv) , (qenv -penv ξ))
+check-premise penv γenv qenv (T ∋' ξ [ θ ])
+  = do
+    _ ← ∋-check c-rules (just ((ξ ‼ qenv) ⟨term θ )) (toTerm penv γenv T ∷ [])
+    succeed (thing (ξ ‼ qenv) , (qenv -penv ξ))
+check-premise penv γenv qenv (x ≡' x')
+  = do
+    _ ← toTerm penv γenv x ≡ toTerm penv γenv x'
+    succeed (` , qenv)
+check-premise penv γenv qenv (univ x)
+  = do
+    _ ← univ-check c-rules (toTerm penv γenv x)
+    succeed (` , qenv)
+check-premise penv γenv qenv (x ⊢' p)
+  = do
+    (p'env , q'env) ← check-premise penv (γenv ^eenv) qenv p
+    succeed (bind p'env , q'env)
+
+check-premise-chain : p -Env → e-Env δ 0 → q -Env → Prems δ p q p' → Failable ⊤
+check-premise-chain penv eenv qenv (ε x)    = succeed tt
+check-premise-chain penv eenv qenv (p ⇉ ps) = do
+                                            (p'env , q₁env) ← check-premise penv eenv qenv p
+                                            _ ← check-premise-chain (penv ∙ p'env) eenv q₁env ps
+                                            succeed tt
 
 run-crule : -- the rule we want to run
             (rule : ConstRule) →                    
@@ -79,16 +144,27 @@ run-erule : (rule : ElimRule) →
 -}
 run-erule rule T-env s-env = {!!}
 
-const-check : List ConstRule                →
-              (subject : Maybe (Lib-Const γ))       →
-              (inputs : Vec (Lib-Const γ) n) →
-              Failable ⊤
-const-check []             sub inp = fail "const-check: print the failing term here"
-const-check (rule ∷ rules) sub inp with match-crule rule NI sub inp 
-... | nothing = const-check rules sub inp
+univ-check  []            t = fail "univ-check: print the failing term here"
+univ-check (rule ∷ rules) t with match-crule rule UNI nothing (t ∷ [])
+... | nothing = univ-check rules t
 ... | just (subj-env , input-envs) with run-crule rule subj-env input-envs
 ... | succeed x = succeed x
-... | fail    x = const-check rules sub inp
+... | fail x = univ-check rules t
+
+type-check  []            ms = fail "type-check: print the failing term here"
+type-check (rule ∷ rules) ms with match-crule rule TY ms []
+... | nothing = type-check rules ms
+... | just (subj-env , input-envs) with run-crule rule subj-env input-envs
+... | succeed x = succeed x
+... | fail x    = type-check rules ms
+
+
+∋-check []             sub inp = fail "∋-check: print the failing term here"
+∋-check (rule ∷ rules) sub inp with match-crule rule NI sub inp 
+... | nothing = ∋-check rules sub inp
+... | just (subj-env , input-envs) with run-crule rule subj-env input-envs
+... | succeed x = succeed x
+... | fail    x = ∋-check rules sub inp
 
 elim-synth : List ElimRule →
              (synth-type : Term lib const γ) →
@@ -111,7 +187,6 @@ ze   ≡v ze    = succeed tt
 su v ≡v su v' = v ≡v v'
 _    ≡v _     = eqfail
 
-_≡_ : Term l d γ → Term l d γ → Failable ⊤
 _≡_ {ess} {const} (` x)    (` x₁) with x == x₁
 ... | false = eqfail
 ... | true  = succeed tt
@@ -147,19 +222,19 @@ infer Γ (ess (elim e s)) = do
                              S ← elim-synth e-rules T s
                              succeed S
 infer Γ (t ∷ T)  = do
-                   _ ← const-check c-rules (just t) (T ∷ [])
+                   _ ← ∋-check c-rules (just t) (T ∷ [])
                    succeed T
 
 check : Context γ → (type : Term lib const γ)  → (term : Term l d γ) → Failable ⊤
 check {_} {lib} {const} Γ T (ess x)
   = do
-      _ ← const-check c-rules (just (ess x)) (T ∷ [])
+      _ ← ∋-check c-rules (just (ess x)) (T ∷ [])
       succeed tt
 check {_} {lib} {const} Γ T (thunk x)
   = do
       S ← infer Γ (ess x)
       S ≡ T -- this is the gotcha, at the moment just syntactic equality-}
-check {_} {ess} {const} Γ T t = const-check c-rules (just (ess t)) (T ∷ [])
+check {_} {ess} {const} Γ T t = ∋-check c-rules (just (ess t)) (T ∷ [])
 check {_} {ess} {compu} Γ T t = do
                                   S ← infer Γ (ess t)
                                   S ≡ T

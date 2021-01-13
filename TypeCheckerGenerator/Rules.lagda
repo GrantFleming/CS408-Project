@@ -8,23 +8,15 @@ module Rules where
 
 \begin{code}
 open import CoreLanguage
-open import Judgement
 open import Thinning using (_⊑_; Scoped; Ø; ι; ε; _⇒[_]_; _O)
 import Pattern as Pat
-open Pat using (Pattern; svar; bind; _∙; ∙_; place; ⋆; _∙_; `; ⊥; s-scope; _⟨svar_; _-Env; match; match-all; _-_)
+open Pat using (Pattern; svar; bind; _∙; ∙_; place; ⋆; _∙_; `; ⊥; s-scope; _⟨svar_; _-Env; match; _-_)
 open Pat.Expression using (Expression; Expr; econ; lcon; ecom; lcom; _/_; ess; `) renaming (_∙_ to _∘_)
-open import Data.Product using (_×_; _,_; proj₂; proj₁; Σ-syntax)
-open import Data.Sum using (_⊎_; inj₁; inj₂)
+open import Data.Product using (_×_; _,_; proj₁; Σ-syntax)
+open import Data.List using (List)
 open import Data.Char
 open import Data.Nat using (ℕ; zero; suc)
 open import Data.Maybe using (Maybe; just; nothing; map; _>>=_)
-open import Data.Empty renaming (⊥ to bot)
-open import Data.Unit using (⊤; tt)
-open import Data.Vec using (Vec; []; _∷_)
-open import Data.Vec.Relation.Unary.All using (All; []; _∷_)
-open import Judgement using (Judgement; J-Type; TY; NI; UNI; _≡ᵇ_)
-open Judgement.Judgement
-open import Data.Bool using (true; false)
 \end{code}
 
 \begin{code}
@@ -86,59 +78,39 @@ data Prems (δ : Scope) (p₀ : Pattern 0) (q₀ : Pattern 0) : (p₂ : Pattern 
         Prems δ p₀ q₀ p₂
 infixr 20 _⇉_
 
-strip : Maybe (Pattern γ) → (Pattern γ)
-strip nothing  = ` '⊤'
-strip (just x) = x
-
-Conclusion : Maybe (Pattern 0) → Set
-Conclusion p = Judgement Pattern Pattern Expression 0 p
-
-private
-  variable
-    p₀ : Pattern 0
-
-record ConstRule : Set where
+record TypeRule : Set where
   field
-    subject    : Maybe (Pattern 0)
-    conclusion : Conclusion subject
-    trusted    : Pattern 0
-    premises   : Σ[ p' ∈ Pattern 0 ] Prems 0 trusted (strip subject) p'
-open ConstRule
+    subject  : Pattern 0
+    premises : Σ[ p' ∈ Pattern 0 ] Prems 0 (` '⊤') subject p'
+open TypeRule
 
-private
-  variable
-    X : Set
+match-typerule : (rule : TypeRule) → Term lib const γ → Maybe ((subject rule) -Env)
+match-typerule rule term = match term (subject rule)
 
-menv : ConstRule → Set
-menv rule with subject rule
-... | nothing = ⊤
-... | just x  = x -Env
+record UnivRule : Set where
+  field
+    input    : Pattern 0
+    premises : Σ[ p' ∈ Pattern 0 ] Prems 0 input (` '⊤') p'
+open UnivRule
 
-out : ConstRule → Set
-out rule = Maybe ((menv rule) × All _-Env (input (conclusion rule)))
+match-univrule : (rule : UnivRule) → Term lib const γ → Maybe ((input rule) -Env)
+match-univrule rule term = match term (input rule)
 
---match t p
--- matching a ConstRule should match the subject and the inputs
--- TO DO clean this up
-match-crule : (rule : ConstRule) → J-Type  →(subject : Maybe (Term lib const δ)) → (inputs : Vec (Term lib const δ) n) → out rule
-match-crule record { subject = nothing } _ (just x) _ = nothing
-match-crule record { subject = just x } _ nothing _ = nothing
-match-crule record { subject = nothing;
-                    conclusion = record {input = inputs; j-type = j'}}
-           j nothing ins with j ≡ᵇ j'
-... | false = nothing
-... | true  = do
-                ins ← match-all ins inputs
-                just (tt , ins)
-match-crule record { subject = (just p) ;
-                    conclusion = record { input = inputs; j-type = j' }}
-           j (just x) ins with j ≡ᵇ j'
-... | false = nothing
-... | true  = do
-                s ← match x p
-                ins ← match-all ins inputs
-                just (s , ins)
+record ∋rule : Set where
+  field
+    subject  : Pattern 0
+    input    : Pattern 0
+    premises : Σ[ p' ∈ Pattern 0 ] Prems 0 input subject p'
+open ∋rule
 
+match-∋rule : (rule : ∋rule) → Term lib const γ → Term lib const γ →
+              (Maybe (((input rule) -Env) × ((subject rule) -Env)))
+match-∋rule rule Tterm tterm
+  = do
+      inenv  ← match Tterm (input rule)
+      subenv ← match tterm (subject rule)
+      just (inenv , subenv)
+                        
 record ElimRule : Set where
   field
     target     : Scope
@@ -158,23 +130,7 @@ match-erule rule T s = do
                        where
                          open ElimRule
 
--- Types of certain rules (these are ones that users might need supply
+data Rules : Set where
+  rs : List TypeRule → List UnivRule → List ∋rule → List ElimRule → Rules
 
-TypeRule : (q : Pattern 0) → (p' : Pattern 0) → Prems 0 (` '⊤') q p' → ConstRule
-subject    (TypeRule q  p' prems) = just q
-conclusion (TypeRule q  p' prems) = TYPE q
-trusted    (TypeRule q  p' prems) = ` '⊤'
-premises   (TypeRule q  p' prems) = p' , prems
-
-CheckRule : (T : Pattern 0) → (t : Pattern 0) → (p' : Pattern 0) → Prems 0 T t p' → ConstRule
-subject    (CheckRule T t p' prems) = just t
-conclusion (CheckRule T t p' prems) = T ∋ t
-trusted    (CheckRule T t p' prems) = T
-premises   (CheckRule T t p' prems) = p' , prems
-
-UnivRule : (u : Pattern 0) → (p' : Pattern 0) → Prems 0 u (` '⊤') p' → ConstRule
-subject    (UnivRule u p' prems) = nothing
-conclusion (UnivRule u p' prems) = UNIV u
-trusted    (UnivRule u p' prems) = u
-premises   (UnivRule u p' prems) = p' , prems
 \end{code}

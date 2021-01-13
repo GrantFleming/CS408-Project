@@ -113,21 +113,6 @@ match {δ} {γ} t (place {δ'} θ) with δ ≟ δ'
 ... | _                       = nothing
 match _ _                     = nothing
 
--- we can match a bunch of patterns if we wish
--- i deliberatly allow m ≠ n for the vectors here
--- we want to supply any list of inputs, if ther are not the same length
--- then there is no match
--- where we use this, we will not know for sure
-match-all : Vec (Term lib const δ) m → (ps : Vec (Pattern γ) n) → Maybe (All _-Env ps)
-match-all [] (_ ∷ _) = nothing
-match-all (_ ∷ _) [] = nothing
-match-all [] [] = just []
-match-all (i ∷ ins) (p ∷ pats)
-  = do
-      e ← match i p
-      es ← match-all ins pats
-      just (e ∷ es)
-
 private
   variable
     θ : δ ⊑ γ
@@ -188,6 +173,14 @@ _‼_ : svar p δ → p -Env → Term lib const δ
 (v ∙)  ‼ (p ∙ q)   = v ‼ p
 (∙ v)  ‼ (p ∙ q)   = v ‼ q
 bind v ‼ bind t    = v ‼ t
+
+-- we can also get the term back from the pattern and the environment
+termFrom : (p : Pattern γ) → p -Env → Term lib const γ
+termFrom (` x) `              = ess (` x)
+termFrom (p ∙ p₁) (e ∙ e₁)    = ess (termFrom p e ∙ termFrom p₁ e₁)
+termFrom (bind p) (bind e)    = ess (bind (termFrom p e))
+termFrom (place θ) (thing x₁) = x₁ ⟨term θ
+termFrom ⊥ ()
 
 {-
   
@@ -397,5 +390,7 @@ module Expression where
   
   toTerm {_} {l = lib} {d = compu} penv eenv (ess x) = toTerm penv eenv x
   toTerm {_} {l = lib} {d = compu} penv eenv (t ∷ T) = toTerm penv eenv t ∷ toTerm penv eenv T
+
+
 \end{code}
 

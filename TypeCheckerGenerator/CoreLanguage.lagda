@@ -10,7 +10,7 @@ open import Data.Product using (_×_; Σ-syntax; _,_)
 open import Data.Nat using (ℕ; _+_; suc)
 open import Data.Unit using (⊤)
 open import Data.Char using (Char)
-open import Data.List
+open import Data.String
 \end{code}
 }
 
@@ -61,4 +61,21 @@ Term ess const γ = Ess-Const γ
 Term ess compu γ = Ess-Compu γ
 Term lib const γ = Lib-Const γ
 Term lib compu γ = Lib-Compu γ
+
+private
+  variable
+    l : Lib
+    d : Dir
+    γ : Scope
+
+print : Term l d γ → String
+print {l = ess} {d = const} (` x) = fromChar x
+print {l = ess} {d = const} (s ∙ t) = print s ++ print t
+print {l = ess} {d = const} (bind x) = "λ" ++ print x
+print {l = ess} {d = compu} (var x) = "VAR"
+print {l = ess} {d = compu} (elim e s) = "elim" ++ print e ++ print s
+print {l = lib} {d = const} (ess x) = print x
+print {l = lib} {d = const} (thunk x) = "_" ++ print x ++ "_"
+print {l = lib} {d = compu} (ess x) = print x
+print {l = lib} {d = compu} (t ∷ T) = print t ++ "∶" ++ print T
 \end{code}

@@ -8,10 +8,10 @@ module Rules where
 
 \begin{code}
 open import CoreLanguage
-open import Thinning using (_⊑_; Scoped; Ø; ι; ε; _⇒[_]_; _O)
+open import Thinning using (_⊑_; Scoped; Ø; ι; ε; _⇒[_]_; _O; _I; Thinnable) renaming (_∘_ to _∘∘_)
 import Pattern as Pat
-open Pat using (Pattern; svar; bind; _∙; ∙_; place; ⋆; _∙_; `; ⊥; s-scope; _⟨svar_; _-Env; match; _-_)
-open Pat.Expression using (Expression; Expr; econ; lcon; ecom; lcom; _/_; ess; `) renaming (_∙_ to _∘_)
+open Pat using (Pattern; svar; bind; _∙; ∙_; place; ⋆; _∙_; `; ⊥; _⟨svar_; _-Env; match; _-_; _⟨pat_)
+open Pat.Expression using (Expression; Expr; econ; lcon; ecom; lcom; _/_; ess; `; _⟨exp_) renaming (_∙_ to _∘_)
 open import Data.Product using (_×_; _,_; proj₁; Σ-syntax)
 open import Data.List using (List)
 open import Data.Char
@@ -29,13 +29,16 @@ private
     p : Pattern 0
     p` : Pattern (suc γ)
     q` : Pattern 0
+    q : Pattern 0
+    q' : Pattern 0
+    p'' : Pattern δ
 
-data Prem (s : s-scope) (q : Pattern 0) (γ : Scope) : (p' : Pattern γ) → (q' : Pattern 0) → Set where
-   type : (ξ : svar q δ) → (θ : δ ⊑ γ) → Prem s q γ (place θ) (q - ξ)
-   _∋'_[_] : (T : Expr s lib const γ) → (ξ : svar q (proj₁ s)) → (θ : (proj₁ s) ⊑ γ) → Prem s q γ (place θ) (q - ξ)
-   _≡'_ : Expr s lib const γ → Expr s lib const γ → Prem s q γ (` '⊤') q
-   univ : Expr s lib const γ → Prem s q γ (` '⊤') q
-   _⊢'_ : Expr s lib const γ → Prem s q (suc γ) p` q` → Prem s q γ (bind p`) q`
+data Prem (p : Pattern 0) (q : Pattern 0) (γ : Scope) : (p' : Pattern γ) → (q' : Pattern 0) → Set where
+   type : (ξ : svar q δ) → (θ : δ ⊑ γ) → Prem p q γ (place θ) (q - ξ)
+   _∋'_[_] : (T : Expr p lib const γ) → (ξ : svar q δ) → (θ : δ ⊑ γ)  → Prem p q γ (place θ) (q - ξ)
+   _≡'_ : Expr p lib const γ → Expr p lib const γ → Prem p q γ (` '⊤') q
+   univ : Expr p lib const γ → Prem p q γ (` '⊤') q
+   _⊢'_ : Expr p lib const γ → Prem p q (suc γ) p` q` → Prem p q γ (bind p`) q`
   
 -- We have a concept of a placeless thing, which represents any
 -- pattern that contains no places
@@ -62,6 +65,14 @@ bind p placeless   = bind (p placeless)
 place x placeless  = ` '⊤'
 ⊥ placeless        = ⊥
 
+-- we can thin premises
+_⟨prem_ : Prem p q δ p'' q' → (θ : δ ⊑ γ)  → Prem p q γ (p'' ⟨pat θ) q'
+type ξ θ₁       ⟨prem θ = type ξ (θ₁ ∘∘ θ)
+(T ∋' ξ [ θ₁ ]) ⟨prem θ = (T ⟨exp θ) ∋' ξ [ θ₁ ∘∘ θ ]
+(x ≡' x₁)       ⟨prem θ = (x ⟨exp θ) ≡' (x₁ ⟨exp θ)
+univ x          ⟨prem θ = univ (x ⟨exp θ)
+(x ⊢' prem)     ⟨prem θ = (x ⟨exp θ) ⊢' (prem ⟨prem (θ I))
+
 private
   variable
     p' : Pattern 0
@@ -71,17 +82,17 @@ private
 
 -- and a chain of Premises
 
-data Prems (δ : Scope) (p₀ : Pattern 0) (q₀ : Pattern 0) : (p₂ : Pattern 0) → Set where
-  ε : (q₀ Placeless) → Prems δ p₀ q₀ p₀
-  _⇉_ : Prem (δ , p₀) q₀ 0 p' q₁ →
-        Prems δ (p₀ ∙ p') q₁ p₂ →
-        Prems δ p₀ q₀ p₂
+data Prems (p₀ : Pattern 0) (q₀ : Pattern 0) : (p₂ : Pattern 0) → Set where
+  ε : (q₀ Placeless) → Prems p₀ q₀ p₀
+  _⇉_ : Prem p₀ q₀ 0 p' q₁ →
+        Prems (p₀ ∙ p') q₁ p₂ →
+        Prems p₀ q₀ p₂
 infixr 20 _⇉_
 
 record TypeRule : Set where
   field
     subject  : Pattern 0
-    premises : Σ[ p' ∈ Pattern 0 ] Prems 0 (` '⊤') subject p'
+    premises : Σ[ p' ∈ Pattern 0 ] Prems (` '⊤') subject p'
 open TypeRule
 
 match-typerule : (rule : TypeRule) → Term lib const γ → Maybe ((subject rule) -Env)
@@ -90,7 +101,7 @@ match-typerule rule term = match term (subject rule)
 record UnivRule : Set where
   field
     input    : Pattern 0
-    premises : Σ[ p' ∈ Pattern 0 ] Prems 0 input (` '⊤') p'
+    premises : Σ[ p' ∈ Pattern 0 ] Prems input (` '⊤') p'
 open UnivRule
 
 match-univrule : (rule : UnivRule) → Term lib const γ → Maybe ((input rule) -Env)
@@ -100,8 +111,10 @@ record ∋rule : Set where
   field
     subject  : Pattern 0
     input    : Pattern 0
-    premises : Σ[ p' ∈ Pattern 0 ] Prems 0 input subject p'
+    premises : Σ[ p' ∈ Pattern 0 ] Prems input subject p'
 open ∋rule
+
+open import Data.Unit using (⊤; tt)
 
 match-∋rule : (rule : ∋rule) → Term lib const γ → Term lib const γ →
               (Maybe (((input rule) -Env) × ((subject rule) -Env)))
@@ -110,18 +123,18 @@ match-∋rule rule Tterm tterm
       inenv  ← match Tterm (input rule)
       subenv ← match tterm (subject rule)
       just (inenv , subenv)
-                        
+
 record ElimRule : Set where
   field
-    target     : Scope
     targetPat  : Pattern 0
     eliminator : Pattern 0
-    premises   : Σ[ p' ∈ Pattern 0 ] Prems target targetPat eliminator p'
-    output     : Expr (target , proj₁ premises) lib const 0
+    premises   : Σ[ p' ∈ Pattern 0 ] Prems targetPat eliminator p'
+    output     : Expr (proj₁ premises) lib const 0
 
 erule-envs : ElimRule → Set
 erule-envs rule = Maybe (((targetPat rule) -Env) × ((eliminator rule) -Env)) where open ElimRule
 
+open import undefined
 match-erule : (rule : ElimRule) → (T : Term lib const γ) → (s : Term lib const γ) → erule-envs rule
 match-erule rule T s = do
                          T-env ← match T (targetPat rule)

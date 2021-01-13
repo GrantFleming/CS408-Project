@@ -97,6 +97,7 @@ _^env e = e ⟨env ↑
  ** should we be checking δ ≟ δ' ? or should we actually be looking for
  something like δ ⊑ δ'? **
 -}
+
 match : Term lib const δ → (p : Pattern γ) → Maybe (p -Env)
 match (ess (` a)) (` c) with a is c
 ... | true because ofʸ refl = just `
@@ -112,6 +113,10 @@ match {δ} {γ} t (place {δ'} θ) with δ ≟ δ'
 ... | .true because ofʸ refl  = just (thing t)
 ... | _                       = nothing
 match _ _                     = nothing
+
+
+--test   = match {1} {1} (thunk (var ze)) (place ι)
+test = match {0} {0} (ess (bind (thunk (var ze)))) (bind (place ι))
 
 private
   variable
@@ -211,8 +216,6 @@ otherresult = mlook myvar result
 \end{code}
 
 \begin{code}
-s-scope = Scope × (Pattern 0)
-
 private
   variable
     l : Lib
@@ -221,45 +224,44 @@ private
 
 module Expression where
 
-  Expr : s-scope → Lib → Dir → Scoped
+  Expr : Pattern 0 → Lib → Dir → Scoped
   
-  data econ (δ : Scope) (p : Pattern 0) (γ : Scope) : Set
-  data lcon (δ : Scope) (p : Pattern 0) (γ : Scope) : Set
-  data ecom (δ : Scope) (p : Pattern 0) (γ : Scope) : Set
-  data lcom (δ : Scope) (p : Pattern 0) (γ : Scope) : Set
+  data econ (p : Pattern 0) (γ : Scope) : Set
+  data lcon (p : Pattern 0) (γ : Scope) : Set
+  data ecom (p : Pattern 0) (γ : Scope) : Set
+  data lcom (p : Pattern 0) (γ : Scope) : Set
   
-  data econ δ p γ where
-    `      : Char → econ δ p γ
-    _∙_   : lcon δ p γ → lcon δ p γ → econ δ p γ
-    bind   : lcon δ p (suc γ) → econ δ p γ
+  data econ p γ where
+    `      : Char → econ p γ
+    _∙_   : lcon p γ → lcon p γ → econ p γ
+    bind   : lcon p (suc γ) → econ p γ
   
   infixr 20 _∙_ 
   
-  data lcon δ p γ where
-    ess    : econ δ p γ → lcon δ p γ
-    thunk  : ecom δ p γ → lcon δ p γ
-    _/_    : svar p γ' → γ' ⇒[ Expr (δ , p) lib compu ] γ → lcon δ p γ
+  data lcon p γ where
+    ess    : econ p γ → lcon p γ
+    thunk  : ecom p γ → lcon p γ
+    _/_    : svar p γ' → γ' ⇒[ Expr p lib compu ] γ → lcon p γ
     
   
-  data ecom δ p γ where
-    var    : Var γ → ecom δ p γ
-    elim   : lcom δ p γ → lcon δ p γ → ecom δ p γ
-    dvar   : Var δ → ecom δ p γ
+  data ecom p γ where
+    var    : Var γ → ecom p γ
+    elim   : lcom p γ → lcon p γ → ecom p γ
   
-  data lcom δ p γ where
-    ess    : ecom δ p γ → lcom δ p γ
-    _∷_    : lcon δ p γ → lcon δ p γ → lcom δ p γ
+  data lcom p γ where
+    ess    : ecom p γ → lcom p γ
+    _∷_    : lcon p γ → lcon p γ → lcom p γ
   
-  Expr (δ , p) ess const γ = econ δ p γ
-  Expr (δ , p) ess compu γ = ecom δ p γ
-  Expr (δ , p) lib const γ = lcon δ p γ
-  Expr (δ , p) lib compu γ = lcom δ p γ
+  Expr p ess const γ = econ p γ
+  Expr p ess compu γ = ecom p γ
+  Expr p lib const γ = lcon p γ
+  Expr p lib compu γ = lcom p γ
   
   Expression : Scoped
-  Expression γ = ∀ {δ} {p} {l} {d} → Expr (δ , p) l d γ
+  Expression γ = ∀ {p} {l} {d} → Expr p l d γ
 
   -- expressions are thinnable on γ
-  _⟨exp_ : Thinnable (Expr (δ , p) l d)
+  _⟨exp_ : Thinnable (Expr p l d)
   
   _⟨exp_ {l = ess} {d = const} (` x)    θ = ` x
   _⟨exp_ {l = ess} {d = const} (s ∙ t)  θ = (s ⟨exp θ) ∙ (t ⟨exp θ)
@@ -267,74 +269,33 @@ module Expression where
   
   _⟨exp_ {l = ess} {d = compu} (var x)    θ  = var (x ⟨var θ)
   _⟨exp_ {l = ess} {d = compu} (elim e s) θ  = elim (e ⟨exp θ) (s ⟨exp θ)
-  _⟨exp_ {l = ess} {d = compu} (dvar x)   θ  = dvar x
   
   _⟨exp_ {l = lib} {d = const} (ess x)   θ = ess (x ⟨exp θ)
   _⟨exp_ {l = lib} {d = const} (thunk x) θ = thunk (x ⟨exp θ)
   _⟨exp_ {l = lib} {d = const} (ξ / σ)   θ = ξ / (σ ⟨ θ)
     where
       -- had to inline ⟨sub for the termination checker
-      _⟨_ : Thinnable (γ' ⇒[ (λ γ → lcom δ p γ) ]_)
+      _⟨_ : Thinnable (γ' ⇒[ (λ γ → lcom p γ) ]_)
       _⟨_  ε        θ' = ε
       _⟨_ (σ' -, x) θ' = (σ' ⟨ θ') -, (x ⟨exp θ')
   _⟨exp_ {l = lib} {d = compu} (ess x) θ  = ess (x ⟨exp θ)
   _⟨exp_ {l = lib} {d = compu} (t ∷ T) θ  = (t ⟨exp θ) ∷ (T ⟨exp θ)
 
   -- expressions are weakenable on γ
-  _^exp : Weakenable (Expr (δ , p) l d)
-  _^exp {δ} {p} {l} {d} = weaken {T = Expr (δ , p) l d} _⟨exp_
-
-  -- but expressions are also thinnable on δ
-  _⟨expδ_ : Thinnable (λ δ → Expr (δ , p) l d γ)
-  
-  _⟨expδ_ {l = ess} {d = const} (` x)    θ = ` x
-  _⟨expδ_ {l = ess} {d = const} (s ∙ t)  θ = (s ⟨expδ θ) ∙ (t ⟨expδ θ)
-  _⟨expδ_ {l = ess} {d = const} (bind x) θ = bind (x ⟨expδ θ)
-  
-  _⟨expδ_ {l = ess} {d = compu} (var x)    θ  = var x
-  _⟨expδ_ {l = ess} {d = compu} (elim e s) θ  = elim (e ⟨expδ θ) (s ⟨expδ θ)
-  _⟨expδ_ {l = ess} {d = compu} (dvar x)   θ  = dvar (x ⟨var θ)
-  
-  _⟨expδ_ {l = lib} {d = const} (ess x)   θ = ess (x ⟨expδ θ)
-  _⟨expδ_ {l = lib} {d = const} (thunk x) θ = thunk (x ⟨expδ θ)
-  _⟨expδ_ {l = lib} {d = const} (ξ / σ)   θ = ξ / (σ ⟨ θ)
-    where
-      -- had to inline ⟨sub for the termination checker
-      _⟨_ : Thinnable  (λ δ → (γ' ⇒[ (λ γ → lcom δ p γ) ] γ))
-      ε        ⟨ θ' = ε
-      (σ' -, x) ⟨ θ' = (σ' ⟨ θ') -, (x ⟨expδ θ')
-  
-  _⟨expδ_ {l = lib} {d = compu} (ess x)  θ = ess (x ⟨expδ θ)
-  _⟨expδ_ {l = lib} {d = compu} (t ∷ T) θ = (t ⟨expδ θ) ∷ (T ⟨expδ θ)
-
-  -- expressions are also weakenable on δ
-  _^expδ : Weakenable (λ δ → Expr (δ , p) l d γ)
-  _^expδ {p} {l} {d} {γ}  = weaken {T = λ δ → Expr (δ , p) l d γ} _⟨expδ_
+  _^exp : Weakenable (Expr p l d)
+  _^exp {p} {l} {d} = weaken {T = Expr p l d} _⟨exp_
 
   -- substituting expressions is weakenable
   _^/exp : Weakenable
-            (γ ⇒[ Expr (δ , p) l d ]_)
-  _^/exp {δ = δ} {p = p} {l = l} {d = d}  = ^sub {T = Expr (δ , p) l d}  _⟨exp_
+            (γ ⇒[ Expr p l d ]_)
+  _^/exp {p = p} {l = l} {d = d}  = ^sub {T = Expr p l d}  _⟨exp_
 
-  -- Environments for elimination targets
-  -- things in the environment need to be synthesizable for elim rules
-  e-Env : Scope → Scope → Set
-  e-Env δ γ = δ ⇒[ Term lib compu ] γ
-
-  -- because terms are thinnable, e-Envs are thinnable on γ
-  _⟨eenv_ : Thinnable (e-Env δ)
-  e ⟨eenv θ = ⟨sub _⟨term_ e θ
-
-  -- therefore weakenable
-  _^eenv : Weakenable (e-Env δ) 
-  _^eenv = weaken _⟨eenv_
-
-  ↠_ : lcom δ p γ → lcon δ p γ
+  ↠_ : lcom p γ → lcon p γ
   ↠ (ess x) = thunk x
   ↠ (t ∷ T) = t
 
                -- δ p was originally 0 , ` '⊤'
-  toExpr : Term l d γ → Expr (δ , p) l d γ
+  toExpr : Term l d γ → Expr p l d γ
   toExpr {ess} {const} (` x)    = ` x
   toExpr {ess} {const} (s ∙ t)  = (toExpr s) ∙ (toExpr t)
   toExpr {ess} {const} (bind x) = bind (toExpr x)
@@ -351,21 +312,20 @@ module Expression where
   
 
     -- actually performing the lcon substitution
-  _//_ :  Expr (δ , p) l d γ' → γ' ⇒[ Expr (δ , p) lib compu ] γ → Expr (δ , p) lib d γ
+  _//_ :  Expr p l d γ' → γ' ⇒[ Expr p lib compu ] γ → Expr p lib d γ
   _//_ {l = ess} {d = const} (` x)       σ = ess (` x)
   _//_ {l = ess} {d = const} (s ∙ t)     σ = ess ((s // σ) ∙ (t // σ))
   _//_ {l = ess} {d = const} (bind t)    σ = ess (bind (t // ((σ ^/exp) -, ess (var ze))))
   
-  _//_ {δ} {p} {ess} {compu} (var v)     σ = lookup (Expr (δ , p) lib compu) σ v
+  _//_ {p} {ess} {compu} (var v)     σ = lookup (Expr p lib compu) σ v
   _//_ {l = ess} {d = compu} (elim e s) σ = ess (elim (e // σ) (s // σ))
-  _//_ {l = ess} {d = compu} (dvar x)   σ = ess (dvar x)
-  
+    
   _//_ {l = lib} {d = const} (ess x)     σ = x // σ
   _//_ {l = lib} {d = const} (thunk x)   σ = ↠ (x // σ)
   _//_ {l = lib} {d = const} (ξ / σ')    σ = ξ / (σ' ∘` σ)
     where
     -- had to inline this composition here to shut the termination checker up
-    _∘`_ : Composable (_⇒[ lcom δ p ]_)
+    _∘`_ : Composable (_⇒[ lcom p ]_)
     ε ∘`          two = ε
     (one -, x) ∘` two = (one ∘` two) -, (x // two)
   
@@ -375,21 +335,20 @@ module Expression where
 
   -- TO DO - get the termination checker to see that this is terminating
   {-# TERMINATING #-}
-  toTerm  : p -Env → e-Env δ γ → Expr (δ , p) l d γ → Term lib d γ
-  toTerm {l = ess} {d = const} penv eenv (` x)        = ess (` x)
-  toTerm {_} {l = ess} {d = const} penv eenv (s ∙ t)  = ess ((toTerm penv eenv s) ∙ (toTerm penv eenv t))
-  toTerm {_} {l = ess} {d = const} penv eenv (bind t) = ess (bind (toTerm penv (eenv ^eenv) t))
+  toTerm  : p -Env → Expr p l d γ → Term lib d γ
+  toTerm {l = ess} {d = const} penv (` x)    = ess (` x)
+  toTerm {l = ess} {d = const} penv (s ∙ t)  = ess ((toTerm penv s) ∙ (toTerm penv t))
+  toTerm {l = ess} {d = const} penv (bind t) = ess (bind (toTerm penv t))
   
-  toTerm {_} {l = ess} {d = compu} penv eenv (var x)    = ess (var x)
-  toTerm {_} {l = ess} {d = compu} penv eenv (elim e s) = ess (elim (toTerm penv eenv e) (toTerm penv eenv s))
-  toTerm {_} {l = ess} {d = compu} penv eenv (dvar v)   = lookup (Term lib compu) eenv v
+  toTerm {l = ess} {d = compu} penv (var x)    = ess (var x)
+  toTerm {l = ess} {d = compu} penv (elim e s) = ess (elim (toTerm penv e) (toTerm penv s))
 
-  toTerm {_} {l = lib} {d = const} penv eenv (ess x)   = toTerm penv eenv x
-  toTerm {_} {l = lib} {d = const} penv eenv (thunk x) = ↠↠ (toTerm penv eenv x)
-  toTerm {_} {l = lib} {d = const} penv eenv (ξ / σ) =  toTerm penv eenv (toExpr (ξ ‼ penv) // σ)
+  toTerm {l = lib} {d = const} penv (ess x)   = toTerm penv x
+  toTerm {l = lib} {d = const} penv (thunk x) = ↠↠ (toTerm penv x)
+  toTerm {l = lib} {d = const} penv (ξ / σ) =  toTerm penv (toExpr (ξ ‼ penv) // σ)
   
-  toTerm {_} {l = lib} {d = compu} penv eenv (ess x) = toTerm penv eenv x
-  toTerm {_} {l = lib} {d = compu} penv eenv (t ∷ T) = toTerm penv eenv t ∷ toTerm penv eenv T
+  toTerm {l = lib} {d = compu} penv (ess x) = toTerm penv x
+  toTerm {l = lib} {d = compu} penv (t ∷ T) = toTerm penv t ∷ toTerm penv T
 
 
 \end{code}

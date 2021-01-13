@@ -10,27 +10,37 @@ open import Failable
 open import Data.Maybe using (Maybe; just; nothing)
 open import Context using (Context)
 open import Data.List using (List; []; _∷_)
-open import Rules using (ConstRule; match-rule; menv)
+open import Rules using (ConstRule; ElimRule; match-crule; match-erule; menv)
 import Pattern as Pat
 open Pat using (Pattern; _-Env)
 open import Data.Unit using (⊤; tt)
-open import Data.Vec using (Vec)
+open import Data.Vec using (Vec; _∷_; [])
 open import Data.Vec.Relation.Unary.All using (All)
 open import Data.Nat using (ℕ)
 open import Data.Product using (_,_)
-import Judgement
+open import Judgement using (J-Type; TY; NI; UNI)
 open Judgement.Judgement using (input)
+open import Context using (Context; _‼V_)
+open import Data.Char using (_==_)
+open import Data.Bool using (Bool; true; false)
 \end{code}
 
 \begin{code}
 private
   variable
+    l : Lib
+    d : Dir
     γ : Scope
     p : Pattern 0
     n : ℕ
 
 open ConstRule
 
+c-rules : List ConstRule
+c-rules = []
+
+e-rules : List ElimRule
+e-rules = []
 
 run-crule : -- the rule we want to run
             (rule : ConstRule) →                    
@@ -40,59 +50,121 @@ run-crule : -- the rule we want to run
             All _-Env (input (conclusion rule)) →
             -- succeed tt if the rule ran successfully otherwise fail
             Failable ⊤
-run-crule rule sub inp = {!!}
+{-
+  This will have two steps, failure at each step propagates:
+    1) Check the preconditions
+    2) Check the premise chain
+  These rules only cover TYPE, ∋ and UNIV so they don't have post conditions
+-}            
+run-crule rule sub inp = do
+                           _ ← check-preconditions rule inp
+                           _ ← check-premisechain rule sub
+                           succeed tt
+  where
+    check-preconditions : (rule : ConstRule) → All _-Env (input (conclusion rule)) → Failable ⊤
+    check-preconditions rule envs = {!!}
+    check-premisechain : (rule : ConstRule) → menv rule → Failable ⊤
+    check-premisechain rule env = {!!}
+
+
+run-erule : (rule : ElimRule) →
+            (ElimRule.targetPat rule) -Env →
+            (ElimRule.eliminator rule) -Env →
+            Failable (Term lib const γ)
+{-
+  This will involve steps
+    1) Check the premise chain
+    2) Form the output
+    3) Convert the output from an Expr to a Term
+-}
+run-erule rule T-env s-env = {!!}
 
 const-check : List ConstRule                →
               (subject : Maybe (Lib-Const γ))       →
               (inputs : Vec (Lib-Const γ) n) →
               Failable ⊤
-const-check []             sub inp = fail "Print the failing term here"
-const-check (rule ∷ rules) sub inp with match-rule rule sub inp 
+const-check []             sub inp = fail "const-check: print the failing term here"
+const-check (rule ∷ rules) sub inp with match-crule rule NI sub inp 
 ... | nothing = const-check rules sub inp
 ... | just (subj-env , input-envs) with run-crule rule subj-env input-envs
 ... | succeed x = succeed x
 ... | fail    x = const-check rules sub inp
 
--- There are certain rules that exist regardless of the type theory
--- We approach these differently, while in Rules.lagda, we gave the machinery for creating
--- rules of a specific 'form' , here these are actual rules to be applied to syntax.
--- Thus these don't necessarily take the 'form' of rules, the are just functionality.
-
--- There are two globally presented rules (rules which explicitly talk about the context)
--- There are context extension and type lookup. This functionality is in Context.lagda
--- given by _,_ for context extension and loopup for type lookup
-
--- you can synthesize the type of a variable by just looking it up in the context using lookup
-
-
--- you can synthesize the type of anything with a type annotation if the annotation is indeed a
--- type and and we can check the annotated thing at that type
-radical : Lib-Const γ → Lib-Const γ → Failable (Term lib const γ)
-radical (ess t)   (ess T)   = {!!}
-radical (ess t)   (thunk T) = {!!}
-radical (thunk t) (ess T)   = {!!}
-radical (thunk t) (thunk T) = {!!}
-
--- you can embed synthesizable things in checkable things
-
--- TO DO
-
--- if n is in a Universe then it is a type
+elim-synth : List ElimRule →
+             (synth-type : Term lib const γ) →
+             (eliminator : Term lib const γ) →
+             Failable (Term lib const γ)
+elim-synth []             T s = fail "elim-synth: print the failing term here"
+elim-synth (rule ∷ rules) T s with match-erule rule T s
+... | nothing              = elim-synth rules T s
+... | just (T-env , s-env) = run-erule rule T-env s-env
 
 -- TO DO (afterwards clean up the STLC example unnecessary rules)
 
--- reflexivity
+-- equality TODO - implement operational semantics and revisit this
+-- At the moment, equality is just syntactic
+eqfail : Failable ⊤
+eqfail = fail "Equality failure."
 
--- TO DO
+_≡v_ : Var γ → Var γ → Failable ⊤
+ze   ≡v ze    = succeed tt
+su v ≡v su v' = v ≡v v'
+_    ≡v _     = eqfail
 
--- These rules are stored together in some structure
+_≡_ : Term l d γ → Term l d γ → Failable ⊤
+_≡_ {ess} {const} (` x)    (` x₁) with x == x₁
+... | false = eqfail
+... | true  = succeed tt
+_≡_ {ess} {const} (x ∙ x₁) (x₂ ∙ x₃) = do
+                                         _ ← x  ≡ x₂
+                                         _ ← x₁ ≡ x₃
+                                         return tt
+_≡_ {ess} {const} (bind x) (bind x') = x ≡ x'
+_≡_ {ess} {const} _ _ = eqfail
 
--- TO DO
--- we have introduction rules
--- and seperately we have elimination rules
+_≡_ {ess} {compu} (var x) (var x')        = x ≡v x'
+_≡_ {ess} {compu} (elim e s) (elim e' s') = do
+                                              _ ← e ≡ e'
+                                              _ ← s ≡ s'
+                                              return tt
+_≡_ {ess} {compu}  _          _           = eqfail
 
-infer : Term lib compu γ → Failable (Term lib const γ)
-infer (ess x)  = {!!}
-infer (t ∷ T)  = radical t T
+_≡_ {lib} {const} (ess x)    (ess x')  = x ≡ x'
+_≡_ {lib} {const} (thunk x) (thunk x') = x ≡ x'
+_≡_ {lib} {const}  _         _         = eqfail
+
+_≡_ {lib} {compu} (ess x) (ess x')  = x ≡ x'
+_≡_ {lib} {compu} (t ∷ T) (t' ∷ T') = do  -- maybe we can ignore the annotation here?
+                                        _ ← t ≡ t'
+                                        _ ← T ≡ T'
+                                        return tt
+_≡_ {lib} {compu}  _       _        = eqfail
+
+infer : Context γ → Term lib compu γ → Failable (Term lib const γ)
+infer Γ (ess (var x))    = succeed (x ‼V Γ)
+infer Γ (ess (elim e s)) = do
+                             T ← infer Γ e
+                             S ← elim-synth e-rules T s
+                             succeed S
+infer Γ (t ∷ T)  = do
+                   _ ← const-check c-rules (just t) (T ∷ [])
+                   succeed T
+
+check : Context γ → (type : Term lib const γ)  → (term : Term l d γ) → Failable ⊤
+check {_} {lib} {const} Γ T (ess x)
+  = do
+      _ ← const-check c-rules (just (ess x)) (T ∷ [])
+      succeed tt
+check {_} {lib} {const} Γ T (thunk x)
+  = do
+      S ← infer Γ (ess x)
+      S ≡ T -- this is the gotcha, at the moment just syntactic equality-}
+check {_} {ess} {const} Γ T t = const-check c-rules (just (ess t)) (T ∷ [])
+check {_} {ess} {compu} Γ T t = do
+                                  S ← infer Γ (ess t)
+                                  S ≡ T
+check {_} {lib} {compu} Γ T t = do
+                                  S ← infer Γ t
+                                  S ≡ T
 
 \end{code}

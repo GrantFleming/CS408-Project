@@ -22,8 +22,9 @@ open import Data.Empty renaming (⊥ to bot)
 open import Data.Unit using (⊤; tt)
 open import Data.Vec using (Vec; []; _∷_)
 open import Data.Vec.Relation.Unary.All using (All; []; _∷_)
-open import Judgement using (Judgement)
+open import Judgement using (Judgement; J-Type; TY; NI; UNI; _≡ᵇ_)
 open Judgement.Judgement
+open import Data.Bool using (true; false)
 \end{code}
 
 \begin{code}
@@ -118,20 +119,25 @@ out rule = Maybe ((menv rule) × All _-Env (input (conclusion rule)))
 
 --match t p
 -- matching a ConstRule should match the subject and the inputs
-match-rule : (rule : ConstRule) → (subject : Maybe (Term lib const δ)) → (inputs : Vec (Term lib const δ) n) → out rule
-match-rule record { subject = nothing } (just x) ins = nothing
-match-rule record { subject = just x } nothing ins = nothing
-match-rule record { subject = nothing;
-                    conclusion = record {input = inputs}}
-           nothing ins = do
-                           ins ← match-all ins inputs
-                           just (tt , ins)
-match-rule record { subject = (just p) ;
-                    conclusion = record { input = inputs }}
-           (just x) ins = do
-                            s ← match x p
-                            ins ← match-all ins inputs
-                            just (s , ins)
+-- TO DO clean this up
+match-crule : (rule : ConstRule) → J-Type  →(subject : Maybe (Term lib const δ)) → (inputs : Vec (Term lib const δ) n) → out rule
+match-crule record { subject = nothing } _ (just x) _ = nothing
+match-crule record { subject = just x } _ nothing _ = nothing
+match-crule record { subject = nothing;
+                    conclusion = record {input = inputs; j-type = j'}}
+           j nothing ins with j ≡ᵇ j'
+... | false = nothing
+... | true  = do
+                ins ← match-all ins inputs
+                just (tt , ins)
+match-crule record { subject = (just p) ;
+                    conclusion = record { input = inputs; j-type = j' }}
+           j (just x) ins with j ≡ᵇ j'
+... | false = nothing
+... | true  = do
+                s ← match x p
+                ins ← match-all ins inputs
+                just (s , ins)
 
 record ElimRule : Set where
   field
@@ -141,6 +147,16 @@ record ElimRule : Set where
     premises   : Σ[ p' ∈ Pattern 0 ] Prems target targetPat eliminator p'
     output     : Expr (target , proj₁ premises) lib const 0
 
+erule-envs : ElimRule → Set
+erule-envs rule = Maybe (((targetPat rule) -Env) × ((eliminator rule) -Env)) where open ElimRule
+
+match-erule : (rule : ElimRule) → (T : Term lib const γ) → (s : Term lib const γ) → erule-envs rule
+match-erule rule T s = do
+                         T-env ← match T (targetPat rule)
+                         s-env ← match s (eliminator rule)
+                         just (T-env , s-env)
+                       where
+                         open ElimRule
 
 -- Types of certain rules (these are ones that users might need supply
 

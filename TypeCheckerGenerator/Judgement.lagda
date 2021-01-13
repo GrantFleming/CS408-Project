@@ -39,6 +39,20 @@ private
     Y : Set
     M : Set → Set
 
+data J-Type : Set where
+  TY NI UNI : J-Type
+
+_≡ᵇ_ : J-Type → J-Type → Bool
+TY  ≡ᵇ TY  = true
+NI  ≡ᵇ NI  = true
+UNI ≡ᵇ UNI = true
+_   ≡ᵇ _   = false
+
+-- TO DO - judgements only have 0 or 1 inputs, no need for vec
+input-no : J-Type → ℕ
+input-no TY  = 0
+input-no NI  = 1
+input-no UNI = 1
 
 data Judgements (I : Scoped) (S : Scoped) (O : Scoped) (γ : Scope) : (length : ℕ) → (Vec (Maybe (S γ)) length) → Set
 record Judgement (I : Scoped) (S : Scoped) (O : Scoped) (γ : Scope) (s : Maybe (S γ)) : Set
@@ -46,12 +60,9 @@ record Judgement (I : Scoped) (S : Scoped) (O : Scoped) (γ : Scope) (s : Maybe 
 record Judgement I S O γ s where
   inductive
   field
-    ino       : ℕ
-    input     : Vec (I γ) ino
-    precond   : Judgements I I ⊥ γ ino (Data.Vec.map just input)
-    ono       : ℕ
-    output    : Vec (O γ) ono
-    postcond  : Judgements I O ⊥ γ ono (Data.Vec.map just output)
+    j-type    : J-Type
+    input     : Vec (I γ) (input-no j-type)
+    precond   : Judgements I I ⊥ γ ((input-no j-type)) (Data.Vec.map just input)
 
 data Judgements I S O γ where
   ε    : Judgements I S O γ 0 []
@@ -67,42 +78,24 @@ open Judgement
 -- Type
 
 TYPE : (s : S γ) → Judgement I S O γ (just s)
-ino       (TYPE s) = 0
+j-type    (TYPE s) = TY
 input     (TYPE s) = []
 precond   (TYPE s) = ε
-ono       (TYPE s) = 0
-output    (TYPE s) = []
-postcond  (TYPE s) = ε
-
 
 -- Universe
 UNIV : I γ → Judgement I S O γ nothing
-ino       (UNIV s) = 1
+j-type    (UNIV s) = UNI
 input     (UNIV i) = i ∷ []
 precond   (UNIV i) = TYPE i , ε
-ono       (UNIV s) = 0
-output    (UNIV i) = []
-postcond  (UNIV i) = ε
 
 -- Type checking
 _∋_ : I γ → (s : S γ) → Judgement I S O γ (just s)
-ino       (T ∋ t) = 1
+j-type    (T ∋ t) = NI
 input     (T ∋ t) = T ∷ []
 precond   (T ∋ t) = TYPE T , ε
-ono       (T ∋ t) = 0
-output    (T ∋ t) = []
-postcond  (T ∋ t) = ε
 
-
--- Type Synthesis
-_∈_ : (s : S γ) → O γ → Judgement I S O γ (just s)
-ino       (t ∈ T) = 0
-input     (t ∈ T) = []
-precond   (t ∈ T) = ε
-ono       (t ∈ T) = 1
-output    (t ∈ T) = T ∷ []
-postcond  (t ∈ T) = TYPE T , ε
-
+{-
+I don't think these will end up being implemented as judgements.
 
 -- Type Lookup
 _:!:_ : (s : S γ) → O γ → Judgement I S O γ (just s)
@@ -123,7 +116,6 @@ ono       (T ≡ T') = 0
 output    (T ≡ T') = []
 postcond  (T ≡ T') = ε
 
-
 -- this feels like some structure that already exists
 maybemap : {X : Set} {Y : Set} → (X → Y) → Maybe (List X) → List Y
 maybemap f nothing  = []
@@ -141,7 +133,7 @@ precond   (S ⊢ j) = TYPE S , ε
 ono       (S ⊢ j) = 0
 output    (S ⊢ j) = []
 postcond  (S ⊢ j) = ε
-
+-}
 {-
   IMPORTANT - for _⊢_ to work, when we are processing the Judgements, we must
   check if the subject is another judgement, and recursivly check the preconditions

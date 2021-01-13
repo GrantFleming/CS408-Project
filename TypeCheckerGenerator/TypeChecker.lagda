@@ -16,11 +16,11 @@ open Pat using (Pattern; _-Env; _∙_; thing; `; bind; s-scope; svar; _‼_; _-p
 open Pat.Expression using (Expression; Expr; lcon; toTerm; e-Env; _^eenv)
 open import Data.Unit using (⊤; tt)
 open import Data.Vec using (Vec; _∷_; [])
-open import Data.Vec.Relation.Unary.All using (All)
+open import Data.Vec.Relation.Unary.All using (All; []; _∷_)
 open import Data.Nat using (ℕ)
 open import Data.Product using (_,_)
 open import Judgement using (J-Type; TY; NI; UNI)
-open Judgement.Judgement using (input)
+open Judgement.Judgement using (input; j-type)
 open import Context using (Context; _‼V_) renaming (_,_ to _-,_)
 open import Data.Char using (_==_)
 open import Data.Bool using (Bool; true; false)
@@ -107,6 +107,9 @@ check-premise-chain penv eenv qenv (p ⇉ ps) = do
                                             _ ← check-premise-chain (penv ∙ p'env) eenv q₁env ps
                                             succeed tt
 
+check-preconditions : (rule : ConstRule) → All _-Env (input (conclusion rule)) → Failable ⊤
+check-preconditions rule envs = {!!}
+
 run-crule : -- the rule we want to run
             (rule : ConstRule) →                    
             -- the pattern environment from matching the subject
@@ -121,15 +124,23 @@ run-crule : -- the rule we want to run
     2) Check the premise chain
   These rules only cover TYPE, ∋ and UNIV so they don't have post conditions
 -}            
-run-crule rule sub inp = do
+run-crule rule@(record {conclusion = record { j-type = TY }}) sub []
+  = do
+      _ ← check-premise-chain {!`!} ε {!!} (proj₂ (premises rule))
+      succeed tt
+    where
+      open ConstRule
+run-crule record {conclusion = record { j-type = NI }}  sub inp = {!!}
+run-crule record {conclusion = record { j-type = UNI }} sub inp = {!!}
+
+
+
+{-do
                            _ ← check-preconditions rule inp
-                           _ ← check-premisechain rule sub
-                           succeed tt
-  where
-    check-preconditions : (rule : ConstRule) → All _-Env (input (conclusion rule)) → Failable ⊤
-    check-preconditions rule envs = {!!}
-    check-premisechain : (rule : ConstRule) → menv rule → Failable ⊤
-    check-premisechain rule env = {!!}
+                           _ ← check-premise-chain {!!} ε {!!} (proj₂ (premises rule))
+                           succeed tt-}
+
+
 
 
 run-erule : (rule : ElimRule) →
@@ -142,7 +153,13 @@ run-erule : (rule : ElimRule) →
     2) Form the output
     3) Convert the output from an Expr to a Term
 -}
-run-erule rule T-env s-env = {!!}
+run-erule rule T-env s-env = do
+                               _ ← check-premise-chain {!!} {!!} {!!} {!!}
+                               x ← form-output {!!}
+                               {!!}
+          where
+            form-output : {!!} → {!!}
+            form-output = {!!}
 
 univ-check  []            t = fail "univ-check: print the failing term here"
 univ-check (rule ∷ rules) t with match-crule rule UNI nothing (t ∷ [])

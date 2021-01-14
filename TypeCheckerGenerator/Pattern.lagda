@@ -114,10 +114,6 @@ match {δ} {γ} t (place {δ'} θ) with δ ≟ δ'
 ... | _                       = nothing
 match _ _                     = nothing
 
-
---test   = match {1} {1} (thunk (var ze)) (place ι)
-test = match {0} {0} (ess (bind (thunk (var ze)))) (bind (place ι))
-
 private
   variable
     θ : δ ⊑ γ

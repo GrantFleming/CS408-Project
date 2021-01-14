@@ -78,4 +78,19 @@ print {l = lib} {d = const} (ess x) = print x
 print {l = lib} {d = const} (thunk x) = "_" ++ print x ++ "_"
 print {l = lib} {d = compu} (ess x) = print x
 print {l = lib} {d = compu} (t ∷ T) = print t ++ "∶" ++ print T
+
+printrawvar : Var γ → String
+printrawvar ze     = "ze"
+printrawvar (su v) = "su " ++ printrawvar v
+
+printraw : Term l d γ → String
+printraw {l = ess} {d = const} (` x) = "(` '" ++ fromChar x ++ "')"
+printraw {l = ess} {d = const} (s ∙ t) = "(" ++ printraw s ++ " ∙ "  ++ printraw t ++ ")"
+printraw {l = ess} {d = const} (bind x) = "(bind " ++ printraw x ++ ")"
+printraw {l = ess} {d = compu} (var x) = "(var " ++ printrawvar x ++ ")"
+printraw {l = ess} {d = compu} (elim e s) = "(elim " ++ printraw e ++ " " ++ printraw s ++ ")"
+printraw {l = lib} {d = const} (ess x) = "(ess " ++ printraw x ++ ")"
+printraw {l = lib} {d = const} (thunk x) = "(thunk " ++ printraw x ++ ")"
+printraw {l = lib} {d = compu} (ess x) = "(ess " ++ printraw x ++ ")"
+printraw {l = lib} {d = compu} (t ∷ T) = "(" ++ printraw t ++ "∶" ++ printraw T ++ ")"
 \end{code}

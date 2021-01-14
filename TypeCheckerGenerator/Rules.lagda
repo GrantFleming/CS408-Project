@@ -134,7 +134,6 @@ record ElimRule : Set where
 erule-envs : ElimRule → Set
 erule-envs rule = Maybe (((targetPat rule) -Env) × ((eliminator rule) -Env)) where open ElimRule
 
-open import undefined
 match-erule : (rule : ElimRule) → (T : Term lib const γ) → (s : Term lib const γ) → erule-envs rule
 match-erule rule T s = do
                          T-env ← match T (targetPat rule)

@@ -137,8 +137,7 @@ run-erule : Context γ                       →
             (rule : ElimRule)               →
             (ElimRule.targetPat rule)  -Env →
             (ElimRule.eliminator rule) -Env →
-            Failable (Term lib const γ) -- should this really be zero?!
--- TO DO - FIX THIS!            
+            Failable (Term lib const γ)
 run-erule Γ rules rule T-env s-env
   = do
       p'env ← check-premise-chain rules T-env s-env (proj₂ (premises rule))
@@ -149,7 +148,7 @@ run-erule Γ rules rule T-env s-env
 
 {-# TERMINATING #-}
 univ-check Γ rules  []              input
-  = fail "univ-check: print the failing term here"
+  = fail ("univ-check: " ++ (print input) ++ " is not a universe")
 univ-check Γ rules (urule ∷ urules) input
   with match-univrule urule input
 ... | nothing = univ-check Γ rules urules input
@@ -158,7 +157,7 @@ univ-check Γ rules (urule ∷ urules) input
 ... | fail x₁ = univ-check Γ rules urules input
 
 type-check  Γ rules []      ms
-  = fail "type-check: print the failing term here"
+  = fail ("type-check: " ++ (print ms) ++ " is not a type")
 type-check Γ rules (trule ∷ trules) ms
   with match-typerule trule ms
 ... | nothing = type-check Γ rules trules ms
@@ -172,9 +171,7 @@ type-check Γ rules (trule ∷ trules) ms
 ∋-check Γ rules (∋-rule ∷ ∋rules) sub inp
   with match-∋rule ∋-rule inp sub
 ... | nothing = ∋-check Γ rules ∋rules sub inp
-... | just (subj-env , input-envs) with run-∋rule Γ rules ∋-rule subj-env input-envs
-... | succeed x = succeed x
-... | fail    x = ∋-check Γ rules ∋rules sub inp
+... | just (subj-env , input-envs) = run-∋rule Γ rules ∋-rule subj-env input-envs
 
 elim-synth : Context γ                       →
              Rules                           →
@@ -182,7 +179,8 @@ elim-synth : Context γ                       →
              (synth-type : Term lib const γ) →
              (eliminator : Term lib const γ) →
              Failable (Term lib const γ)
-elim-synth Γ rules []             T s = fail "elim-synth: print the failing term here"
+elim-synth Γ rules []             T s
+  = fail ("elim-synth: failed to match elimination rule for target = " ++ (printraw T) ++ " and eliminator = " ++ (printraw s))
 elim-synth Γ rules (erule ∷ erules) T s with match-erule erule T s
 ... | nothing              = elim-synth Γ rules erules T s
 ... | just (T-env , s-env) = run-erule Γ rules erule T-env s-env
@@ -244,7 +242,7 @@ check {_} {lib} {const} rules@(rs t u ∋ e) Γ T (ess x)
       succeed tt
 check {_} {lib} {const} rules Γ T (thunk x)
   = do
-      S ← infer rules  Γ (ess x)
+      S ← infer rules Γ (ess x)
       S ≡ T -- this is the gotcha, at the moment just syntactic equality-}
 check {_} {ess} {const} rules@(rs tr u ∋ e) Γ T t = ∋-check Γ rules ∋ (ess t) T
 check {_} {ess} {compu} rules Γ T t = do

@@ -95,7 +95,6 @@ premises   app-rule = targetPat app-rule ∙ place ι ,
                       ε ((` '⊤') placeless)
 output     app-rule = (((∙ ∙ ⋆) ∙) / ε)
 
-
 -- now lets test it ... eeeeeeeeeek
 
 -- first lets get all our rules together:
@@ -119,55 +118,67 @@ rules = rs typerules univrules ∋rules elimrules
 
 -- ok let's try typing some stuff
 
-open import TypeChecker using (check; infer)
-open import CoreLanguage
-open import Failable
-open import Data.String using (String)
+-- open import TypeChecker using (check; infer)
+-- open import CoreLanguage
+-- open import Failable
+-- open import Data.String using (String)
 
--- this should infer the type α → α
+-- -- this should infer the type α → α
 
-radtest : Term lib compu 0
-radtest = ess (bind (thunk (var ze))) ∷ ess (ess (` 'α') ∙ ess (ess (` '→') ∙ ess (` 'α')))
+-- radtest : Term lib compu 0
+-- radtest = ess (bind (thunk (var ze))) ∷ ess (ess (` 'α') ∙ ess (ess (` '→') ∙ ess (` 'α')))
 
-result : String
-result with infer rules ε radtest
-... | succeed x = print x
-... | fail x    = x
+-- result : String
+-- result with infer rules ε radtest
+-- ... | succeed x = print x
+-- ... | fail x    = x
 
--- this should infer type α
+-- -- this should infer type α
 
-apptest : Term lib compu 0
-apptest = ess (elim radtest (ess (` 'a')))
+-- apptest : Term lib compu 0
+-- apptest = ess (elim radtest (ess (` 'a')))
 
-resultapp : String
-resultapp with infer rules ε apptest
-... | succeed x = print x
-... | fail x    = x
+-- resultapp : String
+-- resultapp with infer rules ε apptest
+-- ... | succeed x = print x
+-- ... | fail x    = x
 
+-- -- this should inter type (α → α) → (α → α)
+-- α→α : Term lib const 0
+-- α→α = ess ((ess (` 'α') ∙ ess (ess (` '→') ∙ ess (` 'α'))))
 
--- this should inter type (α → α) → (α → α)
-α→α : Term lib const 0
-α→α = ess ((ess (` 'α') ∙ ess (ess (` '→') ∙ ess (` 'α'))))
+-- [α→α]→[α→α] : Term lib const 0
+-- [α→α]→[α→α] = ess (α→α ∙ ess (ess (` '→') ∙ α→α))
 
-[α→α]→[α→α] : Term lib const 0
-[α→α]→[α→α] = ess (α→α ∙ ess (ess (` '→') ∙ α→α))
+-- identityreturner : Term lib compu 0
+-- identityreturner = ess (bind (thunk (var ze))) ∷ [α→α]→[α→α]
 
-identityreturner : Term lib compu 0
-identityreturner = ess (bind (thunk (var ze))) ∷ [α→α]→[α→α]
+-- resultidreturn : String
+-- resultidreturn with infer rules ε identityreturner
+-- ... | succeed x = print x
+-- ... | fail x    = x
 
-resultidreturn : String
-resultidreturn with infer rules ε identityreturner
-... | succeed x = print x
-... | fail x    = x
+-- -- and finally if we apply the id returner to the id function we should get the id function
+-- -- a.k.a should infer type 
 
--- and finally if we apply the id returner to the id function we should get the id function
--- a.k.a should infer type 
+-- returnerapplied : Term lib compu 0
+-- returnerapplied = ess (elim identityreturner (ess (bind (thunk (var ze)))))
 
-returnerapplied : Term lib compu 0
-returnerapplied = ess (elim identityreturner (ess (bind (thunk (var ze)))))
+-- resultreturnerapplied : String
+-- resultreturnerapplied with infer rules ε returnerapplied
+-- ... | succeed x = print x
+-- ... | fail x    = x
 
-resultreturnerapplied : String
-resultreturnerapplied with infer rules ε returnerapplied
-... | succeed x = print x
-... | fail x    = x
--- \end{code}
+-- --we can also have an elimination in the eliminator position of an elimination
+-- elimeverywhere : Term lib compu 0
+-- elimeverywhere = ess (elim
+--                        (ess (bind (thunk (elim (ess (var ze)) (ess (` 'a'))))) ∷ ess (α→α ∙ ess (ess (` '→') ∙ ess (` 'α'))))
+--                        (thunk (elim identityreturner (ess (bind (thunk (var ze))))))
+--                      )
+
+-- resultelimeverywhere : String
+-- resultelimeverywhere with infer rules ε  elimeverywhere
+-- ... | succeed x = print x
+-- ... | fail x    = x
+
+-- -- \end{code}

@@ -152,18 +152,15 @@ univ-check Γ rules  []              input
 univ-check Γ rules (urule ∷ urules) input
   with match-univrule urule input
 ... | nothing = univ-check Γ rules urules input
-... | just x with run-univrule Γ rules urule x
-... | succeed x₁ = succeed x₁
-... | fail x₁ = univ-check Γ rules urules input
+... | just x = run-univrule Γ rules urule x
+
 
 type-check  Γ rules []      ms
   = fail ("type-check: " ++ (print ms) ++ " is not a type")
 type-check Γ rules (trule ∷ trules) ms
   with match-typerule trule ms
 ... | nothing = type-check Γ rules trules ms
-... | just env with run-typerule Γ rules trule env
-... | succeed x = succeed x
-... | fail x    = type-check Γ rules trules ms
+... | just env = run-typerule Γ rules trule env
 
 
 ∋-check Γ rules []               sub inp

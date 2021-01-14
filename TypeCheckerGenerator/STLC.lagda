@@ -39,7 +39,7 @@ premises U-univ = input U-univ , (ε (` '⊤'))
 α : Pattern 0
 α = ` 'α'
 
-α-rule : TypeRule -- TypeRule α (` '⊤') (ε (α placeless))
+α-rule : TypeRule 
 subject  α-rule = α
 premises α-rule = (` '⊤') , (ε (α placeless))
 
@@ -58,14 +58,30 @@ input    a-rule = α
 premises a-rule = (` 'α') , (ε (a placeless))
 
 {-
+β : Pattern 0
+β = ` 'β'
+
+β-rule : TypeRule 
+subject  β-rule = β
+premises β-rule = (` '⊤') , (ε (β placeless))
+
+β-inuniv : ∋rule
+subject  β-inuniv = β
+input    β-inuniv = U
+premises β-inuniv = (` 'U') , (ε (β placeless))
+-}
+
+-- REMEMEBER TO ADD TO RULES WHEN UNCOMMENTING
+
+{-
 -- and a value 'b'
 b : Pattern 0
 b = ` 'b'
 
-b-rule : ∋rule -- CheckRule α a α (ε (a placeless))
+b-rule : ∋rule
 subject  b-rule = b
-input    b-rule = α
-premises b-rule = (` 'α') , (ε (b placeless))
+input    b-rule = β
+premises b-rule = (` 'β') , (ε (b placeless))
 -}
 
 -- REMEMBER TO ADD RULE TO BOTTOM!!!
@@ -105,7 +121,7 @@ app-rule : ElimRule
 targetPat  app-rule = ⇛
 eliminator app-rule = place ι
 premises   app-rule = targetPat app-rule ∙ place ι ,
-                      (((∙ ∙ ⋆) / ε) ∋' ⋆ [ ι ]) ⇉
+                      (((⋆ ∙) / ε) ∋' ⋆ [ ι ]) ⇉
                       ε ((` '⊤') placeless)
 output     app-rule = (((∙ ∙ ⋆) ∙) / ε)
 
@@ -114,13 +130,13 @@ output     app-rule = (((∙ ∙ ⋆) ∙) / ε)
 open import Data.List using (List; []; _∷_)
 
 typerules : List TypeRule
-typerules = U-type ∷ α-rule ∷ ⇛-rule ∷ []
+typerules = U-type ∷ α-rule ∷ ⇛-rule ∷ [] -- add β-rule
 
 univrules : List UnivRule
-univrules = U-univ ∷ []
+univrules = U-univ  ∷ [] -- add
 
 ∋rules : List ∋rule
-∋rules = lam-rule ∷ α-inuniv ∷ a-rule ∷ ⇛-inuniv ∷ [] -- add b rule
+∋rules = lam-rule ∷ α-inuniv ∷ a-rule ∷ ⇛-inuniv ∷ [] -- add b-rules
 
 elimrules : List ElimRule
 elimrules = app-rule ∷ []

@@ -18,6 +18,9 @@ open import Data.String
 a : ∀{γ} → Term lib const γ
 a = ess (` 'a')
 
+β : ∀{γ} → Term lib const γ
+β = ess (` 'β')
+
 b : ∀{γ} → Term lib const γ
 b = ess (` 'b')
 
@@ -52,7 +55,7 @@ app e s = ess (elim e s)
 
 term : Term lib compu 0
 term = {!!}
-
+      
 test : String
 test with infer rules ε term
 ... | succeed x = print x
@@ -87,7 +90,7 @@ app
 AFTER ADDING b as a value
 
 app
-         ((lam b) ∷ (α ⇨ α))
+         ((lam b) ∷ (α ⇨ β))
          a
 
 -}

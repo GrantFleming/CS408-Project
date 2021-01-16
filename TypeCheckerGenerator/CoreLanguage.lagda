@@ -7,7 +7,7 @@ module CoreLanguage where
 
 \begin{code}
 open import Data.Product using (_×_; Σ-syntax; _,_)
-open import Data.Nat using (ℕ; _+_; suc)
+open import Data.Nat using (ℕ; _+_; suc; zero)
 open import Data.Unit using (⊤)
 open import Data.Char using (Char)
 open import Data.String
@@ -24,6 +24,10 @@ data Var : Scope → Set where
 toNum : ∀{γ} → Var γ → ℕ
 toNum ze     = 0
 toNum (su v) = suc (toNum v)
+
+fromNum : (n : ℕ) → Var (suc n)
+fromNum zero = ze
+fromNum (suc n) = su (fromNum n)
 
 data Ess-Const (γ : Scope) : Set
 data Lib-Const (γ : Scope) : Set

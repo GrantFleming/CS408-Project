@@ -1,13 +1,21 @@
 \section{Thinnings}
 
 \begin{code}
+{-# OPTIONS --rewriting #-}
 module Thinning where
+
+open import Agda.Builtin.Equality
+open import Agda.Builtin.Equality.Rewrite
+open import Data.Nat.Properties using (+-suc; +-identityʳ)
+{-# REWRITE +-suc +-identityʳ #-} -- to avoid the tedium
 
 open import CoreLanguage
 open import Data.Nat using (ℕ; zero; suc; _+_; _∸_)
 open import Data.Bool using (Bool)
 open import Data.Empty renaming (⊥ to bot)
 open import Data.Unit renaming (⊤ to top)
+open import Data.Nat.Properties using (+-identityʳ; +-suc)
+open import Relation.Binary.PropositionalEquality using (refl; _≡_; cong)
 \end{code}
 
 \begin{code}
@@ -38,6 +46,16 @@ data _⊑_ : Scope → Scope → Set where
   _O  : (θ : γ ⊑ δ) → γ ⊑ suc δ
   _I  : (θ : γ ⊑ δ) → suc γ ⊑ suc δ
 
+diff : δ ⊑ γ → ℕ
+diff    ε  = 0
+diff (θ O) = 1 + diff θ
+diff (θ I) = 0 + diff θ
+
+dhole : ∀ (θ : δ ⊑ γ) → diff θ + δ ≡ γ
+dhole ε     = refl
+dhole (θ O) = cong suc (dhole θ)
+dhole (θ I) = cong suc (dhole θ)
+
 -- identity thinning
 ι : {γ : Scope} → γ ⊑ γ
 ι {zero}  = ε
@@ -47,6 +65,24 @@ data _⊑_ : Scope → Scope → Set where
 Ø : {γ : Scope} → 0 ⊑ γ
 Ø {zero}  = ε
 Ø {suc γ} = Ø O
+
+-- appending a thinning
+_++_ : δ ⊑ γ → δ' ⊑ γ' → (δ + δ') ⊑ (γ + γ')
+_++_ {δ} {γ} θ ε
+  rewrite +-identityʳ δ | +-identityʳ γ
+  = θ
+_++_ {γ = γ} {γ' = suc γ'} θ (ϕ O)
+  rewrite +-suc γ γ'
+  = (θ ++ ϕ) O
+_++_ {δ} {γ} {suc δ'} {suc γ'} θ (ϕ I)
+  rewrite +-suc δ δ'
+        | +-suc γ γ'
+        =  (θ ++ ϕ) I
+
+++-identityʳ : ∀ {θ : δ' ⊑ γ'} → ε ++ θ ≡ θ
+++-identityʳ {θ = ε}   = refl
+++-identityʳ {θ = θ O} = cong _O (++-identityʳ)
+++-identityʳ {θ = θ I} = cong _I (++-identityʳ)
 
 -- Thinnability
 Thinnable : Scoped → Set
@@ -60,6 +96,10 @@ Selectable X = ∀ {δ} {γ} → (δ ⊑ γ) → X γ → X δ
 Composable : (Scope → Scope → Set) → Set
 Composable X = ∀ {γ} {γ'} {γ''} → (X γ γ') → (X γ' γ'') → (X γ γ'')
 
+-- Openability
+Openable : Scoped → Set
+Openable T = ∀ {γ} → T γ → (δ : Scope) → T (δ + γ) 
+
 -- thinning composition
 -- action of a thinning on a thining
 _∘_ : Thinnable (γ₁ ⊑_)
@@ -70,10 +110,16 @@ _∘_ : Thinnable (γ₁ ⊑_)
 
 -- variables are thinnable
 _⟨var_ : Thinnable Var
-ze   ⟨var (θ O)  = su (ze ⟨var θ)
-ze   ⟨var (θ I)  = ze
-su v ⟨var (θ O)  = su (su v ⟨var θ)
-su v ⟨var (θ I)  = su (v ⟨var θ)
+v    ⟨var (θ O) = su (v ⟨var θ)
+ze   ⟨var (θ I) = ze
+su v ⟨var (θ I) = su (v ⟨var θ)
+
+-- we can thin opened variables ... careful where you use this
+_⟨var⊗_ : Thinnable (λ δ → Var (γ + δ))
+v ⟨var⊗  ε    = v
+v ⟨var⊗ (θ O) = su (v ⟨var⊗ θ)
+v ⟨var⊗ (θ I) = v ⟨var⊗ θ
+
 
 -- variables are singleton thinnings
 ⟦_⟧var : Var γ → 1 ⊑ γ
@@ -100,6 +146,18 @@ _⟨term_ {lib} {const} (thunk x)  θ  = thunk (x ⟨term θ)
 _⟨term_ {lib} {compu} (ess x)    θ  = ess (x ⟨term θ)
 _⟨term_ {lib} {compu} (t ∷ T)    θ  = (t ⟨term θ) ∷ (T ⟨term θ)
 
+-- we can thin an opened term ... caaaareful where you use this
+_⟨term⊗_ : Thinnable (λ δ → Term l d (γ + δ))
+_⟨term⊗_ {ess} {const} (` x)       θ = ` x
+_⟨term⊗_ {ess} {const} (s ∙ t)     θ = (s ⟨term⊗ θ) ∙ (t ⟨term⊗ θ)
+_⟨term⊗_ {ess} {const} (bind x)    θ = bind (x ⟨term⊗ θ)
+_⟨term⊗_ {ess} {compu} (var x)     θ = var (x ⟨var⊗ θ)
+_⟨term⊗_ {ess} {compu} (elim e s)  θ = elim (e ⟨term⊗ θ) (s ⟨term⊗ θ)
+_⟨term⊗_ {lib} {const} (ess x)     θ = ess (x ⟨term⊗ θ)
+_⟨term⊗_ {lib} {const} (thunk x)   θ = thunk (x ⟨term⊗ θ)
+_⟨term⊗_ {lib} {compu} (ess x)     θ = ess (x ⟨term⊗ θ)
+_⟨term⊗_ {lib} {compu} (t ∷ T)     θ = (t ⟨term⊗ θ) ∷ (T ⟨term⊗ θ)
+
 -- selection
 data BwdVec (X : Set) : ℕ → Set where
   ε    : BwdVec X 0
@@ -124,13 +182,13 @@ _!_ : Selectable (BwdVec X)
 
 
 -- injections
-_◃_ : (γ : Scope) → (δ : Scope) → γ ⊑ (δ + γ)
-γ ◃ zero   = ι
+_◃_ : (γ : Scope) → (δ : Scope) → γ ⊑ (γ + δ)
+γ ◃ zero   = ι {γ}
 γ ◃ suc δ  = (γ ◃ δ) O
 
-_▹_ : (γ : Scope) → (δ : Scope) → δ ⊑ (δ + γ)
+_▹_ : (γ : Scope) → (δ : Scope) → δ ⊑ (γ + δ)
 γ ▹ zero   = Ø
-γ ▹ suc δ  = (γ ▹ δ) I
+γ ▹ suc δ  rewrite +-suc γ δ = (γ ▹ δ) I
 
 -- substitution
 _⇒[_]_ : Scope → Scoped → Scope → Set
@@ -190,6 +248,14 @@ _^ = weaken _∘_
 ^sub : ∀ {T} → Thinnable T → Weakenable (δ ⇒[ T ]_)
 ^sub ⟨T ε                  = ε
 ^sub ⟨T {γ} (_-,_ {n} σ x) = (^sub ⟨T {γ} σ) -, weaken ⟨T x
+
+id : γ ⇒ γ
+id {zero} = ε
+id {suc γ} = ^sub {T = Term lib compu} _⟨term_ (id {γ}) -, ess (var (fromNum γ))
+
+_++sub_ : (δ ⇒ γ) → (δ' ⇒ γ) → (δ + δ') ⇒ γ
+ε        ++sub σ' = σ'
+(σ -, x) ++sub σ' = (σ ++sub σ') -, x
 
 -- 'Term lib compu' substitutions are thinnable
 private

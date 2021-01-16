@@ -1,31 +1,40 @@
 \section{Checking Types}
 
 \begin{code}
+{-# OPTIONS --rewriting #-}
 module TypeChecker where
 \end{code}
 
 \begin{code}
+import Pattern as Pat
+
+
+open import Agda.Builtin.Equality
+open import Agda.Builtin.Equality.Rewrite
+open Pat using (⊗-identityʳ)
+open import Data.Nat.Properties using (+-identityʳ)
+{-# REWRITE +-identityʳ ⊗-identityʳ #-} -- to avoid the tedium
+
 open import CoreLanguage
 open import Failable
 open import Data.Maybe using (Maybe; just; nothing)
 open import Context using (Context)
 open import Data.List using (List; []; _∷_)
 open import Rules
-import Pattern as Pat
-open Pat using (Pattern; _-Env; _∙_; thing; `; bind; svar; _‼_; _-penv_; termFrom; _⟨pat_; _⟨env_)
+open Pat using (Pattern; _-Env; _∙_; thing; `; bind; svar; _‼_; _-penv_; _⟨pat_; _⟨env_; _⊗_; termFrom; _⟨svar_; _⊗env_)
 open Pat.Expression using (Expression; Expr; lcon; toTerm; ess; thunk; _/_)
 open import Data.Unit using (⊤; tt)
 open import Data.Vec using (Vec; _∷_; [])
 open import Data.Vec.Relation.Unary.All using (All; []; _∷_)
-open import Data.Nat using (ℕ)
+open import Data.Nat using (ℕ; _+_; zero; suc)
 open import Data.Product using (_,_)
 open import Context using (Context; _‼V_) renaming (_,_ to _-,_)
 open import Data.Char using (_==_)
 open import Data.Bool using (Bool; true; false)
 open import Data.Product using (_×_; proj₁; proj₂)
-open import Thinning using (_⟨term_; ε; Ø)
+open import Thinning using (_⟨term_; ε; Ø; _⊑_; diff; dhole; _⟨term⊗_; ι)
 open import Data.String using (_++_)
-
+open import Relation.Binary.PropositionalEquality using (subst)
 
 -- REMOVE ME
 open import Data.String using (String)
@@ -71,79 +80,82 @@ univ-check : Context γ              →
              (input : Lib-Const γ)  →
              Failable ⊤
 
-_≡_ : Term l d γ → Term l d γ → Failable ⊤
+_≡ᵗ_ : Term l d γ → Term l d γ → Failable ⊤
 
-
-check-premise : Context γ         →
-                Rules             →
-                p -Env            →
-                q -Env            →
-                Prem p q γ p' q'  →
+check-premise : {δ : Scope} {p : Pattern δ} {q : Pattern δ} {γ : Scope} {p' : Pattern γ} {q' : Pattern δ} →
+                Context γ   →
+                Rules       →
+                p -Env      →
+                q -Env      →
+                ActualPrem p q γ p' q'  →
                 Failable (p' -Env × q' -Env)
 check-premise Γ rules@(rs t u ∋ e) penv qenv (type ξ θ)
   = do
-      _ ← type-check Γ rules t ((ξ ‼ qenv) ⟨term θ)
-      succeed ((thing (ξ ‼ qenv)) , (qenv -penv ξ))
-check-premise Γ rules@(rs t u ∋ e) penv qenv (T ∋' ξ [ θ ])
-  = do
-      _ ← check rules Γ (toTerm penv T) ((ξ ‼ qenv) ⟨term θ)
-      succeed ((thing (ξ ‼ qenv)) , (qenv -penv ξ))
+      _ ← type-check  Γ rules t ((ξ ‼ qenv) ⟨term θ)
+      succeed (thing (ξ ‼ qenv) , (qenv -penv ξ))
+check-premise Γ rules penv qenv (T ∋' ξ [ θ ])
+   = do
+     _ ← check rules Γ (toTerm {γ = 0} penv T) ((ξ ‼ qenv) ⟨term θ)
+     succeed ((thing (ξ ‼ qenv)) , (qenv -penv ξ))
 check-premise Γ rules penv qenv (x ≡' x')
-  = do
-    _ ← toTerm penv x ≡ toTerm penv x'
-    succeed (` , qenv)
+ = do
+     _ ← toTerm {γ = 0}  penv x ≡ᵗ toTerm {γ = 0} penv x'
+     succeed (` , qenv)
 check-premise Γ rules@(rs t u ∋ e) penv qenv (univ x)
   = do
-      _ ← univ-check Γ rules u (toTerm penv x)
+      _ ← univ-check Γ rules u (toTerm {γ = 0} penv x)
       succeed (` , qenv)
-check-premise Γ rules penv qenv (x ⊢' p)
+check-premise {γ = γ} Γ rules penv qenv (x ⊢' prem)
   = do
-      (p'env , q'env) ← check-premise (Γ -, (toTerm penv x)) rules penv qenv p
-      succeed (bind p'env , q'env)
+     (p'env , q'env) ← check-premise (Γ -, toTerm {γ = 0} penv x) rules penv qenv prem
+     succeed ((bind p'env) , q'env)
 
-check-premise-chain : Rules → p -Env → q -Env → Prems p q p' → Failable (p' -Env)
-check-premise-chain rules penv qenv (ε x)    = succeed penv
-check-premise-chain rules penv qenv (prem ⇉ prems)
-  = do
-      (p'env , q₁env) ← check-premise ε rules penv qenv prem
-      p''env ← check-premise-chain rules (penv ∙ p'env) q₁env prems
-      succeed p''env
+check-premise-chain : ∀ {p : Pattern γ} {q : Pattern γ} {p' : Pattern γ} →
+                      Context γ → Rules → p -Env → q -Env → ActualPrems p q p' → Failable (p' -Env)
+check-premise-chain Γ rules penv qenv (ε x)       = succeed penv
+check-premise-chain Γ rules penv qenv (prem ⇉ prems)
+ = do
+     (p'env , q₁env) ← check-premise Γ rules penv qenv prem
+     p''env ← check-premise-chain Γ rules (penv ∙ p'env) q₁env prems
+     succeed p''env
 
-run-typerule : Context γ → Rules → (rule : TypeRule) → ((subject rule) -Env) → Failable ⊤
-run-typerule Γ rules rule env
-  = do
-      _ ← check-premise-chain rules ` env (proj₂ (premises rule))
-      succeed tt
 
--- check the precondition that the thing must be a type!
-run-univrule : Context γ → Rules → (rule : UnivRule) → ((input rule) -Env) → Failable ⊤
-run-univrule Γ rules@(rs t u ∋ e) rule env
-  = do
-     _ ← type-check Γ rules t (termFrom ((input rule) ⟨pat Ø) (env ⟨env Ø))
-     _ ← check-premise-chain rules env ` (proj₂ (premises rule))
-     succeed tt
 
 
 -- check the precondition that the type must actually be a type
-run-∋rule : Context γ → Rules → (rule : ∋rule) → ((input rule) -Env) → ((subject rule) -Env) → Failable ⊤
-run-∋rule Γ rules@(rs t u ∋ e) rule ienv senv
+run-∋rule : Context γ → Rules → (rule : ∋rule) → ((γ ⊗ (input rule)) -Env) → ((γ ⊗ (subject rule)) -Env) → Failable ⊤
+run-∋rule {γ} Γ rules@(rs t u ∋ e) rule ienv senv
   = do
-     _ ← type-check Γ rules t (termFrom ((input rule) ⟨pat Ø) (ienv ⟨env Ø))
-     _ ← check-premise-chain rules ienv senv (proj₂ (premises rule))
+     _ ← type-check Γ rules t (termFrom (input rule) ienv)
+     _ ← check-premise-chain Γ rules ienv senv (actual-premises γ (proj₂ (premises rule)))
      succeed tt
 
 run-erule : Context γ                       →
             Rules                           →
             (rule : ElimRule)               →
-            (ElimRule.targetPat rule)  -Env →
-            (ElimRule.eliminator rule) -Env →
+            (γ ⊗ ElimRule.targetPat rule)  -Env →
+            (γ ⊗ ElimRule.eliminator rule) -Env →
             Failable (Term lib const γ)
-run-erule Γ rules rule T-env s-env
+run-erule {γ} Γ rules rule T-env s-env
   = do
-      p'env ← check-premise-chain rules T-env s-env (proj₂ (premises rule))
-      succeed (toTerm p'env (output rule) ⟨term Ø)
+      p'env ← check-premise-chain Γ rules T-env s-env (actual-premises γ (proj₂ (premises rule)))
+      succeed (toTerm p'env (output rule))
     where
       open ElimRule
+
+-- check the precondition that the thing must be a type!
+run-univrule : Context γ → Rules → (rule : UnivRule) → ((γ ⊗ (input rule)) -Env) → Failable ⊤
+run-univrule {γ = γ} Γ rules@(rs t u ∋ e) rule env
+  = do
+     _ ← type-check Γ rules t (termFrom (input rule) env)
+     _ ← check-premise-chain Γ rules env ` (actual-premises γ (proj₂ (premises rule)))
+     succeed tt
+
+run-typerule : Context γ → Rules → (rule : TypeRule) → ((γ ⊗ (subject rule)) -Env) → Failable ⊤
+run-typerule {γ} Γ rules rule env
+  = do
+      _ ← check-premise-chain Γ rules ` env (actual-premises γ (proj₂ (premises rule)))
+      succeed tt
 
 
 {-# TERMINATING #-}
@@ -194,33 +206,33 @@ ze   ≡v ze    = succeed tt
 su v ≡v su v' = v ≡v v'
 _    ≡v _     = eqfail
 
-_≡_ {ess} {const} (` x)    (` x₁) with x == x₁
+_≡ᵗ_ {ess} {const} (` x)    (` x₁) with x == x₁
 ... | false = eqfail
 ... | true  = succeed tt
-_≡_ {ess} {const} (x ∙ x₁) (x₂ ∙ x₃) = do
-                                         _ ← x  ≡ x₂
-                                         _ ← x₁ ≡ x₃
+_≡ᵗ_ {ess} {const} (x ∙ x₁) (x₂ ∙ x₃) = do
+                                         _ ← x  ≡ᵗ x₂
+                                         _ ← x₁ ≡ᵗ x₃
                                          return tt
-_≡_ {ess} {const} (bind x) (bind x') = x ≡ x'
-_≡_ {ess} {const} _ _ = eqfail
+_≡ᵗ_ {ess} {const} (bind x) (bind x') = x ≡ᵗ x'
+_≡ᵗ_ {ess} {const} _ _ = eqfail
 
-_≡_ {ess} {compu} (var x) (var x')        = x ≡v x'
-_≡_ {ess} {compu} (elim e s) (elim e' s') = do
-                                              _ ← e ≡ e'
-                                              _ ← s ≡ s'
+_≡ᵗ_ {ess} {compu} (var x) (var x')        = x ≡v x'
+_≡ᵗ_ {ess} {compu} (elim e s) (elim e' s') = do
+                                              _ ← e ≡ᵗ e'
+                                              _ ← s ≡ᵗ s'
                                               return tt
-_≡_ {ess} {compu}  _          _           = eqfail
+_≡ᵗ_ {ess} {compu}  _          _           = eqfail
 
-_≡_ {lib} {const} (ess x)    (ess x')  = x ≡ x'
-_≡_ {lib} {const} (thunk x) (thunk x') = x ≡ x'
-_≡_ {lib} {const}  _         _         = eqfail
+_≡ᵗ_ {lib} {const} (ess x)    (ess x')  = x ≡ᵗ x'
+_≡ᵗ_ {lib} {const} (thunk x) (thunk x') = x ≡ᵗ x'
+_≡ᵗ_ {lib} {const}  _         _         = eqfail
 
-_≡_ {lib} {compu} (ess x) (ess x')  = x ≡ x'
-_≡_ {lib} {compu} (t ∷ T) (t' ∷ T') = do  -- maybe we can ignore the annotation here?
-                                        _ ← t ≡ t'
-                                        _ ← T ≡ T'
+_≡ᵗ_ {lib} {compu} (ess x) (ess x')  = x ≡ᵗ x'
+_≡ᵗ_ {lib} {compu} (t ∷ T) (t' ∷ T') = do  -- maybe we can ignore the annotation here?
+                                        _ ← t ≡ᵗ t'
+                                        _ ← T ≡ᵗ T'
                                         return tt
-_≡_ {lib} {compu}  _       _        = eqfail
+_≡ᵗ_ {lib} {compu}  _       _        = eqfail
 
 
 infer : Rules → Context γ → Term lib compu γ → Failable (Term lib const γ)
@@ -240,12 +252,12 @@ check {_} {lib} {const} rules@(rs t u ∋ e) Γ T (ess x)
 check {_} {lib} {const} rules Γ T (thunk x)
   = do
       S ← infer rules Γ (ess x)
-      S ≡ T -- this is the gotcha, at the moment just syntactic equality-}
+      S ≡ᵗ T -- this is the gotcha, at the moment just syntactic equality-}
 check {_} {ess} {const} rules@(rs tr u ∋ e) Γ T t = ∋-check Γ rules ∋ (ess t) T
 check {_} {ess} {compu} rules Γ T t = do
                                   S ← infer rules Γ (ess t)
-                                  S ≡ T
+                                  S ≡ᵗ T
 check {_} {lib} {compu} rules Γ T t = do
                                   S ← infer rules Γ t
-                                  S ≡ T
+                                  S ≡ᵗ T
 -- \end{code}

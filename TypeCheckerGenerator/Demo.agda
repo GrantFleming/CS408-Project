@@ -54,8 +54,10 @@ app e s = ess (elim e s)
 -- now we can do some examples
 
 term : Term lib compu 0
-term = {!!}
-      
+term = app
+         ((lam b) ∷ (α ⇨ β))
+         a
+         
 test : String
 test with infer rules ε term
 ... | succeed x = print x

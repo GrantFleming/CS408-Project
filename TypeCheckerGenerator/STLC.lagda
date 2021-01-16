@@ -26,7 +26,7 @@ open ∋rule
 U : Pattern 0
 U = ` 'U'
 
-U-type : TypeRule -- UnivRule U U (ε ((` '⊤') placeless))
+U-type : TypeRule
 subject  U-type = U
 premises U-type = ` '⊤' , (ε (U placeless))
 
@@ -52,12 +52,12 @@ premises α-inuniv = (` 'U') , (ε (α placeless))
 a : Pattern 0
 a = ` 'a'
 
-a-rule : ∋rule -- CheckRule α a α (ε (a placeless))
+a-rule : ∋rule
 subject  a-rule = a
 input    a-rule = α
 premises a-rule = (` 'α') , (ε (a placeless))
 
-{-
+
 β : Pattern 0
 β = ` 'β'
 
@@ -69,11 +69,11 @@ premises β-rule = (` '⊤') , (ε (β placeless))
 subject  β-inuniv = β
 input    β-inuniv = U
 premises β-inuniv = (` 'U') , (ε (β placeless))
--}
+
 
 -- REMEMEBER TO ADD TO RULES WHEN UNCOMMENTING
 
-{-
+
 -- and a value 'b'
 b : Pattern 0
 b = ` 'b'
@@ -82,7 +82,7 @@ b-rule : ∋rule
 subject  b-rule = b
 input    b-rule = β
 premises b-rule = (` 'β') , (ε (b placeless))
--}
+
 
 -- REMEMBER TO ADD RULE TO BOTTOM!!!
 
@@ -114,8 +114,7 @@ subject  lam-rule = lam
 input    lam-rule = ⇛
 premises lam-rule = input lam-rule ∙ bind (place ι) , (((⋆ ∙) / ε) ⊢' (((∙ ∙ ⋆) / ε) ∋' bind ⋆ [ ι ]))
                                                       ⇉ ε (bind (` '⊤') placeless)
---ε (lam placeless)
-
+         
 -- and we can type lam elimination
 app-rule : ElimRule
 targetPat  app-rule = ⇛
@@ -130,13 +129,13 @@ output     app-rule = (((∙ ∙ ⋆) ∙) / ε)
 open import Data.List using (List; []; _∷_)
 
 typerules : List TypeRule
-typerules = U-type ∷ α-rule ∷ ⇛-rule ∷ [] -- add β-rule
+typerules = U-type ∷ α-rule ∷ ⇛-rule ∷ β-rule ∷ [] -- add β-rule
 
 univrules : List UnivRule
 univrules = U-univ  ∷ [] -- add
 
 ∋rules : List ∋rule
-∋rules = lam-rule ∷ α-inuniv ∷ a-rule ∷ ⇛-inuniv ∷ [] -- add b-rules
+∋rules = lam-rule ∷ α-inuniv ∷ a-rule ∷ ⇛-inuniv ∷ b-rule ∷ [] -- add b-rules
 
 elimrules : List ElimRule
 elimrules = app-rule ∷ []
@@ -281,11 +280,13 @@ resultreturnerapplied with infer rules ε returnerapplied
 ... | succeed x = print x
 ... | fail x    = x
 
---we can also have an elimination in the eliminator position of an elimination
+--we can also have an elimination in the eliminator position of an elimination, result should be of type α
 -- BUG FOUND!!!
 elimeverywhere : Term lib compu 0
 elimeverywhere = ess (elim
+                       --λ x . x a ∷ ((α → α) → α)
                        (ess (bind (thunk (elim (ess (var ze)) (ess (` 'a'))))) ∷ ess (α→α ∙ ess (ess (` '→') ∙ ess (` 'α'))))
+                       --(α → α)
                        (thunk (elim identityreturner (ess (bind (thunk (var ze))))))
                      )
 

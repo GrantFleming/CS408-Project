@@ -53,10 +53,9 @@ app e s = ess (elim e s)
 
 -- now we can do some examples
 
+
 term : Term lib compu 0
-term = app
-         ((lam b) ∷ (α ⇨ β))
-         a
+term = {!!}
          
 test : String
 test with infer rules ε term
@@ -95,5 +94,13 @@ app
          ((lam b) ∷ (α ⇨ β))
          a
 
+-}
+
+{-
+(λx.xa ∷ ((α→α)→α))  ((λx.x ∷ ((α→α)→(α→α)))  (λx.x))
+
+app
+         ((lam (thunk (elim (ess (var ze)) (ess (` 'a'))))) ∷ ((α ⇨ α) ⇨ α))
+         (thunk (elim (ess (bind (thunk (var ze))) ∷ ((α ⇨ α) ⇨ (α ⇨ α))) (ess (bind (thunk (var ze))))))
 -}
 

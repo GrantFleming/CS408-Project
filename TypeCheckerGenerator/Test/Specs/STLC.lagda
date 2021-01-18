@@ -2,11 +2,13 @@
 
 \hide{
 \begin{code}
-module STLC where
+module Test.Specs.STLC where
 \end{code}
 }
 
 \begin{code}
+open import CoreLanguage
+open import Data.Nat using (suc)
 import Pattern as Pat
 open Pat using (Pattern; `; place; bind; _∙_;  ⋆; _∙; ∙_; svar)
 open Pat.Expression using (_/_; ess; `; _∙_)
@@ -17,6 +19,38 @@ open ElimRule
 open TypeRule
 open UnivRule
 open ∋rule
+\end{code}
+
+We begin by introducing some combinators to construct our language terms
+as creating these terms directly in our internal language can be tedious.
+
+\begin{code}
+module combinators where
+  α : ∀{γ} → Term lib const γ
+  α = ess (` 'α')
+  
+  a : ∀{γ} → Term lib const γ
+  a = ess (` 'a')
+  
+  β : ∀{γ} → Term lib const γ
+  β = ess (` 'β')
+  
+  b : ∀{γ} → Term lib const γ
+  b = ess (` 'b')
+  
+  _⇨_ : ∀{γ} → Lib-Const γ → Lib-Const γ → Term lib const γ
+  x ⇨ y = ess (x ∙ ess (ess (` '→') ∙ y))
+  infixr 20 _⇨_
+  
+  lam : ∀ {γ} → Term lib const (suc γ) → Term lib const γ
+  lam t = ess (bind t)
+  
+  ~ : ∀ {γ} → Var γ → Term lib const γ
+  ~ vr = thunk (var vr)
+  
+  app : ∀ {γ} → Lib-Compu γ → Lib-Const γ → Term lib compu γ
+  app e s = ess (elim e s)
+
 \end{code}
 
 \begin{code}
@@ -142,157 +176,4 @@ elimrules = app-rule ∷ []
 
 rules : Rules
 rules = rs typerules univrules ∋rules elimrules
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
---ok let's try typing some stuff
-
-open import TypeChecker using (check; infer)
-open import CoreLanguage
-open import Failable
-open import Data.String using (String)
-
--- this should infer the type α → α
-
-radtest : Term lib compu 0
-radtest = ess (bind (thunk (var ze))) ∷ ess (ess (` 'α') ∙ ess (ess (` '→') ∙ ess (` 'α')))
-
-result : String
-result with infer rules ε radtest
-... | succeed x = print x
-... | fail x    = x
-
--- this should infer type α
-
-apptest : Term lib compu 0
-apptest = ess (elim radtest (ess (` 'a')))
-
-resultapp : String
-resultapp with infer rules ε apptest
-... | succeed x = print x
-... | fail x    = x
-
--- this should inter type (α → α) → (α → α)
-α→α : Term lib const 0
-α→α = ess ((ess (` 'α') ∙ ess (ess (` '→') ∙ ess (` 'α'))))
-
-[α→α]→[α→α] : Term lib const 0
-[α→α]→[α→α] = ess (α→α ∙ ess (ess (` '→') ∙ α→α))
-
-identityreturner : Term lib compu 0
-identityreturner = ess (bind (thunk (var ze))) ∷ [α→α]→[α→α]
-
-resultidreturn : String
-resultidreturn with infer rules ε identityreturner
-... | succeed x = print x
-... | fail x    = x
-
--- and finally if we apply the id returner to the id function we should get the id function
--- a.k.a should infer type 
-
-returnerapplied : Term lib compu 0
-returnerapplied = ess (elim identityreturner (ess (bind (thunk (var ze)))))
-
-resultreturnerapplied : String
-resultreturnerapplied with infer rules ε returnerapplied
-... | succeed x = print x
-... | fail x    = x
-
---we can also have an elimination in the eliminator position of an elimination, result should be of type α
--- BUG FOUND!!!
-elimeverywhere : Term lib compu 0
-elimeverywhere = ess (elim
-                       --λ x . x a ∷ ((α → α) → α)
-                       (ess (bind (thunk (elim (ess (var ze)) (ess (` 'a'))))) ∷ ess (α→α ∙ ess (ess (` '→') ∙ ess (` 'α'))))
-                       --(α → α)
-                       (thunk (elim identityreturner (ess (bind (thunk (var ze))))))
-                     )
-
-resultelimeverywhere : String
-resultelimeverywhere with infer rules ε  elimeverywhere
-... | succeed x = print x
-... | fail x    = x
-
--- \end{code}
+\end{code}

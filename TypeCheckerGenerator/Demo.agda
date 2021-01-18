@@ -1,6 +1,9 @@
 module Demo where
 
-open import STLC using (rules)
+import Test.Specs.STLC as STLC
+open STLC using (rules)
+open STLC.combinators
+
 open import TypeChecker using (infer; check)
 open import CoreLanguage
 open import Data.Nat using (suc)
@@ -8,43 +11,6 @@ open import Failable
 open import Thinning using (ε; _-,_)
 open import Data.String
 open import Context using (Context)
-
-
--- producing terms in the internal language is tedious and error prone
--- so to save a little headache we will use some combinators
-
-α : ∀{γ} → Term lib const γ
-α = ess (` 'α')
-
-a : ∀{γ} → Term lib const γ
-a = ess (` 'a')
-
-β : ∀{γ} → Term lib const γ
-β = ess (` 'β')
-
-b : ∀{γ} → Term lib const γ
-b = ess (` 'b')
-
-_⇨_ : ∀{γ} → Lib-Const γ → Lib-Const γ → Term lib const γ
-x ⇨ y = ess (x ∙ ess (ess (` '→') ∙ y))
-infixr 20 _⇨_
-
-lam : ∀ {γ} → Term lib const (suc γ) → Term lib const γ
-lam t = ess (bind t)
-
-~ : ∀ {γ} → Var γ → Term lib const γ
-~ vr = thunk (var vr)
-
-app : ∀ {γ} → Lib-Compu γ → Lib-Const γ → Term lib compu γ
-app e s = ess (elim e s)
-
-
-
-
-
-
-
-
 
 
 
@@ -56,9 +22,7 @@ app e s = ess (elim e s)
 
 
 term : Term lib compu 0
-term = app
-         ((lam (thunk (elim (ess (var ze)) (ess (` 'a'))))) ∷ ((α ⇨ α) ⇨ α))
-         (thunk (elim (ess (bind (thunk (var ze))) ∷ ((α ⇨ α) ⇨ (α ⇨ α))) (ess (bind (thunk (var ze))))))
+term = lam (~ ze) ∷ (α ⇨ α)
 
 ctx : Context 0
 ctx = ε

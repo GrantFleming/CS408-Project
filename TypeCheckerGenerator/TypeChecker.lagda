@@ -8,12 +8,8 @@ module TypeChecker where
 \begin{code}
 import Pattern as Pat
 
-
-open import Agda.Builtin.Equality
-open import Agda.Builtin.Equality.Rewrite
 open Pat using (⊗-identityʳ)
-open import Data.Nat.Properties using (+-identityʳ)
-{-# REWRITE +-identityʳ ⊗-identityʳ #-} -- to avoid the tedium
+{-# REWRITE ⊗-identityʳ #-} 
 
 open import CoreLanguage
 open import Failable

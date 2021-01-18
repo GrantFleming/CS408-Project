@@ -8,11 +8,6 @@ module Rules where
 }
 
 \begin{code}
-open import Agda.Builtin.Equality
-open import Agda.Builtin.Equality.Rewrite
-open import Data.Nat.Properties using (+-suc; +-identityʳ)
-{-# REWRITE +-identityʳ #-} -- to avoid the tedium
-
 open import CoreLanguage
 open import Thinning using (_⊑_; Scoped; Ø; ι; ε; _⇒[_]_; _O; _I; Thinnable; _◃_; _++_) renaming (_∘_ to _∘∘_)
 import Pattern as Pat
@@ -23,7 +18,7 @@ open import Data.List using (List)
 open import Data.Char
 open import Data.Nat using (ℕ; zero; suc; _+_)
 open import Data.Maybe using (Maybe; just; nothing; map; _>>=_)
-open import Relation.Binary.PropositionalEquality using (cong; sym; subst)
+open import Relation.Binary.PropositionalEquality using (cong; sym; subst; _≡_; refl)
 \end{code}
 
 \begin{code}

@@ -5,8 +5,9 @@ open import TypeChecker using (infer; check)
 open import CoreLanguage
 open import Data.Nat using (suc)
 open import Failable
-open import Thinning using (ε)
+open import Thinning using (ε; _-,_)
 open import Data.String
+open import Context using (Context)
 
 
 -- producing terms in the internal language is tedious and error prone
@@ -55,10 +56,15 @@ app e s = ess (elim e s)
 
 
 term : Term lib compu 0
-term = {!!}
-         
+term = app
+         ((lam (thunk (elim (ess (var ze)) (ess (` 'a'))))) ∷ ((α ⇨ α) ⇨ α))
+         (thunk (elim (ess (bind (thunk (var ze))) ∷ ((α ⇨ α) ⇨ (α ⇨ α))) (ess (bind (thunk (var ze))))))
+
+ctx : Context 0
+ctx = ε
+
 test : String
-test with infer rules ε term
+test with infer rules ctx term
 ... | succeed x = print x
 ... | fail    x = x
 
@@ -104,3 +110,7 @@ app
          (thunk (elim (ess (bind (thunk (var ze))) ∷ ((α ⇨ α) ⇨ (α ⇨ α))) (ess (bind (thunk (var ze))))))
 -}
 
+{-
+term = ess (bind (thunk (elim (ess (var (su (su ze)))) (ess (` 'a'))))) ∷ (β ⇨ α)
+ctx = ε -, (α ⇨ α) -, β
+-}

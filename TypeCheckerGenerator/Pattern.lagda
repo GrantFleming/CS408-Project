@@ -8,15 +8,11 @@ module Pattern where
 }
 
 \begin{code}
-open import Agda.Builtin.Equality
-open import Agda.Builtin.Equality.Rewrite
-open import Data.Nat.Properties using (_≟_; +-suc; +-identityʳ)
-{-# REWRITE +-suc +-identityʳ #-} -- to avoid the tedium
-
 open import CoreLanguage renaming (↠ to ↠↠)
 open import Thinning hiding (⊥)
 open import Data.Char using (Char) renaming (_≟_ to _is_)
 open import Data.Nat using (suc; _+_)
+open import Data.Nat.Properties using (_≟_; +-suc)
 open import Data.Maybe using (Maybe; just; nothing; _>>=_)
 open import Data.Bool using (true; false)
 open import Relation.Nullary using (does; _because_; proof; ofʸ; ofⁿ)

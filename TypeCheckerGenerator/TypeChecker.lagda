@@ -6,36 +6,24 @@ module TypeChecker where
 \end{code}
 
 \begin{code}
-import Pattern as Pat
-
-open Pat using (⊗-identityʳ)
+open import Pattern using (⊗-identityʳ)
 {-# REWRITE ⊗-identityʳ #-} 
 
 open import CoreLanguage
 open import Failable
-open import Data.Maybe using (Maybe; just; nothing)
-open import Context using (Context)
+open import Data.Maybe using (just; nothing)
+open import Context using (Context; _‼V_) renaming (_,_ to _-,_)
 open import Data.List using (List; []; _∷_)
 open import Rules
-open Pat using (Pattern; _-Env; _∙_; thing; `; bind; svar; _‼_; _-penv_; _⟨pat_; _⟨env_; _⊗_; termFrom; _⟨svar_; _⊗env_)
-open Pat.Expression using (Expression; Expr; lcon; toTerm; ess; thunk; _/_)
+open Pattern using (Pattern; _-Env; _∙_; thing; `; bind; _‼_; _-penv_; _⊗_; termFrom)
+open import Expression using (toTerm)
 open import Data.Unit using (⊤; tt)
-open import Data.Vec using (Vec; _∷_; [])
-open import Data.Vec.Relation.Unary.All using (All; []; _∷_)
-open import Data.Nat using (ℕ; _+_; zero; suc)
 open import Data.Product using (_,_)
-open import Context using (Context; _‼V_) renaming (_,_ to _-,_)
 open import Data.Char using (_==_)
-open import Data.Bool using (Bool; true; false)
+open import Data.Bool using (true; false)
 open import Data.Product using (_×_; proj₁; proj₂)
-open import Thinning using (_⟨term_; ε; Ø; _⊑_; diff; dhole; _⟨term⊗_; ι)
+open import Thinning using (_⟨term_)
 open import Data.String using (_++_)
-open import Relation.Binary.PropositionalEquality using (subst)
-
--- REMOVE ME
-open import Data.String using (String)
-ts : String → Failable ⊤
-ts str = fail str
 \end{code}
 
 \begin{code}
@@ -44,12 +32,12 @@ private
     l : Lib
     d : Dir
     γ : Scope
-    p : Pattern 0
-    p' : Pattern γ    
-    q : Pattern 0
-    q' : Pattern 0
-    n : ℕ
     δ : Scope
+    p : Pattern δ
+    q : Pattern δ
+    p' : Pattern γ
+    q' : Pattern δ
+
 
 open TypeRule
 open UnivRule
@@ -78,33 +66,32 @@ univ-check : Context γ              →
 
 _≡ᵗ_ : Term l d γ → Term l d γ → Failable ⊤
 
-check-premise : {δ : Scope} {p : Pattern δ} {q : Pattern δ} {γ : Scope} {p' : Pattern γ} {q' : Pattern δ} →
-                Context γ   →
+check-premise : Context γ   →
                 Rules       →
                 p -Env      →
                 q -Env      →
                 ActualPrem p q γ p' q'  →
                 Failable (p' -Env × q' -Env)
-check-premise Γ rules@(rs t u ∋ e) penv qenv (type ξ θ)
+check-premise {q = q} Γ rules@(rs t u ∋ e) penv qenv (type ξ θ)
   = do
-      _ ← type-check  Γ rules t ((ξ ‼ qenv) ⟨term θ)
-      succeed (thing (ξ ‼ qenv) , (qenv -penv ξ))
+    _ ← type-check  Γ rules t ((ξ ‼ qenv) ⟨term θ)
+    succeed (thing (ξ ‼ qenv) , (qenv -penv ξ))
 check-premise Γ rules penv qenv (T ∋' ξ [ θ ])
-   = do
-     _ ← check rules Γ (toTerm {γ = 0} penv T) ((ξ ‼ qenv) ⟨term θ)
-     succeed ((thing (ξ ‼ qenv)) , (qenv -penv ξ))
+  = do
+    _ ← check rules Γ (toTerm {γ = 0} penv T) ((ξ ‼ qenv) ⟨term θ)
+    succeed ((thing (ξ ‼ qenv)) , (qenv -penv ξ))
 check-premise Γ rules penv qenv (x ≡' x')
- = do
-     _ ← toTerm {γ = 0}  penv x ≡ᵗ toTerm {γ = 0} penv x'
-     succeed (` , qenv)
+  = do
+    _ ← toTerm {γ = 0}  penv x ≡ᵗ toTerm {γ = 0} penv x'
+    succeed (` , qenv)
 check-premise Γ rules@(rs t u ∋ e) penv qenv (univ x)
   = do
-      _ ← univ-check Γ rules u (toTerm {γ = 0} penv x)
-      succeed (` , qenv)
+    _ ← univ-check Γ rules u (toTerm {γ = 0} penv x)
+    succeed (` , qenv)
 check-premise {γ = γ} Γ rules penv qenv (x ⊢' prem)
   = do
-     (p'env , q'env) ← check-premise (Γ -, toTerm {γ = 0} penv x) rules penv qenv prem
-     succeed ((bind p'env) , q'env)
+    (p'env , q'env) ← check-premise (Γ -, toTerm {γ = 0} penv x) rules penv qenv prem
+    succeed ((bind p'env) , q'env)
 
 check-premise-chain : ∀ {p : Pattern γ} {q : Pattern γ} {p' : Pattern γ} →
                       Context γ → Rules → p -Env → q -Env → ActualPrems p q p' → Failable (p' -Env)
@@ -185,12 +172,10 @@ elim-synth : Context γ                       →
              (eliminator : Term lib const γ) →
              Failable (Term lib const γ)
 elim-synth Γ rules []             T s
-  = fail ("elim-synth: failed to match elimination rule for target = " ++ (printraw T) ++ " and eliminator = " ++ (printraw s))
+  = fail ("elim-synth: failed to match elimination rule for target = " ++ (print T) ++ " and eliminator = " ++ (print s))
 elim-synth Γ rules (erule ∷ erules) T s with match-erule erule T s
 ... | nothing              = elim-synth Γ rules erules T s
 ... | just (T-env , s-env) = run-erule Γ rules erule T-env s-env
-
--- -- TO DO (afterwards clean up the STLC example unnecessary rules)
 
 -- equality TODO - implement operational semantics and revisit this
 -- At the moment, equality is just syntactic
@@ -229,7 +214,6 @@ _≡ᵗ_ {lib} {compu} (t ∷ T) (t' ∷ T') = do  -- maybe we can ignore the an
                                         _ ← T ≡ᵗ T'
                                         return tt
 _≡ᵗ_ {lib} {compu}  _       _        = eqfail
-
 
 infer : Rules → Context γ → Term lib compu γ → Failable (Term lib const γ)
 infer rules Γ (ess (var x))    = succeed (x ‼V Γ)

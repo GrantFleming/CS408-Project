@@ -9,8 +9,11 @@ module Context where
 \hide{
 \begin{code}
 open import CoreLanguage
-open import Thinning using (_⇒[_]_; _⇒_; BwdVec; ε; _⊑_; _-,_; ⟦_⟧var; _!_; Thinnable; ⟨sub; _⟨term_; _/term_; _^term; ↑; Weakenable; weaken)
-open import Data.Nat using (ℕ; zero; suc)
+open import Thinning using (⟦_⟧var; _!_; Thinnable; ⟨sub; _⟨term_; Weakenable; weaken)
+open import BwdVec
+open import Data.Nat using (suc)
+open import Substitution
+open import TermSubstitution
 \end{code}
 }
 
@@ -22,8 +25,6 @@ private
   variable
     δ : Scope
     γ : Scope
-    δ'' : Scope
-    δ' : Scope
     γ' : Scope
 
 -- since contexts are just substitutions we can use the selection

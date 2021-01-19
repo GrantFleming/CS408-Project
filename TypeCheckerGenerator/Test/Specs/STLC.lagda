@@ -9,11 +9,11 @@ module Test.Specs.STLC where
 \begin{code}
 open import CoreLanguage
 open import Data.Nat using (suc)
-import Pattern as Pat
-open Pat using (Pattern; `; place; bind; _∙_;  ⋆; _∙; ∙_; svar)
-open Pat.Expression using (_/_; ess; `; _∙_)
+open import Pattern using (Pattern; `; place; bind; _∙_;  ⋆; _∙; ∙_; svar)
+open import Expression using (_/_; ess; `; _∙_)
 open import Rules using (ElimRule; TypeRule; UnivRule; Rules; rs; ∋rule; ε; _placeless; type; _⇉_; _⊢'_; _∋'_[_]; `)
-open import Thinning using (Ø; _O; ε; ι)
+open import Thinning using (Ø; _O; ι)
+open import BwdVec using (ε)
 open import Data.Product using (_,_)
 open ElimRule
 open TypeRule

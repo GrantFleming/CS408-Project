@@ -6,9 +6,7 @@ module CoreLanguage where
 \end{code}
 
 \begin{code}
-open import Data.Product using (_×_; Σ-syntax; _,_)
-open import Data.Nat using (ℕ; _+_; suc; zero)
-open import Data.Unit using (⊤)
+open import Data.Nat using (ℕ; suc; zero)
 open import Data.Char using (Char)
 open import Data.String
 \end{code}
@@ -16,6 +14,7 @@ open import Data.String
 
 \begin{code}
 Scope = ℕ
+Scoped = Scope → Set
 
 data Var : Scope → Set where
   ze : {s : Scope} → Var (suc s)

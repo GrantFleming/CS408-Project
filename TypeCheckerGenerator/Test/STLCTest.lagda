@@ -11,7 +11,7 @@ open import CoreLanguage
 open import Failable
 open STLC using (rules)
 open STLC.combinators
-open import Thinning using (ε; _-,_)
+open import BwdVec using (ε; _-,_)
 open import TypeChecker using (infer)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl)
 \end{code}

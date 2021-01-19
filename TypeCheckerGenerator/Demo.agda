@@ -8,7 +8,7 @@ open import TypeChecker using (infer; check)
 open import CoreLanguage
 open import Data.Nat using (suc)
 open import Failable
-open import Thinning using (ε; _-,_)
+open import BwdVec
 open import Data.String
 open import Context using (Context)
 

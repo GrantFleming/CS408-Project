@@ -9,21 +9,18 @@ module Rules where
 
 \begin{code}
 open import CoreLanguage
-open import Thinning using (_⊑_; Scoped; Ø; ι; ε; _⇒[_]_; _O; _I; Thinnable; _◃_; _++_) renaming (_∘_ to _∘∘_)
-import Pattern as Pat
-open Pat using (Pattern; svar; bind; _∙; ∙_; place; ⋆; _∙_; `; ⊥; _⟨svar_; _-Env; match; _-_; _⟨pat_; _⊗_; _⊗svar_)
-open Pat.Expression using (Expression; Expr; econ; lcon; ecom; lcom; _/_; ess; `; _⟨exp_; _⊗expr_) renaming (_∙_ to _∘_)
+open import Thinning using (_⊑_; ι; _++_)
+open import Pattern using (Pattern; svar; bind; _∙; ∙_; place; ⋆; _∙_; `; ⊥; _-Env; match; _-_; _⊗_; _⊗svar_)
+open import Expression using (Expr; _⊗expr_)
 open import Data.Product using (_×_; _,_; proj₁; Σ-syntax)
 open import Data.List using (List)
 open import Data.Char
-open import Data.Nat using (ℕ; zero; suc; _+_)
-open import Data.Maybe using (Maybe; just; nothing; map; _>>=_)
-open import Relation.Binary.PropositionalEquality using (cong; sym; subst; _≡_; refl)
+open import Data.Nat using (ℕ; suc; _+_)
+open import Data.Maybe using (Maybe; just; _>>=_)
+open import Relation.Binary.PropositionalEquality using (cong; sym; _≡_; refl)
 \end{code}
 
 \begin{code}
--- we need the concept of a Premise that obtains a certain amount of trust
-
 private
   variable
     δ : Scope
@@ -36,7 +33,7 @@ private
     q`` : Pattern δ
     q : Pattern 0
     q' : Pattern 0
-    p'' : Pattern δ
+
 
 data Prem (p : Pattern 0) (q : Pattern 0) (γ : Scope) : (p' : Pattern γ) → (q' : Pattern 0) → Set where
    type : (ξ : svar q δ) → (θ : δ ⊑ γ) → Prem p q γ (place θ) (q - ξ)
@@ -102,20 +99,11 @@ _⊗pl_ : ∀ {p : Pattern γ} → p Placeless → (δ : Scope) → (δ ⊗ p) P
 (s ∙ t) ⊗pl δ = (s ⊗pl δ) ∙ (t ⊗pl δ)
 bind t  ⊗pl δ = bind (t ⊗pl δ)
 
--- we can thin premises
-_⟨prem_ : Prem p q δ p'' q' → (θ : δ ⊑ γ)  → Prem p q γ (p'' ⟨pat θ) q'
-type ξ θ₁       ⟨prem θ = type ξ (θ₁ ∘∘ θ)
-(T ∋' ξ [ θ₁ ]) ⟨prem θ = (T ⟨exp θ) ∋' ξ [ θ₁ ∘∘ θ ]
-(x ≡' x₁)       ⟨prem θ = (x ⟨exp θ) ≡' (x₁ ⟨exp θ)
-univ x          ⟨prem θ = univ (x ⟨exp θ)
-(x ⊢' prem)     ⟨prem θ = (x ⟨exp θ) ⊢' (prem ⟨prem (θ I))
-
 private
   variable
     p' : Pattern 0
     q₁ : Pattern 0
     p₂ : Pattern 0
-    n : ℕ
 
 -- and a chain of Premises
 
@@ -128,7 +116,6 @@ infixr 20 _⇉_
 
 private
   variable
-    pᵈ : Pattern δ
     q₁` : Pattern γ
     p₂` : Pattern γ
 
@@ -166,8 +153,6 @@ record ∋rule : Set where
     input    : Pattern 0
     premises : Σ[ p' ∈ Pattern 0 ] Prems input subject p'
 open ∋rule
-
-open import Data.Unit using (⊤; tt)
 
 match-∋rule : (rule : ∋rule) → Term lib const γ → Term lib const γ →
               (Maybe (((γ ⊗ (input rule)) -Env) × ((γ ⊗ (subject rule)) -Env)))

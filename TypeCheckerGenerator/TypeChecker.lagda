@@ -69,7 +69,7 @@ check-premise : Context γ   →
                 Rules       →
                 p -Env      →
                 q -Env      →
-                ActualPrem p q γ p' q'  →
+                Prem p q γ p' q'  →
                 Failable (p' -Env × q' -Env)
 check-premise {q = q} Γ rules@(rs t u ∋ e) penv qenv (type ξ θ)
   = do
@@ -93,7 +93,7 @@ check-premise {γ = γ} Γ rules penv qenv (x ⊢' prem)
     succeed ((bind p'env) , q'env)
 
 check-premise-chain : ∀ {p : Pattern γ} {q : Pattern γ} {p' : Pattern γ} →
-                      Context γ → Rules → p -Env → q -Env → ActualPrems p q p' → Failable (p' -Env)
+                      Context γ → Rules → p -Env → q -Env → Prems p q p' → Failable (p' -Env)
 check-premise-chain Γ rules penv qenv (ε x)       = succeed penv
 check-premise-chain Γ rules penv qenv (prem ⇉ prems)
  = do
@@ -101,15 +101,11 @@ check-premise-chain Γ rules penv qenv (prem ⇉ prems)
      p''env ← check-premise-chain Γ rules (penv ∙ p'env) q₁env prems
      succeed p''env
 
-
-
-
--- check the precondition that the type must actually be a type
 run-∋rule : Context γ → Rules → (rule : ∋rule) → ((γ ⊗ (input rule)) -Env) → ((γ ⊗ (subject rule)) -Env) → Failable ⊤
 run-∋rule {γ} Γ rules@(rs t u ∋ e) rule ienv senv
   = do
      _ ← type-check Γ rules t (termFrom (input rule) ienv)
-     _ ← check-premise-chain Γ rules ienv senv (actual-premises γ (proj₂ (premises rule)))
+     _ ← check-premise-chain Γ rules ienv senv (⊗premises γ (proj₂ (premises rule)))
      succeed tt
 
 run-erule : Context γ                       →
@@ -120,7 +116,7 @@ run-erule : Context γ                       →
             Failable (Term const γ)
 run-erule {γ} Γ rules rule T-env s-env
   = do
-      p'env ← check-premise-chain Γ rules T-env s-env (actual-premises γ (proj₂ (premises rule)))
+      p'env ← check-premise-chain Γ rules T-env s-env (⊗premises γ (proj₂ (premises rule)))
       succeed (toTerm p'env (output rule))
     where
       open ElimRule
@@ -130,13 +126,13 @@ run-univrule : Context γ → Rules → (rule : UnivRule) → ((γ ⊗ (input ru
 run-univrule {γ = γ} Γ rules@(rs t u ∋ e) rule env
   = do
      _ ← type-check Γ rules t (termFrom (input rule) env)
-     _ ← check-premise-chain Γ rules env ` (actual-premises γ (proj₂ (premises rule)))
+     _ ← check-premise-chain Γ rules env ` (⊗premises γ (proj₂ (premises rule)))
      succeed tt
 
 run-typerule : Context γ → Rules → (rule : TypeRule) → ((γ ⊗ (subject rule)) -Env) → Failable ⊤
 run-typerule {γ} Γ rules rule env
   = do
-      _ ← check-premise-chain Γ rules ` env (actual-premises γ (proj₂ (premises rule)))
+      _ ← check-premise-chain Γ rules ` env (⊗premises γ (proj₂ (premises rule)))
       succeed tt
 
 
@@ -208,18 +204,25 @@ _≡ᵗ_ {compu} (t ∷ T) (t' ∷ T') = do  -- maybe we can ignore the annotati
 _ ≡ᵗ _  = eqfail
 
 infer : Rules → Context γ → Term compu γ → Failable (Term const γ)
-infer rules Γ (var x)    = succeed (x ‼V Γ)
+infer rules@(rs t u ∋ ee) Γ (var x)    = do
+                            -- check postcondition:
+                             _ ← type-check Γ rules t (x ‼V Γ)
+                             succeed (x ‼V Γ)
 infer rules@(rs t u ∋ ee) Γ (elim e s) = do
                              T ← infer rules Γ e
                              S ← elim-synth Γ rules ee T s
+                             -- check postcondition:
+                             _ ← type-check Γ rules t S
                              succeed S
 infer rules@(rs tr u ∋ e) Γ (t ∷ T)  = do
+                   -- postcondition checks in ∋-check
                    _ ← ∋-check Γ rules ∋ t T
                    succeed T
 
 check {_} {const} rules Γ T (thunk x)       = check rules Γ T x
 check {_} {const} rules@(rs tr u ∋ e) Γ T t = ∋-check Γ rules ∋ t T
-check {_} {compu} rules Γ T t = do
+check {_} {compu} rules@(rs tr u ∋ e) Γ T t = do
                             S ← infer rules Γ t
+                            _ ← type-check Γ rules tr S
                             S ≡ᵗ T
 -- \end{code}

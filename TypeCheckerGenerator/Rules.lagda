@@ -34,21 +34,12 @@ private
     q : Pattern 0
     q' : Pattern 0
 
-
-data Prem (p : Pattern 0) (q : Pattern 0) (γ : Scope) : (p' : Pattern γ) → (q' : Pattern 0) → Set where
-   type : (ξ : svar q δ) → (θ : δ ⊑ γ) → Prem p q γ (place θ) (q - ξ)
-   _∋'_[_] : (T : Expr p const γ) → (ξ : svar q δ) → (θ : δ ⊑ γ)  → Prem p q γ (place θ) (q - ξ)
-   _≡'_ : Expr p const γ → Expr p const γ → Prem p q γ (` '⊤') q
-   univ : Expr p const γ → Prem p q γ (` '⊤') q
-   _⊢'_ : Expr p const γ → Prem p q (suc γ) p` q` → Prem p q γ (bind p`) q`
-
-
-data ActualPrem (p : Pattern δ) (q : Pattern δ) (γ : Scope) : (p' : Pattern γ) → (q' : Pattern δ) → Set where
-   type    : (ξ : svar q δ') → (θ : δ' ⊑ γ) → ActualPrem p q γ (place θ) (q - ξ)
-   _∋'_[_] : (T : Expr p const γ) → (ξ : svar q δ') → (θ : δ' ⊑ γ)  → ActualPrem p q γ (place θ) (q - ξ)
-   _≡'_    : Expr p const γ → Expr p const γ → ActualPrem p q γ (` '⊤') q
-   univ    : Expr p const γ → ActualPrem p q γ (` '⊤') q
-   _⊢'_    : Expr p const γ → ActualPrem p q (suc γ) p` q`` → ActualPrem p q γ (bind p`) q``
+data Prem (p : Pattern δ) (q : Pattern δ) (γ : Scope) : (p' : Pattern γ) → (q' : Pattern δ) → Set where
+   type    : (ξ : svar q δ') → (θ : δ' ⊑ γ) → Prem p q γ (place θ) (q - ξ)
+   _∋'_[_] : (T : Expr p const γ) → (ξ : svar q δ') → (θ : δ' ⊑ γ)  → Prem p q γ (place θ) (q - ξ)
+   _≡'_    : Expr p const γ → Expr p const γ → Prem p q γ (` '⊤') q
+   univ    : Expr p const γ → Prem p q γ (` '⊤') q
+   _⊢'_    : Expr p const γ → Prem p q (suc γ) p` q`` → Prem p q γ (bind p`) q``
 
 
 
@@ -58,15 +49,15 @@ helper δ (s ∙ t) (∙ ξ)      = cong (Pattern._∙_ (δ ⊗ s)) (helper δ t
 helper δ (bind q) (bind ξ)  = cong bind (helper δ q ξ)
 helper δ (place x) ⋆        = refl
 
-actual-premise : ∀ {p' : Pattern γ} → 
+⊗premise : ∀ {p' : Pattern γ} → 
                  (δ : Scope) →
                  Prem p q γ p' q' →
-                 ActualPrem (δ ⊗ p) (δ ⊗ q) (δ + γ) (δ ⊗ p')  (δ ⊗ q')
-actual-premise {q = q} δ (type ξ θ)     rewrite sym (helper δ q ξ) = type (ξ ⊗svar δ) (ι ++ θ)
-actual-premise {q = q} δ (T ∋' ξ [ θ ]) rewrite sym (helper δ q ξ) = (T ⊗expr δ) ∋' ξ ⊗svar δ [ ι ++ θ ]
-actual-premise δ (x ≡' x₁)      = (x ⊗expr δ) ≡' (x₁ ⊗expr δ)
-actual-premise δ (univ x)       = univ (x ⊗expr δ)
-actual-premise δ (_⊢'_ {p` = p`} x prem) = (x ⊗expr δ) ⊢' actual-premise δ prem
+                 Prem (δ ⊗ p) (δ ⊗ q) (δ + γ) (δ ⊗ p')  (δ ⊗ q')
+⊗premise {q = q} δ (type ξ θ)     rewrite sym (helper δ q ξ) = type (ξ ⊗svar δ) (ι ++ θ)
+⊗premise {q = q} δ (T ∋' ξ [ θ ]) rewrite sym (helper δ q ξ) = (T ⊗expr δ) ∋' ξ ⊗svar δ [ ι ++ θ ]
+⊗premise δ (x ≡' x₁)      = (x ⊗expr δ) ≡' (x₁ ⊗expr δ)
+⊗premise δ (univ x)       = univ (x ⊗expr δ)
+⊗premise δ (_⊢'_ {p` = p`} x prem) = (x ⊗expr δ) ⊢' ⊗premise δ prem
 
 -- We have a concept of a placeless thing, which represents any
 -- pattern that contains no places
@@ -106,28 +97,21 @@ private
     p₂ : Pattern 0
 
 -- and a chain of Premises
-
-data Prems (p₀ : Pattern 0) (q₀ : Pattern 0) : (p₂ : Pattern 0) → Set where
-  ε : (q₀ Placeless) → Prems p₀ q₀ p₀
-  _⇉_ : Prem p₀ q₀ 0 p' q₁ →
-        Prems (p₀ ∙ p') q₁ p₂ →
-        Prems p₀ q₀ p₂
-infixr 20 _⇉_
-
 private
   variable
     q₁` : Pattern γ
     p₂` : Pattern γ
 
-data ActualPrems (p₀ : Pattern γ) (q₀ : Pattern γ) : (p₂ : Pattern γ) → Set where
-  ε : (q₀ Placeless) → ActualPrems p₀ q₀ p₀
-  _⇉_ : ActualPrem p₀ q₀ γ pᵍ q₁` →
-        ActualPrems (p₀ ∙ pᵍ) q₁` p₂` →
-        ActualPrems p₀ q₀ p₂`
+data Prems (p₀ : Pattern γ) (q₀ : Pattern γ) : (p₂ : Pattern γ) → Set where
+  ε : (q₀ Placeless) → Prems p₀ q₀ p₀
+  _⇉_ : Prem p₀ q₀ γ pᵍ q₁` →
+        Prems (p₀ ∙ pᵍ) q₁` p₂` →
+        Prems p₀ q₀ p₂`
+infixr 20 _⇉_
 
-actual-premises : (δ : Scope) → Prems p q p₂ → ActualPrems (δ ⊗ p) (δ ⊗ q) (δ ⊗ p₂)
-actual-premises δ (ε x)           = ε (x ⊗pl δ)
-actual-premises δ (prem ⇉ prems)  = actual-premise δ prem ⇉ actual-premises δ prems
+⊗premises : (δ : Scope) → Prems p q p₂ → Prems (δ ⊗ p) (δ ⊗ q) (δ ⊗ p₂)
+⊗premises δ (ε x)           = ε (x ⊗pl δ)
+⊗premises δ (prem ⇉ prems)  = ⊗premise δ prem ⇉ ⊗premises δ prems
 
 record TypeRule : Set where
   field

@@ -10,7 +10,7 @@ module Test.Specs.STLC where
 open import CoreLanguage
 open import Data.Nat using (suc)
 open import Pattern using (Pattern; `; place; bind; _∙_;  ⋆; _∙; ∙_; svar)
-open import Expression using (_/_; ess; `; _∙_)
+open import Expression using (_/_; `; _∙_)
 open import Rules using (ElimRule; TypeRule; UnivRule; Rules; rs; ∋rule; ε; _placeless; type; _⇉_; _⊢'_; _∋'_[_]; `)
 open import Thinning using (Ø; _O; ι)
 open import BwdVec using (ε)
@@ -26,30 +26,30 @@ as creating these terms directly in our internal language can be tedious.
 
 \begin{code}
 module combinators where
-  α : ∀{γ} → Term lib const γ
-  α = ess (` 'α')
+  α : ∀{γ} → Term const γ
+  α = ` 'α'
   
-  a : ∀{γ} → Term lib const γ
-  a = ess (` 'a')
+  a : ∀{γ} → Term const γ
+  a = ` 'a'
   
-  β : ∀{γ} → Term lib const γ
-  β = ess (` 'β')
+  β : ∀{γ} → Term const γ
+  β = ` 'β'
   
-  b : ∀{γ} → Term lib const γ
-  b = ess (` 'b')
+  b : ∀{γ} → Term const γ
+  b = ` 'b'
   
-  _⇨_ : ∀{γ} → Lib-Const γ → Lib-Const γ → Term lib const γ
-  x ⇨ y = ess (x ∙ ess (ess (` '→') ∙ y))
+  _⇨_ : ∀{γ} → Const γ → Const γ → Term const γ
+  x ⇨ y = x ∙ ((` '→') ∙ y)
   infixr 20 _⇨_
   
-  lam : ∀ {γ} → Term lib const (suc γ) → Term lib const γ
-  lam t = ess (bind t)
+  lam : ∀ {γ} → Term const (suc γ) → Term const γ
+  lam t = bind t
   
-  ~ : ∀ {γ} → Var γ → Term lib const γ
+  ~ : ∀ {γ} → Var γ → Term const γ
   ~ vr = thunk (var vr)
   
-  app : ∀ {γ} → Lib-Compu γ → Lib-Const γ → Term lib compu γ
-  app e s = ess (elim e s)
+  app : ∀ {γ} → Compu γ → Const γ → Term compu γ
+  app e s = elim e s
 
 \end{code}
 

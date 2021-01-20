@@ -47,7 +47,7 @@ data _-Env {γ : Scope} : Pattern γ → Set where
   `      : {c : Char} → (` c) -Env
   _∙_    : q -Env → r -Env → (q ∙ r) -Env
   bind   : t -Env → (bind t) -Env
-  thing  : {θ : δ ⊑ γ} → Term lib const δ → (place θ) -Env
+  thing  : {θ : δ ⊑ γ} → Term const δ → (place θ) -Env
 
 -- We can 'open' patterns
 _⊗_ : (γ : Scope) → (p : Pattern δ) → Pattern (γ + δ)
@@ -66,17 +66,17 @@ _⊗_ {δ} γ (bind t)
 ⊗-identityʳ {p = place x} rewrite ++-identityʳ {θ = x} = refl
 ⊗-identityʳ {p = ⊥}       = refl
 
-match : Term lib const (δ + γ) → (p : Pattern γ) → Maybe ((δ ⊗ p) -Env)
-match (ess (` a)) (` c) with a is c
+match : Term const (δ + γ) → (p : Pattern γ) → Maybe ((δ ⊗ p) -Env)
+match (` a) (` c) with a is c
 ... | true because ofʸ refl = just `
 ... | _                     = nothing
-match (ess (s ∙ t)) (p ∙ q)   = do
-                                  x ← match s p
-                                  y ← match t q
-                                  just (x ∙ y)
-match (ess (bind t)) (bind p) = do
-                                  x ← match t p
-                                  just (bind x)
+match (s ∙ t) (p ∙ q)   = do
+                            x ← match s p
+                            y ← match t q
+                            just (x ∙ y)
+match (bind t) (bind p) = do
+                            x ← match t p
+                            just (bind x)
 match  {γ = γ} t   (place {δ'} θ) with γ ≟ δ'
 ... | true because ofʸ refl = just (thing t)
 ... | false because _       = nothing
@@ -116,17 +116,19 @@ _⊗var_ : Var δ → (γ : Scope) → Var (γ + δ)
 (ze {s})   ⊗var γ = (fromNum γ) ⟨var ((ι {suc γ}) ++ (Ø {s}))
 (su {s} v) ⊗var γ = su (v ⊗var γ)
 
+private
+  variable
+    d : Dir
+
 -- we can 'open up' a term
-_⊗term_ : ∀ {l} {d} → Term l d δ → (γ : Scope) → Term l d (γ + δ)
-_⊗term_ {l = ess} {d = const} (` x)      γ = ` x
-_⊗term_ {l = ess} {d = const} (s ∙ t)    γ = (s ⊗term γ) ∙ (t ⊗term γ)
-_⊗term_ {l = ess} {d = const} (bind x)   γ = bind (x ⊗term γ)
-_⊗term_ {l = ess} {d = compu} (var x)    γ = var (x ⊗var γ)
-_⊗term_ {l = ess} {d = compu} (elim e s) γ = elim (e ⊗term γ) (s ⊗term γ)
-_⊗term_ {l = lib} {d = const} (ess x)    γ = ess (x ⊗term γ)
-_⊗term_ {l = lib} {d = const} (thunk x)  γ = thunk (x ⊗term γ)
-_⊗term_ {l = lib} {d = compu} (ess x)    γ = ess (x ⊗term γ)
-_⊗term_ {l = lib} {d = compu} (t ∷ T)    γ = (t ⊗term γ) ∷ (T ⊗term γ)
+_⊗term_ : Term d δ → (γ : Scope) → Term d (γ + δ)
+_⊗term_ {const} (` x)      γ = ` x
+_⊗term_ {const} (s ∙ t)    γ = (s ⊗term γ) ∙ (t ⊗term γ)
+_⊗term_ {const} (bind x)   γ = bind (x ⊗term γ)
+_⊗term_ {const} (thunk x)  γ = thunk (x ⊗term γ)
+_⊗term_ {compu} (var x)    γ = var (x ⊗var γ)
+_⊗term_ {compu} (elim e s) γ = elim (e ⊗term γ) (s ⊗term γ)
+_⊗term_ {compu} (t ∷ T)    γ = (t ⊗term γ) ∷ (T ⊗term γ)
 
 -- and we can open environments
 _⊗env_ : p -Env → (γ : Scope) → (γ ⊗ p) -Env
@@ -136,17 +138,17 @@ bind e  ⊗env γ = bind (e ⊗env γ)
 thing x ⊗env γ = thing (x ⊗term γ)
 
 -- crucually, we can now look up terms in an environment
-_‼_ : ∀ {γ} {p : Pattern γ} → svar p δ → (γ' ⊗ p) -Env → Term lib const (γ' + δ)
+_‼_ : ∀ {γ} {p : Pattern γ} → svar p δ → (γ' ⊗ p) -Env → Term const (γ' + δ)
 ⋆      ‼ thing x = x
 (v ∙)  ‼ (p ∙ q) = v ‼ p
 (∙ v)  ‼ (p ∙ q) = v ‼ q
 bind v ‼ bind t  = v ‼ t
 
 -- we can also get the term back from the pattern and the environment
-termFrom : (p : Pattern γ) → (δ ⊗ p) -Env → Term lib const (δ + γ)
-termFrom (` x) `              = ess (` x)
-termFrom (p ∙ p₁) (e ∙ e₁)    = ess (termFrom p e ∙ termFrom p₁ e₁)
-termFrom (bind p) (bind e)    = ess (bind (termFrom p e))
+termFrom : (p : Pattern γ) → (δ ⊗ p) -Env → Term const (δ + γ)
+termFrom (` x) `              = ` x
+termFrom (p ∙ p₁) (e ∙ e₁)    = termFrom p e ∙ termFrom p₁ e₁
+termFrom (bind p) (bind e)    = bind (termFrom p e)
 termFrom (place θ) (thing x₁) = x₁ ⟨term⊗ θ
 termFrom ⊥ ()
 \end{code}

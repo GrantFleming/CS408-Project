@@ -49,13 +49,13 @@ _ : infer rules ε (app ((lam b) ∷ (α ⇨ β)) a)
 _ = refl
 
 _ : infer rules ε (app
-         ((lam (thunk (elim (ess (var ze)) (ess (` 'a'))))) ∷ ((α ⇨ α) ⇨ α))
-         (thunk (elim (ess (bind (thunk (var ze))) ∷ ((α ⇨ α) ⇨ (α ⇨ α))) (ess (bind (thunk (var ze))))))) 
+         ((lam (thunk (elim (var ze) (` 'a')))) ∷ ((α ⇨ α) ⇨ α))
+         (thunk (elim (bind (thunk (var ze)) ∷ ((α ⇨ α) ⇨ (α ⇨ α))) (bind (thunk (var ze))))))
     ≡
     succeed α
 _ = refl
 
-_ : infer rules (ε -, (α ⇨ α) -, β) (ess (bind (thunk (elim (ess (var (su (su ze)))) (ess (` 'a'))))) ∷ (β ⇨ α))
+_ : infer rules (ε -, (α ⇨ α) -, β) ((bind (thunk (elim (var (su (su ze))) (` 'a')))) ∷ (β ⇨ α))
     ≡
     succeed (β ⇨ α)
 _ = refl
@@ -77,16 +77,16 @@ _ = refl
 -- should correctly type nested eliminations
 
 _ : infer rules ε
-     (ess
-       (elim
-         (ess (bind (thunk
-            (elim
-              (ess (var ze))
-              (ess (` 'a'))))) ∷ ess ((α ⇨ α) ∙ ess (ess (` '→') ∙ ess (` 'α'))))
-         (thunk
-           (elim
-             (ess (bind (thunk (var ze))) ∷ ((α ⇨ α) ⇨ (α ⇨ α)))
-             (ess (bind (thunk (var ze))))))))
+          (elim
+            (bind (thunk
+              (elim
+                (var ze)
+                (` 'a')))
+              ∷ ((α ⇨ α) ∙ ((` '→') ∙ (` 'α'))))
+            (thunk
+              (elim
+                ((bind (thunk (var ze))) ∷ ((α ⇨ α) ⇨ (α ⇨ α)))
+                ((bind (thunk (var ze)))))))
     ≡
     succeed α
 _ = refl

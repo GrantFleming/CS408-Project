@@ -19,7 +19,7 @@ open import TermSubstitution
 
 \begin{code}
 Context : Scope → Set
-Context γ = γ ⇒[ Term lib const ] γ
+Context γ = γ ⇒[ Term const ] γ
 
 private
   variable
@@ -30,22 +30,22 @@ private
 -- since contexts are just substitutions we can use the selection
 -- already defined for BwdVec _!_ and define variables lookup in
 -- terms of this
-_‼V_ : Var γ → (Context γ) → Term lib const γ
+_‼V_ : Var γ → (Context γ) → Term const γ
 v ‼V Γ with ⟦ v ⟧var ! Γ
 ... | ε -, x = x
 
 -- we can apply a thinning generally to _⇒[ Term lib const ]_
 -- but we are not guaranteed that the result will be a context
-_⟨Γ_ : Thinnable (δ ⇒[ Term lib const ]_)
+_⟨Γ_ : Thinnable (δ ⇒[ Term const ]_)
 Γ ⟨Γ θ = ⟨sub _⟨term_ Γ θ
 
 -- and therefore _⇒[ Term lib const ]_  can be weakened
 -- (thus contexts can be weakened but are no longer contexts)
-_^Γ : Weakenable (δ ⇒[ Term lib const ]_)
+_^Γ : Weakenable (δ ⇒[ Term const ]_)
 _^Γ = weaken _⟨Γ_
 
 -- Which means we can define context extension
-_,_ : Context γ → Term lib const γ → Context (suc γ)
+_,_ : Context γ → Term const γ → Context (suc γ)
 Γ , t = (Γ -, t) ^Γ
 
 -- Now if we only ever use ε and _,_ context extension, we are
@@ -54,7 +54,7 @@ _,_ : Context γ → Term lib const γ → Context (suc γ)
 -- and we can apply substitutions generally to _⇒[ Term lib const ]_
 -- but we are not guaranteed that the result will be a Context
 -- unless γ = γ'
-_/Γ_ : δ ⇒[ Term lib const ] γ → γ ⇒ γ' → δ ⇒[ Term lib const ] γ'
+_/Γ_ : δ ⇒[ Term const ] γ → γ ⇒ γ' → δ ⇒[ Term const ] γ'
 ε /Γ σ = ε
 (Γ -, x) /Γ σ = (Γ /Γ σ) -, (x /term σ)
 

@@ -28,72 +28,56 @@ fromNum : (n : ℕ) → Var (suc n)
 fromNum zero = ze
 fromNum (suc n) = su (fromNum n)
 
-data Ess-Const (γ : Scope) : Set
-data Lib-Const (γ : Scope) : Set
-data Ess-Compu (γ : Scope) : Set
-data Lib-Compu (γ : Scope) : Set
+data Const (γ : Scope) : Set
+data Compu (γ : Scope) : Set
 
-data Ess-Const γ where
-  `      : Char → Ess-Const γ
-  _∙_    : Lib-Const γ → Lib-Const γ → Ess-Const γ
-  bind   : Lib-Const (suc γ) → Ess-Const γ
+data Const γ where
+  `      : Char → Const γ
+  _∙_    : Const γ → Const γ → Const γ
+  bind   : Const (suc γ) → Const γ
+  thunk  : Compu γ → Const γ
 
 infixr 20 _∙_ 
 
-data Lib-Const γ where
-  ess    : Ess-Const γ → Lib-Const γ
-  thunk  : Ess-Compu γ → Lib-Const γ
+data Compu γ where
+  var    : Var γ → Compu γ
+  elim   : Compu γ → Const γ → Compu γ
+  _∷_    : Const γ → Const γ → Compu γ
 
-data Ess-Compu γ where
-  var    : Var γ → Ess-Compu γ
-  elim   : Lib-Compu γ → Lib-Const γ → Ess-Compu γ
-
-data Lib-Compu γ where
-  ess    : Ess-Compu γ → Lib-Compu γ
-  _∷_    : Lib-Const γ → Lib-Const γ → Lib-Compu γ
-
-↠ : ∀ {γ} → Lib-Compu γ → Lib-Const γ
-↠ (ess x) = thunk x
+↠ : ∀ {γ} → Compu γ → Const γ
 ↠ (t ∷ T) = t
+↠  x      = thunk x
 
-data Lib : Set where ess lib : Lib
 data Dir : Set where const compu : Dir
 
-Term : Lib → Dir → Scope → Set
-Term ess const γ = Ess-Const γ
-Term ess compu γ = Ess-Compu γ
-Term lib const γ = Lib-Const γ
-Term lib compu γ = Lib-Compu γ
+Term : Dir → Scope → Set
+Term const γ = Const γ
+Term compu γ = Compu γ
 
 private
   variable
-    l : Lib
     d : Dir
     γ : Scope
 
-print : Term l d γ → String
-print {l = ess} {d = const} (` x) = fromChar x
-print {l = ess} {d = const} (s ∙ t) = print s ++ print t
-print {l = ess} {d = const} (bind x) = "λ" ++ print x
-print {l = ess} {d = compu} (var x) = "VAR"
-print {l = ess} {d = compu} (elim e s) = "elim" ++ print e ++ print s
-print {l = lib} {d = const} (ess x) = print x
-print {l = lib} {d = const} (thunk x) = "_" ++ print x ++ "_"
-print {l = lib} {d = compu} (ess x) = print x
-print {l = lib} {d = compu} (t ∷ T) = print t ++ "∶" ++ print T
+print : Term d γ → String
+print {const} (` x)      = fromChar x
+print {const} (s ∙ t)    = print s ++ print t
+print {const} (bind x)   = "λ" ++ print x
+print {const} (thunk x)  = "_" ++ print x ++ "_"
+print {compu} (var x)    = "VAR"
+print {compu} (elim e s) = "elim" ++ print e ++ print s
+print {compu} (t ∷ T)    = print t ++ "∶" ++ print T
 
 printrawvar : Var γ → String
 printrawvar ze     = "ze"
 printrawvar (su v) = "su " ++ printrawvar v
 
-printraw : Term l d γ → String
-printraw {l = ess} {d = const} (` x) = "(` '" ++ fromChar x ++ "')"
-printraw {l = ess} {d = const} (s ∙ t) = "(" ++ printraw s ++ " ∙ "  ++ printraw t ++ ")"
-printraw {l = ess} {d = const} (bind x) = "(bind " ++ printraw x ++ ")"
-printraw {l = ess} {d = compu} (var x) = "(var " ++ printrawvar x ++ ")"
-printraw {l = ess} {d = compu} (elim e s) = "(elim " ++ printraw e ++ " " ++ printraw s ++ ")"
-printraw {l = lib} {d = const} (ess x) = "(ess " ++ printraw x ++ ")"
-printraw {l = lib} {d = const} (thunk x) = "(thunk " ++ printraw x ++ ")"
-printraw {l = lib} {d = compu} (ess x) = "(ess " ++ printraw x ++ ")"
-printraw {l = lib} {d = compu} (t ∷ T) = "(" ++ printraw t ++ "∶" ++ printraw T ++ ")"
+printraw : Term d γ → String
+printraw {const} (` x)       = "(` '" ++ fromChar x ++ "')"
+printraw {const} (s ∙ t)     = "(" ++ printraw s ++ " ∙ "  ++ printraw t ++ ")"
+printraw {const} (bind x)    = "(bind " ++ printraw x ++ ")"
+printraw {const} (thunk x)   = "(thunk " ++ printraw x ++ ")"
+printraw {compu} (var x)     = "(var " ++ printrawvar x ++ ")"
+printraw {compu} (elim e s)  = "(elim " ++ printraw e ++ " " ++ printraw s ++ ")"
+printraw {compu} (t ∷ T)     = "(" ++ printraw t ++ "∶" ++ printraw T ++ ")"
 \end{code}

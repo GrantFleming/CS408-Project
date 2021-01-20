@@ -100,35 +100,30 @@ v ⟨var⊗ (θ I) = v ⟨var⊗ θ
 
 private
   variable
-    l : Lib
     d : Dir
     X : Set
     Y : Set
     n : ℕ
 
 -- terms are thinnable
-_⟨term_ : Thinnable (Term l d)
-_⟨term_ {ess} {const} (` x)      θ  = ` x
-_⟨term_ {ess} {const} (s ∙ t)    θ  = (s ⟨term θ) ∙ (t ⟨term θ)
-_⟨term_ {ess} {const} (bind t)   θ  = bind (t ⟨term (θ I))
-_⟨term_ {ess} {compu} (var x)    θ  = var (x ⟨var θ)
-_⟨term_ {ess} {compu} (elim e s) θ  = elim (e ⟨term θ) (s ⟨term θ)
-_⟨term_ {lib} {const} (ess x)    θ  = ess (x ⟨term θ)
-_⟨term_ {lib} {const} (thunk x)  θ  = thunk (x ⟨term θ)
-_⟨term_ {lib} {compu} (ess x)    θ  = ess (x ⟨term θ)
-_⟨term_ {lib} {compu} (t ∷ T)    θ  = (t ⟨term θ) ∷ (T ⟨term θ)
+_⟨term_ : Thinnable (Term d)
+_⟨term_ {const} (` x)      θ  = ` x
+_⟨term_ {const} (s ∙ t)    θ  = (s ⟨term θ) ∙ (t ⟨term θ)
+_⟨term_ {const} (bind t)   θ  = bind (t ⟨term (θ I))
+_⟨term_ {const} (thunk x)  θ  = thunk (x ⟨term θ)
+_⟨term_ {compu} (var x)    θ  = var (x ⟨var θ)
+_⟨term_ {compu} (elim e s) θ  = elim (e ⟨term θ) (s ⟨term θ)
+_⟨term_ {compu} (t ∷ T)    θ  = (t ⟨term θ) ∷ (T ⟨term θ)
 
 -- we can thin an opened term
-_⟨term⊗_ : Thinnable (λ δ → Term l d (γ + δ))
-_⟨term⊗_ {ess} {const} (` x)       θ = ` x
-_⟨term⊗_ {ess} {const} (s ∙ t)     θ = (s ⟨term⊗ θ) ∙ (t ⟨term⊗ θ)
-_⟨term⊗_ {ess} {const} (bind x)    θ = bind (x ⟨term⊗ θ)
-_⟨term⊗_ {ess} {compu} (var x)     θ = var (x ⟨var⊗ θ)
-_⟨term⊗_ {ess} {compu} (elim e s)  θ = elim (e ⟨term⊗ θ) (s ⟨term⊗ θ)
-_⟨term⊗_ {lib} {const} (ess x)     θ = ess (x ⟨term⊗ θ)
-_⟨term⊗_ {lib} {const} (thunk x)   θ = thunk (x ⟨term⊗ θ)
-_⟨term⊗_ {lib} {compu} (ess x)     θ = ess (x ⟨term⊗ θ)
-_⟨term⊗_ {lib} {compu} (t ∷ T)     θ = (t ⟨term⊗ θ) ∷ (T ⟨term⊗ θ)
+_⟨term⊗_ : Thinnable (λ δ → Term d (γ + δ))
+_⟨term⊗_ {const} (` x)       θ = ` x
+_⟨term⊗_ {const} (s ∙ t)     θ = (s ⟨term⊗ θ) ∙ (t ⟨term⊗ θ)
+_⟨term⊗_ {const} (bind x)    θ = bind (x ⟨term⊗ θ)
+_⟨term⊗_ {const} (thunk x)   θ = thunk (x ⟨term⊗ θ)
+_⟨term⊗_ {compu} (var x)     θ = var (x ⟨var⊗ θ)
+_⟨term⊗_ {compu} (elim e s)  θ = elim (e ⟨term⊗ θ) (s ⟨term⊗ θ)
+_⟨term⊗_ {compu} (t ∷ T)     θ = (t ⟨term⊗ θ) ∷ (T ⟨term⊗ θ)
 
 -- We can select from BwdVec using a thinning
 _!_ : Selectable (BwdVec X)
@@ -175,8 +170,8 @@ _^var : Weakenable Var
 _^var = weaken _⟨var_
 
 -- terms are weakenable
-_^term : Weakenable (Term l d)
-_^term {l} {d} t = weaken {Term l d} _⟨term_ t
+_^term : Weakenable (Term d)
+_^term {d} t = weaken {Term d} _⟨term_ t
 
 -- substitutions are Weakenable if the thing
 -- they substitute is Thinnable

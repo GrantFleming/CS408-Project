@@ -29,7 +29,6 @@ open import Data.String using (_++_)
 \begin{code}
 private
   variable
-    l : Lib
     d : Dir
     γ : Scope
     δ : Scope
@@ -43,28 +42,28 @@ open TypeRule
 open UnivRule
 open ∋rule
 
-check : Rules → Context γ → (type : Term lib const γ)  → (term : Term l d γ) → Failable ⊤
+check : Rules → Context γ → (type : Term const γ)  → (term : Term d γ) → Failable ⊤
 
 ∋-check : Context γ               →
           Rules                   →
           List ∋rule              →
-          (subject : Lib-Const γ) →
-          (input : Lib-Const γ)   →
+          (subject : Const γ) →
+          (input : Const γ)   →
           Failable ⊤
 
 type-check : Context γ               →
              Rules                   →
              List TypeRule           →
-             (subject : Lib-Const γ) →
+             (subject : Const γ) →
              Failable ⊤
 
 univ-check : Context γ              →
              Rules                  →
              List UnivRule          →
-             (input : Lib-Const γ)  →
+             (input : Const γ)  →
              Failable ⊤
 
-_≡ᵗ_ : Term l d γ → Term l d γ → Failable ⊤
+_≡ᵗ_ : Term d γ → Term d γ → Failable ⊤
 
 check-premise : Context γ   →
                 Rules       →
@@ -118,7 +117,7 @@ run-erule : Context γ                       →
             (rule : ElimRule)               →
             (γ ⊗ ElimRule.targetPat rule)  -Env →
             (γ ⊗ ElimRule.eliminator rule) -Env →
-            Failable (Term lib const γ)
+            Failable (Term const γ)
 run-erule {γ} Γ rules rule T-env s-env
   = do
       p'env ← check-premise-chain Γ rules T-env s-env (actual-premises γ (proj₂ (premises rule)))
@@ -168,9 +167,9 @@ type-check Γ rules (trule ∷ trules) ms
 elim-synth : Context γ                       →
              Rules                           →
              List ElimRule                   →
-             (synth-type : Term lib const γ) →
-             (eliminator : Term lib const γ) →
-             Failable (Term lib const γ)
+             (synth-type : Term const γ) →
+             (eliminator : Term const γ) →
+             Failable (Term const γ)
 elim-synth Γ rules []             T s
   = fail ("elim-synth: failed to match elimination rule for target = " ++ (print T) ++ " and eliminator = " ++ (print s))
 elim-synth Γ rules (erule ∷ erules) T s with match-erule erule T s
@@ -187,37 +186,30 @@ ze   ≡v ze    = succeed tt
 su v ≡v su v' = v ≡v v'
 _    ≡v _     = eqfail
 
-_≡ᵗ_ {ess} {const} (` x)    (` x₁) with x == x₁
+_≡ᵗ_ {const} (` x)    (` x₁) with x == x₁
 ... | false = eqfail
 ... | true  = succeed tt
-_≡ᵗ_ {ess} {const} (x ∙ x₁) (x₂ ∙ x₃) = do
-                                         _ ← x  ≡ᵗ x₂
-                                         _ ← x₁ ≡ᵗ x₃
-                                         return tt
-_≡ᵗ_ {ess} {const} (bind x) (bind x') = x ≡ᵗ x'
-_≡ᵗ_ {ess} {const} _ _ = eqfail
+_≡ᵗ_ {const} (x ∙ x₁) (x₂ ∙ x₃) = do
+                                   _ ← x  ≡ᵗ x₂
+                                   _ ← x₁ ≡ᵗ x₃
+                                   return tt
+_≡ᵗ_ {const} (bind x) (bind x') = x ≡ᵗ x'
+_≡ᵗ_ {const} (thunk x) (thunk x') = x ≡ᵗ x'
 
-_≡ᵗ_ {ess} {compu} (var x) (var x')        = x ≡v x'
-_≡ᵗ_ {ess} {compu} (elim e s) (elim e' s') = do
-                                              _ ← e ≡ᵗ e'
-                                              _ ← s ≡ᵗ s'
-                                              return tt
-_≡ᵗ_ {ess} {compu}  _          _           = eqfail
-
-_≡ᵗ_ {lib} {const} (ess x)    (ess x')  = x ≡ᵗ x'
-_≡ᵗ_ {lib} {const} (thunk x) (thunk x') = x ≡ᵗ x'
-_≡ᵗ_ {lib} {const}  _         _         = eqfail
-
-_≡ᵗ_ {lib} {compu} (ess x) (ess x')  = x ≡ᵗ x'
-_≡ᵗ_ {lib} {compu} (t ∷ T) (t' ∷ T') = do  -- maybe we can ignore the annotation here?
+_≡ᵗ_ {compu} (var x) (var x')        = x ≡v x'
+_≡ᵗ_ {compu} (elim e s) (elim e' s') = do
+                                        _ ← e ≡ᵗ e'
+                                        _ ← s ≡ᵗ s'
+                                        return tt
+_≡ᵗ_ {compu} (t ∷ T) (t' ∷ T') = do  -- maybe we can ignore the annotation here?
                                         _ ← t ≡ᵗ t'
                                         _ ← T ≡ᵗ T'
                                         return tt
-_≡ᵗ_ {lib} {compu}  _       _        = eqfail
+_ ≡ᵗ _  = eqfail
 
-infer : Rules → Context γ → Term lib compu γ → Failable (Term lib const γ)
-infer rules Γ (ess (var x))    = succeed (x ‼V Γ)
-infer rules@(rs t u ∋ ee) Γ (ess (elim e s)) = do
+infer : Rules → Context γ → Term compu γ → Failable (Term const γ)
+infer rules Γ (var x)    = succeed (x ‼V Γ)
+infer rules@(rs t u ∋ ee) Γ (elim e s) = do
                              T ← infer rules Γ e
                              S ← elim-synth Γ rules ee T s
                              succeed S
@@ -225,19 +217,9 @@ infer rules@(rs tr u ∋ e) Γ (t ∷ T)  = do
                    _ ← ∋-check Γ rules ∋ t T
                    succeed T
 
-check {_} {lib} {const} rules@(rs t u ∋ e) Γ T (ess x)
-  = do
-      _ ← ∋-check Γ rules ∋ (ess x) T
-      succeed tt
-check {_} {lib} {const} rules Γ T (thunk x)
-  = do
-      S ← infer rules Γ (ess x)
-      S ≡ᵗ T -- this is the gotcha, at the moment just syntactic equality-}
-check {_} {ess} {const} rules@(rs tr u ∋ e) Γ T t = ∋-check Γ rules ∋ (ess t) T
-check {_} {ess} {compu} rules Γ T t = do
-                                  S ← infer rules Γ (ess t)
-                                  S ≡ᵗ T
-check {_} {lib} {compu} rules Γ T t = do
-                                  S ← infer rules Γ t
-                                  S ≡ᵗ T
+check {_} {const} rules Γ T (thunk x)       = check rules Γ T x
+check {_} {const} rules@(rs tr u ∋ e) Γ T t = ∋-check Γ rules ∋ t T
+check {_} {compu} rules Γ T t = do
+                            S ← infer rules Γ t
+                            S ≡ᵗ T
 -- \end{code}

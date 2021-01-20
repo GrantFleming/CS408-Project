@@ -21,8 +21,8 @@ open import Context using (Context)
 -- now we can do some examples
 
 
-term : Term lib compu 0
-term = lam (~ ze) ∷ (α ⇨ α)
+term : Term compu 0
+term = {!!}
 
 ctx : Context 0
 ctx = ε
@@ -70,11 +70,11 @@ app
 (λx.xa ∷ ((α→α)→α))  ((λx.x ∷ ((α→α)→(α→α)))  (λx.x))
 
 app
-         ((lam (thunk (elim (ess (var ze)) (ess (` 'a'))))) ∷ ((α ⇨ α) ⇨ α))
-         (thunk (elim (ess (bind (thunk (var ze))) ∷ ((α ⇨ α) ⇨ (α ⇨ α))) (ess (bind (thunk (var ze))))))
+         ((lam (thunk (app (var ze) a))) ∷ ((α ⇨ α) ⇨ α))
+         (thunk (app (bind (thunk (var ze)) ∷ ((α ⇨ α) ⇨ (α ⇨ α))) (bind (thunk (var ze)))))
 -}
 
 {-
-term = ess (bind (thunk (elim (ess (var (su (su ze)))) (ess (` 'a'))))) ∷ (β ⇨ α)
+term = (bind (thunk (app (var (su (su ze))) a))) ∷ (β ⇨ α)
 ctx = ε -, (α ⇨ α) -, β
 -}

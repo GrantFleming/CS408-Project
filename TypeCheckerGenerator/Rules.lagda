@@ -37,18 +37,18 @@ private
 
 data Prem (p : Pattern 0) (q : Pattern 0) (γ : Scope) : (p' : Pattern γ) → (q' : Pattern 0) → Set where
    type : (ξ : svar q δ) → (θ : δ ⊑ γ) → Prem p q γ (place θ) (q - ξ)
-   _∋'_[_] : (T : Expr p lib const γ) → (ξ : svar q δ) → (θ : δ ⊑ γ)  → Prem p q γ (place θ) (q - ξ)
-   _≡'_ : Expr p lib const γ → Expr p lib const γ → Prem p q γ (` '⊤') q
-   univ : Expr p lib const γ → Prem p q γ (` '⊤') q
-   _⊢'_ : Expr p lib const γ → Prem p q (suc γ) p` q` → Prem p q γ (bind p`) q`
+   _∋'_[_] : (T : Expr p const γ) → (ξ : svar q δ) → (θ : δ ⊑ γ)  → Prem p q γ (place θ) (q - ξ)
+   _≡'_ : Expr p const γ → Expr p const γ → Prem p q γ (` '⊤') q
+   univ : Expr p const γ → Prem p q γ (` '⊤') q
+   _⊢'_ : Expr p const γ → Prem p q (suc γ) p` q` → Prem p q γ (bind p`) q`
 
 
 data ActualPrem (p : Pattern δ) (q : Pattern δ) (γ : Scope) : (p' : Pattern γ) → (q' : Pattern δ) → Set where
    type    : (ξ : svar q δ') → (θ : δ' ⊑ γ) → ActualPrem p q γ (place θ) (q - ξ)
-   _∋'_[_] : (T : Expr p lib const γ) → (ξ : svar q δ') → (θ : δ' ⊑ γ)  → ActualPrem p q γ (place θ) (q - ξ)
-   _≡'_    : Expr p lib const γ → Expr p lib const γ → ActualPrem p q γ (` '⊤') q
-   univ    : Expr p lib const γ → ActualPrem p q γ (` '⊤') q
-   _⊢'_    : Expr p lib const γ → ActualPrem p q (suc γ) p` q`` → ActualPrem p q γ (bind p`) q``
+   _∋'_[_] : (T : Expr p const γ) → (ξ : svar q δ') → (θ : δ' ⊑ γ)  → ActualPrem p q γ (place θ) (q - ξ)
+   _≡'_    : Expr p const γ → Expr p const γ → ActualPrem p q γ (` '⊤') q
+   univ    : Expr p const γ → ActualPrem p q γ (` '⊤') q
+   _⊢'_    : Expr p const γ → ActualPrem p q (suc γ) p` q`` → ActualPrem p q γ (bind p`) q``
 
 
 
@@ -135,7 +135,7 @@ record TypeRule : Set where
     premises : Σ[ p' ∈ Pattern 0 ] Prems (` '⊤') subject p'
 open TypeRule
 
-match-typerule : (rule : TypeRule) → Term lib const γ → Maybe ((γ ⊗ (subject rule)) -Env)
+match-typerule : (rule : TypeRule) → Term const γ → Maybe ((γ ⊗ (subject rule)) -Env)
 match-typerule rule term = match term (subject rule)
 
 record UnivRule : Set where
@@ -144,7 +144,7 @@ record UnivRule : Set where
     premises : Σ[ p' ∈ Pattern 0 ] Prems input (` '⊤') p'
 open UnivRule
 
-match-univrule : (rule : UnivRule) → Term lib const γ → Maybe ((γ ⊗ (input rule)) -Env)
+match-univrule : (rule : UnivRule) → Term const γ → Maybe ((γ ⊗ (input rule)) -Env)
 match-univrule rule term = match term (input rule)
 
 record ∋rule : Set where
@@ -154,7 +154,7 @@ record ∋rule : Set where
     premises : Σ[ p' ∈ Pattern 0 ] Prems input subject p'
 open ∋rule
 
-match-∋rule : (rule : ∋rule) → Term lib const γ → Term lib const γ →
+match-∋rule : (rule : ∋rule) → Term const γ → Term const γ →
               (Maybe (((γ ⊗ (input rule)) -Env) × ((γ ⊗ (subject rule)) -Env)))
 match-∋rule rule Tterm tterm
   = do
@@ -167,11 +167,11 @@ record ElimRule : Set where
     targetPat  : Pattern 0
     eliminator : Pattern 0
     premises   : Σ[ p' ∈ Pattern 0 ] Prems targetPat eliminator p'
-    output     : Expr (proj₁ premises) lib const 0
+    output     : Expr (proj₁ premises) const 0
 
 match-erule : (rule : ElimRule) →
-              (T : Term lib const γ) →
-              (s : Term lib const γ) →
+              (T : Term const γ) →
+              (s : Term const γ) →
               Maybe (((γ ⊗ (ElimRule.targetPat rule)) -Env) × ((γ ⊗ (ElimRule.eliminator rule)) -Env))
 match-erule rule T s = do
                          T-env ← match T (targetPat rule)

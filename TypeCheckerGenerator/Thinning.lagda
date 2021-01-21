@@ -1,4 +1,4 @@
-\section{Thinnings}
+⊗\section{Thinnings}
 
 \begin{code}
 {-# OPTIONS --rewriting #-}

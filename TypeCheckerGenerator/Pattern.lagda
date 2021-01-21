@@ -9,7 +9,7 @@ module Pattern where
 
 \begin{code}
 open import CoreLanguage renaming (↠ to ↠↠)
-open import Thinning using (_⊑_; Ø; ι; _++_; ++-identityʳ; _⟨var_; _⟨term⊗_)
+open import Thinning using (_⊑_; Ø; ι; _++_; ++-identityʳ; _⟨var_; _⟨term_; _⟨term⊗_)
 open import Data.Char using (Char) renaming (_≟_ to _is_)
 open import Data.Nat.Properties using (_≟_)
 open import Data.Maybe using (Maybe; just; nothing; _>>=_)
@@ -17,6 +17,7 @@ open import Data.Bool using (true; false)
 open import Relation.Nullary using (does; _because_; proof; ofʸ)
 open import Relation.Binary.PropositionalEquality using (refl;  _≡_; cong; cong₂)
 open import Data.Nat using (suc; _+_)
+open import Opening using (Openable; openable)
 \end{code}
 
 \begin{code}
@@ -50,13 +51,12 @@ data _-Env {γ : Scope} : Pattern γ → Set where
   thing  : {θ : δ ⊑ γ} → Term const δ → (place θ) -Env
 
 -- We can 'open' patterns
-_⊗_ : (γ : Scope) → (p : Pattern δ) → Pattern (γ + δ)
-γ ⊗ ` x     = ` x
-γ ⊗ (s ∙ t) = (γ ⊗ s) ∙ (γ ⊗ t)
-_⊗_ {δ} γ (bind t)
-  = bind (γ ⊗ t)
-γ ⊗ place θ = place (ι ++ θ)
-γ ⊗ ⊥       = ⊥
+_⊗_ : Openable Pattern
+γ ⊗ ` x      = ` x
+γ ⊗ (s ∙ t)  = (γ ⊗ s) ∙ (γ ⊗ t)
+γ ⊗ (bind t) = bind (γ ⊗ t)
+γ ⊗ place θ  = place (ι ++ θ)
+γ ⊗ ⊥        = ⊥
 
 -- opening a pattern by 0 is just the pattern
 ⊗-identityʳ : 0 ⊗ p ≡ p
@@ -104,38 +104,32 @@ _-penv_ : p -Env → (ξ : svar p δ) → (p - ξ) -Env
 bind e -penv bind ξ = bind (e -penv ξ)
 thing x -penv ⋆     = `
 
--- we can 'open up' a svar
-_⊗svar_ : svar p δ → (γ : Scope) → svar (γ ⊗ p) (γ + δ)
-(⋆ {θ = θ}) ⊗svar γ = ⋆
-(v ∙)       ⊗svar γ = (v ⊗svar γ) ∙
-(∙ v)       ⊗svar γ = ∙ (v ⊗svar γ)
-bind v      ⊗svar γ = bind (v ⊗svar γ)
+-- we can 'open up' a svar but not using Openable as
+-- the resulting svar is indexed by a newly opened pattern
+_⊗svar_ : (γ : Scope) → svar p δ → svar (γ ⊗ p) (γ + δ)
+γ ⊗svar ⋆      = ⋆
+γ ⊗svar (v ∙)  = (γ ⊗svar v) ∙
+γ ⊗svar (∙ v)  = ∙ (γ ⊗svar v)
+γ ⊗svar bind v = bind (γ ⊗svar v)
 
--- and a var
-_⊗var_ : Var δ → (γ : Scope) → Var (γ + δ)
-(ze {s})   ⊗var γ = (fromNum γ) ⟨var ((ι {suc γ}) ++ (Ø {s}))
-(su {s} v) ⊗var γ = su (v ⊗var γ)
+-- we can 'open up' variables using the thinning
+_⊗var_ : Openable Var
+_⊗var_ = openable _⟨var_
 
 private
   variable
     d : Dir
 
--- we can 'open up' a term
-_⊗term_ : Term d δ → (γ : Scope) → Term d (γ + δ)
-_⊗term_ {const} (` x)      γ = ` x
-_⊗term_ {const} (s ∙ t)    γ = (s ⊗term γ) ∙ (t ⊗term γ)
-_⊗term_ {const} (bind x)   γ = bind (x ⊗term γ)
-_⊗term_ {const} (thunk x)  γ = thunk (x ⊗term γ)
-_⊗term_ {compu} (var x)    γ = var (x ⊗var γ)
-_⊗term_ {compu} (elim e s) γ = elim (e ⊗term γ) (s ⊗term γ)
-_⊗term_ {compu} (t ∷ T)    γ = (t ⊗term γ) ∷ (T ⊗term γ)
+-- we can 'open up' a term using the thinning
+_⊗term_ : Openable (Term d)
+_⊗term_ {d} = openable {T = Term d} _⟨term_
 
 -- and we can open environments
 _⊗env_ : p -Env → (γ : Scope) → (γ ⊗ p) -Env
 `       ⊗env γ = `
 (s ∙ t) ⊗env γ = (s ⊗env γ) ∙ (t ⊗env γ)
 bind e  ⊗env γ = bind (e ⊗env γ)
-thing x ⊗env γ = thing (x ⊗term γ)
+thing x ⊗env γ = thing (γ ⊗term x)
 
 -- crucually, we can now look up terms in an environment
 _‼_ : ∀ {γ} {p : Pattern γ} → svar p δ → (γ' ⊗ p) -Env → Term const (γ' + δ)

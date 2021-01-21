@@ -41,9 +41,7 @@ data Prem (p : Pattern δ) (q : Pattern δ) (γ : Scope) : (p' : Pattern γ) →
    univ    : Expr p const γ → Prem p q γ (` '⊤') q
    _⊢'_    : Expr p const γ → Prem p q (suc γ) p` q`` → Prem p q γ (bind p`) q``
 
-
-
-helper : ∀ {δ'} (δ : Scope) → (q : Pattern γ) → (ξ : svar q δ') → (δ ⊗ q) - (ξ ⊗svar δ) ≡ δ ⊗ (q - ξ)
+helper : ∀ {δ'} (δ : Scope) → (q : Pattern γ) → (ξ : svar q δ') → (δ ⊗ q) - (δ ⊗svar ξ) ≡ δ ⊗ (q - ξ)
 helper δ (s ∙ t)  (ξ ∙)     = cong (λ x → Pattern._∙_ x (δ ⊗ t)) (helper δ s ξ) 
 helper δ (s ∙ t) (∙ ξ)      = cong (Pattern._∙_ (δ ⊗ s)) (helper δ t ξ)
 helper δ (bind q) (bind ξ)  = cong bind (helper δ q ξ)
@@ -53,11 +51,11 @@ helper δ (place x) ⋆        = refl
                  (δ : Scope) →
                  Prem p q γ p' q' →
                  Prem (δ ⊗ p) (δ ⊗ q) (δ + γ) (δ ⊗ p')  (δ ⊗ q')
-⊗premise {q = q} δ (type ξ θ)     rewrite sym (helper δ q ξ) = type (ξ ⊗svar δ) (ι ++ θ)
-⊗premise {q = q} δ (T ∋' ξ [ θ ]) rewrite sym (helper δ q ξ) = (T ⊗expr δ) ∋' ξ ⊗svar δ [ ι ++ θ ]
-⊗premise δ (x ≡' x₁)      = (x ⊗expr δ) ≡' (x₁ ⊗expr δ)
-⊗premise δ (univ x)       = univ (x ⊗expr δ)
-⊗premise δ (_⊢'_ {p` = p`} x prem) = (x ⊗expr δ) ⊢' ⊗premise δ prem
+⊗premise {q = q} δ (type ξ θ)     rewrite sym (helper δ q ξ) = type (δ ⊗svar ξ) (ι ++ θ)
+⊗premise {q = q} δ (T ∋' ξ [ θ ]) rewrite sym (helper δ q ξ) = (δ ⊗expr T) ∋' δ ⊗svar ξ [ ι ++ θ ]
+⊗premise δ (x ≡' x₁)      = (δ ⊗expr x) ≡' (δ ⊗expr x₁)
+⊗premise δ (univ x)       = univ (δ ⊗expr x)
+⊗premise δ (_⊢'_ {p` = p`} x prem) = (δ ⊗expr x) ⊢' ⊗premise δ prem
 
 -- We have a concept of a placeless thing, which represents any
 -- pattern that contains no places

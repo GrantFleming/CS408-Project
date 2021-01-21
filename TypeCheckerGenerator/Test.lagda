@@ -1,12 +1,12 @@
 \section{Testing}
 
-\hide
+\hide{
 \begin{code}
 module Test where
 \end{code}
 }
 
-\hide
+\hide{
 \begin{code}
 open import Test.STLCTest
 \end{code}

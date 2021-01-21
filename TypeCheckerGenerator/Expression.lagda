@@ -112,22 +112,22 @@ idexpr {zero}          = ε
 idexpr {suc γ} {p = p} = ^sub {T = Expr p compu} _⟨exp_ idexpr -, var (fromNum γ)
 
 
-_⊗expr_ : Expr p d δ → (γ : Scope) → Expr (γ ⊗ p) d (γ + δ)
+_⊗expr_ : (γ : Scope) → Expr p d δ → Expr (γ ⊗ p) d (γ + δ)
 
 -- we can 'open' a substitution of expressions
-_⊗sub_ : δ ⇒[ Expr p compu ] γ → (δ' : Scope) → (δ' + δ) ⇒[ Expr (δ' ⊗  p) compu ] (δ' + γ)
-_⊗sub_ {p = p} {γ = γ} ε δ' = ⟨sub {T = Expr (δ' ⊗ p) compu} _⟨exp_ (idexpr {δ'}) (δ' ◃ γ)
-(σ -, x) ⊗sub δ' = (σ ⊗sub δ') -, (x ⊗expr δ')
+_⊗sub_ : (δ' : Scope) → δ ⇒[ Expr p compu ] γ → (δ' + δ) ⇒[ Expr (δ' ⊗  p) compu ] (δ' + γ)
+_⊗sub_ {p = p} {γ = γ} δ' ε = ⟨sub {T = Expr (δ' ⊗ p) compu} _⟨exp_ (idexpr {δ'}) (δ' ◃ γ)
+δ' ⊗sub (σ -, x) = (δ' ⊗sub σ) -, (δ' ⊗expr x)
 
 -- so we can 'open up' an expression
-_⊗expr_ {d = const} (` x)      γ  = ` x
-_⊗expr_ {d = const} (s ∙ t)    γ  = (s ⊗expr γ) ∙ (t ⊗expr γ)
-_⊗expr_ {d = const} (bind x)   γ  = bind (x ⊗expr γ)
-_⊗expr_ {d = const} (thunk x)  γ  = thunk (x ⊗expr γ)
-_⊗expr_ {d = const} {δ = δ} (ξ / σ)    γ  = (ξ ⊗svar γ) / (σ ⊗sub γ)
-_⊗expr_ {d = compu} (var x)    γ  = var (x ⊗var γ)
-_⊗expr_ {d = compu} (elim e s) γ  = elim (e ⊗expr γ) (s ⊗expr γ)
-_⊗expr_ {d = compu} (t ∷ T)    γ  = (t ⊗expr γ) ∷ (T ⊗expr γ)
+_⊗expr_ {d = const} γ (` x)       = ` x
+_⊗expr_ {d = const} γ (s ∙ t)     = (γ ⊗expr s) ∙ (γ ⊗expr t)
+_⊗expr_ {d = const} γ (bind x)    = bind (γ ⊗expr x)
+_⊗expr_ {d = const} γ (thunk x)   = thunk (γ ⊗expr x)
+_⊗expr_ {d = const} γ (ξ / σ)     = (γ ⊗svar ξ) / (γ ⊗sub σ)
+_⊗expr_ {d = compu} γ (var x)     = var (γ ⊗var x)
+_⊗expr_ {d = compu} γ (elim e s)  = elim (γ ⊗expr e) (γ ⊗expr s)
+_⊗expr_ {d = compu} γ (t ∷ T)     = (γ ⊗expr t) ∷ (γ ⊗expr T)
 
 toTerm  : (γ ⊗ p) -Env → Expr p d γ' → Term d (γ + γ')
 toTerm {d = const} penv (` x)    = ` x

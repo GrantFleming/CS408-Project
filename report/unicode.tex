@@ -4,6 +4,10 @@
 \usepackage{amssymb}
 \usepackage{txfonts}
 
+\def\dotminus{\mathbin{
+  \ooalign{\hss\smash{\raise1ex\hbox{.}}\hss\cr
+  \mathsurround=0pt$-$}}}
+
 % Misc symbols
 \newunicodechar{⌞}{\ensuremath{\llcorner}}
 \newunicodechar{⌟}{\ensuremath{\lrcorner}}
@@ -17,10 +21,13 @@
 \newunicodechar{□}{\ensuremath{\Box}}
 \newunicodechar{∎}{\ensuremath{\blacksquare}}
 \newunicodechar{⋆}{\ensuremath{\star}}
+\newunicodechar{↠}{\ensuremath{\twoheadrightarrow}}
 
 \newunicodechar{‼}{\ensuremath{!!}}
 \newunicodechar{⁇}{\ensuremath{??}}
 \newunicodechar{∥}{\ensuremath{\|}}
+\newunicodechar{∶}{\ensuremath{:}}
+
 
 % indices
 \newunicodechar{₀}{\ensuremath{_0}}
@@ -44,11 +51,13 @@
 
 \newunicodechar{²}{\ensuremath{^2}}
 
+\newunicodechar{ᵇ}{\ensuremath{^b}}
+\newunicodechar{ᵍ}{\ensuremath{^g}}
 \newunicodechar{ⁱ}{\ensuremath{^i}}
 \newunicodechar{ˡ}{\ensuremath{^l}}
 \newunicodechar{ʳ}{\ensuremath{^r}}
-\newunicodechar{ᵇ}{\ensuremath{^b}}
-
+\newunicodechar{ᵗ}{\ensuremath{^t}}
+\newunicodechar{ʸ}{\ensuremath{^y}}
 
 \newunicodechar{ᴬ}{\ensuremath{^A}}
 \newunicodechar{ᴮ}{\ensuremath{^B}}
@@ -57,6 +66,7 @@
 \newunicodechar{ᵀ}{\ensuremath{^T}}
 \newunicodechar{ᵁ}{\ensuremath{^U}}
 \newunicodechar{ⱽ}{\ensuremath{^V}}
+
 
 % Dots
 \newunicodechar{⋯}{\ensuremath{\cdots}}
@@ -102,6 +112,21 @@
 \newunicodechar{↺}{\ensuremath{\circlearrowleft}}
 \newunicodechar{⊔}{\ensuremath{\sqcup}}
 \newunicodechar{⨆}{\ensuremath{\bigsqcup}}
+\newunicodechar{θ}{\ensuremath{\theta}}
+\newunicodechar{ϕ}{\ensuremath{\phi}}
+\newunicodechar{⊗}{\ensuremath{\otimes}}
+
+\newunicodechar{⊑}{\ensuremath{\sqsubseteq}}
+\newunicodechar{◃}{\ensuremath{\triangleleft}}
+\newunicodechar{▹}{\ensuremath{\triangleright}}
+\newunicodechar{∸}{\ensuremath{\dotminus}}
+
+
+
+
+
+
+
 \newunicodechar{∩}{\ensuremath{\cap}}
 \newunicodechar{∪}{\ensuremath{\cup}}
 

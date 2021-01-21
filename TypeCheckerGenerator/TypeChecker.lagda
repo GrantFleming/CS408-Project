@@ -225,4 +225,4 @@ check {_} {compu} rules@(rs tr u ∋ e) Γ T t = do
                             S ← infer rules Γ t
                             _ ← type-check Γ rules tr S
                             S ≡ᵗ T
--- \end{code}
+\end{code}

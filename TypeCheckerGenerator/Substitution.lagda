@@ -1,12 +1,12 @@
 \section{Substitution}
 
-\hide
+\hide{
 \begin{code}
 module Substitution where
 \end{code}
 }
 
-\hide
+\hide{
 \begin{code}
 open import CoreLanguage
 open import BwdVec

@@ -9,15 +9,15 @@ module Pattern where
 
 \begin{code}
 open import CoreLanguage renaming (↠ to ↠↠)
-open import Thinning using (_⊑_; Ø; ι; _++_; ++-identityʳ; _⟨var_; _⟨term_; _⟨term⊗_)
+open import Thinning using (_⊑_; Ø; ι; _++_; _⟨term⊗_; ++-identityʳ)
 open import Data.Char using (Char) renaming (_≟_ to _is_)
 open import Data.Nat.Properties using (_≟_)
 open import Data.Maybe using (Maybe; just; nothing; _>>=_)
 open import Data.Bool using (true; false)
 open import Relation.Nullary using (does; _because_; proof; ofʸ)
 open import Relation.Binary.PropositionalEquality using (refl;  _≡_; cong; cong₂)
-open import Data.Nat using (suc; _+_)
-open import Opening using (Openable; openable)
+open import Data.Nat using (zero; suc; _+_)
+open import Opening using (Openable)
 \end{code}
 
 \begin{code}
@@ -55,15 +55,16 @@ _⊗_ : Openable Pattern
 γ ⊗ ` x      = ` x
 γ ⊗ (s ∙ t)  = (γ ⊗ s) ∙ (γ ⊗ t)
 γ ⊗ (bind t) = bind (γ ⊗ t)
-γ ⊗ place θ  = place (ι ++ θ)
+γ ⊗ place θ  = place (ι {γ} ++ θ)
 γ ⊗ ⊥        = ⊥
 
 -- opening a pattern by 0 is just the pattern
+open import Thinning using (ε; _O; _I)
 ⊗-identityʳ : 0 ⊗ p ≡ p
 ⊗-identityʳ {p = ` x}     = refl
 ⊗-identityʳ {p = p ∙ p₁}  = cong₂ _∙_ ⊗-identityʳ ⊗-identityʳ
-⊗-identityʳ {p = bind p}  = cong bind ⊗-identityʳ 
-⊗-identityʳ {p = place x} rewrite ++-identityʳ {θ = x} = refl
+⊗-identityʳ {p = bind p}  = cong bind ⊗-identityʳ
+⊗-identityʳ {p = place θ} rewrite ++-identityʳ θ = refl
 ⊗-identityʳ {p = ⊥}       = refl
 
 match : Term const (δ + γ) → (p : Pattern γ) → Maybe ((δ ⊗ p) -Env)
@@ -114,7 +115,8 @@ _⊗svar_ : (γ : Scope) → svar p δ → svar (γ ⊗ p) (γ + δ)
 
 -- we can 'open up' variables using the thinning
 _⊗var_ : Openable Var
-_⊗var_ = openable _⟨var_
+zero  ⊗var v = v
+suc γ ⊗var v = su (γ ⊗var v)
 
 private
   variable
@@ -122,7 +124,13 @@ private
 
 -- we can 'open up' a term using the thinning
 _⊗term_ : Openable (Term d)
-_⊗term_ {d} = openable {T = Term d} _⟨term_
+_⊗term_ {const} γ (` x)      = ` x
+_⊗term_ {const} γ (s ∙ t)    = (γ ⊗term s) ∙ (γ ⊗term t)
+_⊗term_ {const} γ (bind t)   = bind (γ ⊗term t)
+_⊗term_ {const} γ (thunk x)  = thunk (γ ⊗term x)
+_⊗term_ {compu} γ (var x)    = var (γ ⊗var x)
+_⊗term_ {compu} γ (elim e s) = elim (γ ⊗term e) (γ ⊗term s)
+_⊗term_ {compu} γ (t ∷ T)    = (γ ⊗term t) ∷ (γ ⊗term T)
 
 -- and we can open environments
 _⊗env_ : p -Env → (γ : Scope) → (γ ⊗ p) -Env

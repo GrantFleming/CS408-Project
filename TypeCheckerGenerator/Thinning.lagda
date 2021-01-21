@@ -60,10 +60,10 @@ _++_ {δ} {γ} {suc δ'} {suc γ'} θ (ϕ I)
         | +-suc γ γ'
         =  (θ ++ ϕ) I
 
-++-identityʳ : ∀ {θ : δ' ⊑ γ'} → ε ++ θ ≡ θ
-++-identityʳ {θ = ε}   = refl
-++-identityʳ {θ = θ O} = cong _O (++-identityʳ)
-++-identityʳ {θ = θ I} = cong _I (++-identityʳ)
+++-identityʳ : (θ : δ ⊑ γ) → ε ++ θ ≡ θ
+++-identityʳ  ε    = refl
+++-identityʳ (θ O) = cong _O (++-identityʳ θ)
+++-identityʳ (θ I) = cong _I (++-identityʳ θ)
 
 -- Thinnability
 Thinnable : Scoped → Set

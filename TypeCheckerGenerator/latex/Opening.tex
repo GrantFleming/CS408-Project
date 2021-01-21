@@ -2,11 +2,6 @@
 
 \hide{
 \begin{code}%
-\>[0]\AgdaSymbol{\{-\#}\AgdaSpace{}%
-\AgdaKeyword{OPTIONS}\AgdaSpace{}%
-\AgdaPragma{--rewriting}\AgdaSpace{}%
-\AgdaSymbol{\#-\}}\<%
-\\
 \>[0]\AgdaKeyword{module}\AgdaSpace{}%
 \AgdaModule{Opening}\AgdaSpace{}%
 \AgdaKeyword{where}\<%
@@ -27,21 +22,11 @@
 \AgdaModule{Data.Nat}\AgdaSpace{}%
 \AgdaKeyword{using}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaOperator{\AgdaPrimitive{\AgdaUnderscore{}+\AgdaUnderscore{}}}\AgdaSymbol{)}\<%
-\\
-\>[0]\AgdaKeyword{open}\AgdaSpace{}%
-\AgdaKeyword{import}\AgdaSpace{}%
-\AgdaModule{Thinning}\AgdaSpace{}%
-\AgdaKeyword{using}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaFunction{Thinnable}\AgdaSymbol{;}\AgdaSpace{}%
-\AgdaFunction{Ø}\AgdaSymbol{;}\AgdaSpace{}%
-\AgdaFunction{ι}\AgdaSymbol{;}\AgdaSpace{}%
-\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}++\AgdaUnderscore{}}}\AgdaSymbol{;}\AgdaSpace{}%
-\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}▹\AgdaUnderscore{}}}\AgdaSymbol{)}\<%
 \end{code}
 }
 
 \begin{code}%
-\>[0]\AgdaComment{-- scoped things can be openable}\<%
+\>[0]\AgdaComment{-- scoped things can are openable}\<%
 \\
 \>[0]\AgdaFunction{Openable}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
@@ -67,34 +52,5 @@
 \AgdaBound{T}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaBound{γ}\AgdaSpace{}%
 \AgdaOperator{\AgdaPrimitive{+}}\AgdaSpace{}%
-\AgdaBound{δ}\AgdaSymbol{)}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaComment{-- anything thinnable is automatically openable}\<%
-\\
-\>[0]\AgdaFunction{openable}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaSymbol{∀}\AgdaSpace{}%
-\AgdaSymbol{\{}\AgdaBound{T}\AgdaSymbol{\}}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaFunction{Thinnable}\AgdaSpace{}%
-\AgdaBound{T}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaFunction{Openable}\AgdaSpace{}%
-\AgdaBound{T}\<%
-\\
-\>[0]\AgdaFunction{openable}\AgdaSpace{}%
-\AgdaBound{⟨}\AgdaSpace{}%
-\AgdaSymbol{\{}\AgdaBound{δ}\AgdaSymbol{\}}\AgdaSpace{}%
-\AgdaSymbol{=}\AgdaSpace{}%
-\AgdaSymbol{λ}\AgdaSpace{}%
-\AgdaBound{γ}\AgdaSpace{}%
-\AgdaBound{Tδ}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaBound{⟨}\AgdaSpace{}%
-\AgdaBound{Tδ}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaBound{γ}\AgdaSpace{}%
-\AgdaOperator{\AgdaFunction{▹}}\AgdaSpace{}%
 \AgdaBound{δ}\AgdaSymbol{)}\<%
 \end{code}

@@ -62,10 +62,6 @@ A variable is our first example of such a scoped entity which we
 construct in order to maintain the invariant that a variable should
 always refer to something in scope.
 
-\begin{code}%
-\>[0]\<%
-\end{code}
-
 \hide{
 \begin{code}%
 \>[0]\AgdaKeyword{private}\<%
@@ -155,7 +151,7 @@ always refer to something in scope.
 }
 
 
-Our internal syntax is split into two broad categories grammatical
+Our internal syntax is split into two broad grammatical
 classes: constructions and computations. Constructions will have
 their type checked, while computations have their type synthesized.
 
@@ -286,15 +282,15 @@ their type checked, while computations have their type synthesized.
 \\
 \>[0]\AgdaFunction{Term}\AgdaSpace{}%
 \AgdaInductiveConstructor{const}\AgdaSpace{}%
-\AgdaBound{γ}\AgdaSpace{}%
-\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaBound{γ}%
+\>[14]\AgdaSymbol{=}\AgdaSpace{}%
 \AgdaDatatype{Const}\AgdaSpace{}%
 \AgdaBound{γ}\<%
 \\
 \>[0]\AgdaFunction{Term}\AgdaSpace{}%
 \AgdaInductiveConstructor{compu}\AgdaSpace{}%
-\AgdaBound{γ}\AgdaSpace{}%
-\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaBound{γ}%
+\>[14]\AgdaSymbol{=}\AgdaSpace{}%
 \AgdaDatatype{Compu}\AgdaSpace{}%
 \AgdaBound{γ}\<%
 \end{code}
@@ -339,8 +335,7 @@ this embedding.
 \hide{
 \begin{code}%
 \>[0]\AgdaKeyword{infixr}\AgdaSpace{}%
-\AgdaNumber{20}\AgdaSpace{}%
-\AgdaOperator{\AgdaInductiveConstructor{\AgdaUnderscore{}∙\AgdaUnderscore{}}}\<%
+\AgdaNumber{2}\AgdaOperator{\AgdaInductiveConstructor{0 \AgdaUnderscore{}∙\AgdaUnderscore{}}}\<%
 \\
 %
 \\[\AgdaEmptyExtraSkip]%

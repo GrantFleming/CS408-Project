@@ -47,11 +47,22 @@
 \>[4]\AgdaGeneralizable{γ}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaFunction{Scope}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaComment{-- substitution}\<%
-\\
+\end{code}
+}
+
+Substitutions are defined as backward vectors, vectors that grow by appending
+elements to the right hand side as opposed to the left. A substitution is
+defined in terms of two scopes, the scope of the target of substitution, and
+the scope of the entities we will substitute into the target.
+
+We are able to look up individual variables in a substitution, later we will
+see that this is just a special case of using a thinning to select from a
+subsitution but having dedicated syntax is often more convenient.
+
+We also capture the idea of Substitutable entities and define composition
+for substitution across all such definitions.
+
+\begin{code}%
 \>[0]\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}⇒[\AgdaUnderscore{}]\AgdaUnderscore{}}}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaFunction{Scope}\AgdaSpace{}%
@@ -75,12 +86,6 @@
 \\
 %
 \\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaComment{-- we can select from substitions using \AgdaUnderscore{}!\AgdaUnderscore{}}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaComment{-- we can lookup things in substitutions}\<%
-\\
 \>[0]\AgdaFunction{lookup}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaBound{T}\AgdaSpace{}%
@@ -99,32 +104,8 @@
 \AgdaBound{T}\AgdaSpace{}%
 \AgdaGeneralizable{γ}\<%
 \\
-\>[0]\AgdaFunction{lookup}\AgdaSpace{}%
-\AgdaBound{T}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaBound{σ}\AgdaSpace{}%
-\AgdaOperator{\AgdaInductiveConstructor{-,}}\AgdaSpace{}%
-\AgdaBound{x}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaInductiveConstructor{ze}\AgdaSpace{}%
-\AgdaSymbol{=}\AgdaSpace{}%
-\AgdaBound{x}\<%
-\\
-\>[0]\AgdaFunction{lookup}\AgdaSpace{}%
-\AgdaBound{T}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaBound{σ}\AgdaSpace{}%
-\AgdaOperator{\AgdaInductiveConstructor{-,}}\AgdaSpace{}%
-\AgdaBound{x}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaInductiveConstructor{su}\AgdaSpace{}%
-\AgdaBound{v}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaSymbol{=}\AgdaSpace{}%
-\AgdaFunction{lookup}\AgdaSpace{}%
-\AgdaBound{T}\AgdaSpace{}%
-\AgdaBound{σ}\AgdaSpace{}%
-\AgdaBound{v}\<%
-\\
 %
 \\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaComment{-- Substitutability}\<%
-\\
 \>[0]\AgdaFunction{Substitutable}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaFunction{Scoped}\AgdaSpace{}%
@@ -152,8 +133,6 @@
 \\
 %
 \\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaComment{-- substitution composability}\<%
-\\
 \>[0]\AgdaOperator{\AgdaFunction{[\AgdaUnderscore{}]\AgdaUnderscore{}∘σ\AgdaUnderscore{}}}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaSymbol{∀}\AgdaSpace{}%
@@ -166,7 +145,34 @@
 \AgdaOperator{\AgdaFunction{\AgdaUnderscore{}⇒[}}\AgdaSpace{}%
 \AgdaBound{T}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{]\AgdaUnderscore{}}}\<%
+\end{code}
+
+\hide{
+\begin{code}%
+\>[0]\AgdaFunction{lookup}\AgdaSpace{}%
+\AgdaBound{T}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{σ}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{-,}}\AgdaSpace{}%
+\AgdaBound{x}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaInductiveConstructor{ze}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaBound{x}\<%
 \\
+\>[0]\AgdaFunction{lookup}\AgdaSpace{}%
+\AgdaBound{T}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{σ}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{-,}}\AgdaSpace{}%
+\AgdaBound{x}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{su}\AgdaSpace{}%
+\AgdaBound{v}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaFunction{lookup}\AgdaSpace{}%
+\AgdaBound{T}\AgdaSpace{}%
+\AgdaBound{σ}\AgdaSpace{}%
+\AgdaBound{v}\<%
+\\
+%
+\\[\AgdaEmptyExtraSkip]%
 \>[0]\AgdaOperator{\AgdaFunction{[}}\AgdaSpace{}%
 \AgdaBound{/}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{]}}%
@@ -197,3 +203,4 @@
 \AgdaBound{σ'}\<%
 \end{code}
 }
+

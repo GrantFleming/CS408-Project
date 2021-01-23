@@ -38,9 +38,6 @@ A variable is our first example of such a scoped entity which we
 construct in order to maintain the invariant that a variable should
 always refer to something in scope.
 
-\begin{code}
-\end{code}
-
 \hide{
 \begin{code}
 private
@@ -68,7 +65,7 @@ fromNum (suc n) = su (fromNum n)
 }
 
 
-Our internal syntax is split into two broad categories grammatical
+Our internal syntax is split into two broad grammatical
 classes: constructions and computations. Constructions will have
 their type checked, while computations have their type synthesized.
 
@@ -94,8 +91,8 @@ data Compu γ where
 data Dir : Set where const compu : Dir
 
 Term : Dir → Scoped
-Term const γ = Const γ
-Term compu γ = Compu γ
+Term const γ  = Const γ
+Term compu γ  = Compu γ
 \end{code}
 
 This syntax gives us the means to represent atoms of original syntax

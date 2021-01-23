@@ -18,5 +18,9 @@ data BwdVec (X : Set) : ℕ → Set where
   _-,_ : {n : ℕ} → BwdVec X n → X → BwdVec X (suc n)
 
 infixl 20 _-,_
+
+map : ∀ {X} {Y} {n} → (X → Y) → BwdVec X n → BwdVec Y n
+map f  ε       = ε
+map f (v -, x) = map f v -, f x
 \end{code}
 

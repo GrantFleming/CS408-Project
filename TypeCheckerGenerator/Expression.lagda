@@ -11,7 +11,7 @@ module Expression where
 \begin{code}
 open import CoreLanguage renaming (↠ to ↠↠)
 open import Pattern using (Pattern; _-Env; svar; _⊗_; _⊗var_; _⊗svar_; _‼_)
-open import Thinning
+open import Thinning hiding (_++_)
 open import Substitution
 open import TermSubstitution
 open import Composition
@@ -138,7 +138,7 @@ toTerm {d = const} penv (thunk x) = ↠↠ (toTerm penv x)
 toTerm {γ = γ} {d = const} {γ' = γ'} penv (ξ / σ)
   = let σpenv = helper σ penv in
     let thingy = ⟨sub {T = Term compu} _⟨term_ id (γ ◃ γ') in
-    (ξ ‼ penv) /term ((thingy ++sub σpenv))
+    (ξ ‼ penv) /term ((thingy ++ σpenv))
     where
       helper : ∀ {γ} → δ' ⇒[ Expr p d ] γ' → ((γ ⊗ p) -Env)  → δ' ⇒[ Term d ] (γ + γ')
       helper ε env = ε

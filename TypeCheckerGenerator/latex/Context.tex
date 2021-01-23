@@ -167,8 +167,7 @@ We provide a special function to extend contexts which appends a new
 element to the context (making it no longer a context as $suc γ \neq γ$ in
 $(suc γ) ⇒[ \mbox{Term const} ] γ$) before weakening the whole substitution
 yielding the context $(suc γ) \mbox{⇒[Term const]} (suc γ)$. The extra effort
-exerted here keeps our contexts in a pre-thinned state allowing us
-to use terms directly from it without having to fix up the scope first.
+exerted here keeps our contexts in the previously explained pre-thinned state.
 
 If we only ever use $ε$ and $\_ , \_$ to construct our contexts, we can be assured
 that they will always be valid and pre-thinned. No such assurances can

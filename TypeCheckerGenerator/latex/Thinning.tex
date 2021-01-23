@@ -90,7 +90,9 @@
 \\
 \>[0]\AgdaKeyword{open}\AgdaSpace{}%
 \AgdaKeyword{import}\AgdaSpace{}%
-\AgdaModule{BwdVec}\<%
+\AgdaModule{BwdVec}\AgdaSpace{}%
+\AgdaKeyword{hiding}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}++\AgdaUnderscore{}}}\AgdaSymbol{)}\<%
 \\
 \>[0]\AgdaKeyword{open}\AgdaSpace{}%
 \AgdaKeyword{import}\AgdaSpace{}%
@@ -167,15 +169,15 @@
 \end{code}
 }
 
-A key concept that will be used throught this implementation is that
+A key concept that will be used throughout this implementation is that
 of a Thinning. Thinnings describe embeddings between scopes and are
-denoted $δ ⊑ γ$ where they are embedding some scope $δ$ into another
+denoted $δ ⊑ γ$ where they are embed some scope $δ$ into another
 scope $γ$ and as such is must be that $δ \leq γ$.
 
 Thinnings can be represented as bit-vectors $γ$ digits long where each
 digit identifies what is 'new' in $γ$, or alternatively, for things scoped
-in $γ$, which of them existed in $δ$. Ouut implementation follows this
-intuiting and also enforces the $δ < γ$ invariant by construction.
+in $γ$, which of them existed in $δ$. Our implementation follows this
+intuiting and also enforces the $δ \leq γ$ invariant by construction.
 
 \begin{code}%
 \>[0]\AgdaKeyword{data}\AgdaSpace{}%
@@ -230,20 +232,20 @@ thinning and what it means to append two thinnings as well as injections
 to a concatenation in both directions. Their type signatures are as follows.
 
 \begin{code}%
-\>[0]\AgdaFunction{ι}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
+\>[0]\AgdaFunction{ι}%
+\>[6]\AgdaSymbol{:}\AgdaSpace{}%
 \AgdaGeneralizable{γ}\AgdaSpace{}%
 \AgdaOperator{\AgdaDatatype{⊑}}\AgdaSpace{}%
 \AgdaGeneralizable{γ}\<%
 \\
-\>[0]\AgdaFunction{Ø}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
+\>[0]\AgdaFunction{Ø}%
+\>[6]\AgdaSymbol{:}\AgdaSpace{}%
 \AgdaNumber{0}\AgdaSpace{}%
 \AgdaOperator{\AgdaDatatype{⊑}}\AgdaSpace{}%
 \AgdaGeneralizable{γ}\<%
 \\
-\>[0]\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}++\AgdaUnderscore{}}}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
+\>[0]\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}++\AgdaUnderscore{}}}%
+\>[6]\AgdaSymbol{:}\AgdaSpace{}%
 \AgdaGeneralizable{δ}\AgdaSpace{}%
 \AgdaOperator{\AgdaDatatype{⊑}}\AgdaSpace{}%
 \AgdaGeneralizable{γ}\AgdaSpace{}%
@@ -260,8 +262,8 @@ to a concatenation in both directions. Their type signatures are as follows.
 \AgdaOperator{\AgdaPrimitive{+}}\AgdaSpace{}%
 \AgdaGeneralizable{γ'}\AgdaSymbol{)}\<%
 \\
-\>[0]\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}◃\AgdaUnderscore{}}}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
+\>[0]\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}◃\AgdaUnderscore{}}}%
+\>[6]\AgdaSymbol{:}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaBound{γ}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaFunction{Scope}\AgdaSymbol{)}\AgdaSpace{}%
@@ -276,8 +278,8 @@ to a concatenation in both directions. Their type signatures are as follows.
 \AgdaOperator{\AgdaPrimitive{+}}\AgdaSpace{}%
 \AgdaBound{δ}\AgdaSymbol{)}\<%
 \\
-\>[0]\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}▹\AgdaUnderscore{}}}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
+\>[0]\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}▹\AgdaUnderscore{}}}%
+\>[6]\AgdaSymbol{:}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaBound{γ}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaFunction{Scope}\AgdaSymbol{)}\AgdaSpace{}%
@@ -481,7 +483,7 @@ to a concatenation in both directions. Their type signatures are as follows.
 }
 
 It is also worth noting here that all variables can be represented as
-singlton thinnings where the thinning identifies the selection of a
+singleton thinnings where the thinning identifies the selection of a
 variable from the scope.
 
 \begin{code}%

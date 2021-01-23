@@ -17,7 +17,7 @@ open import Data.Empty renaming (⊥ to bot)
 open import Data.Unit renaming (⊤ to top)
 open import Data.Nat.Properties using (+-identityʳ; +-suc)
 open import Relation.Binary.PropositionalEquality using (refl; _≡_; cong)
-open import BwdVec
+open import BwdVec hiding (_++_)
 open import Substitution
 \end{code}
 }
@@ -41,15 +41,15 @@ private
 \end{code}
 }
 
-A key concept that will be used throught this implementation is that
+A key concept that will be used throughout this implementation is that
 of a Thinning. Thinnings describe embeddings between scopes and are
-denoted $δ ⊑ γ$ where they are embedding some scope $δ$ into another
+denoted $δ ⊑ γ$ where they are embed some scope $δ$ into another
 scope $γ$ and as such is must be that $δ \leq γ$.
 
 Thinnings can be represented as bit-vectors $γ$ digits long where each
 digit identifies what is 'new' in $γ$, or alternatively, for things scoped
-in $γ$, which of them existed in $δ$. Ouut implementation follows this
-intuiting and also enforces the $δ < γ$ invariant by construction.
+in $γ$, which of them existed in $δ$. Our implementation follows this
+intuiting and also enforces the $δ \leq γ$ invariant by construction.
 
 \begin{code}
 data _⊑_ : Scope → Scope → Set where
@@ -63,11 +63,11 @@ thinning and what it means to append two thinnings as well as injections
 to a concatenation in both directions. Their type signatures are as follows.
 
 \begin{code}
-ι : γ ⊑ γ
-Ø : 0 ⊑ γ
-_++_ : δ ⊑ γ → δ' ⊑ γ' → (δ + δ') ⊑ (γ + γ')
-_◃_ : (γ : Scope) → (δ : Scope) → γ ⊑ (γ + δ)
-_▹_ : (γ : Scope) → (δ : Scope) → δ ⊑ (γ + δ)
+ι     : γ ⊑ γ
+Ø     : 0 ⊑ γ
+_++_  : δ ⊑ γ → δ' ⊑ γ' → (δ + δ') ⊑ (γ + γ')
+_◃_   : (γ : Scope) → (δ : Scope) → γ ⊑ (γ + δ)
+_▹_   : (γ : Scope) → (δ : Scope) → δ ⊑ (γ + δ)
 \end{code}
 
 \hide{
@@ -107,7 +107,7 @@ _++_ {δ} {γ} {suc δ'} {suc γ'} θ (ϕ I)
 }
 
 It is also worth noting here that all variables can be represented as
-singlton thinnings where the thinning identifies the selection of a
+singleton thinnings where the thinning identifies the selection of a
 variable from the scope.
 
 \begin{code}

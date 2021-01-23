@@ -26,3 +26,9 @@ Openable T = ∀ {δ} → (γ : Scope) → T δ → T (γ + δ)
 
 As with previous concepts, we adopt a naming convension when constructing
 openings where we use ⊗ often suffexed with the kind of thing we are opening.
+
+\hl{DOUBLE CHECK THIS}
+
+It is possible to express an opening as a thinning $δ ⊑ (γ + δ)$ however
+having a type that can express an opening in terms of $γ$ rather than
+in terms of a thinning is often more convenient and readable.

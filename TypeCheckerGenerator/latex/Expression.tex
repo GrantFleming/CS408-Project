@@ -37,7 +37,9 @@
 \\
 \>[0]\AgdaKeyword{open}\AgdaSpace{}%
 \AgdaKeyword{import}\AgdaSpace{}%
-\AgdaModule{Thinning}\<%
+\AgdaModule{Thinning}\AgdaSpace{}%
+\AgdaKeyword{hiding}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}++\AgdaUnderscore{}}}\AgdaSymbol{)}\<%
 \\
 \>[0]\AgdaKeyword{open}\AgdaSpace{}%
 \AgdaKeyword{import}\AgdaSpace{}%
@@ -513,9 +515,9 @@ Expression γ = ∀ \{δ\} \{p : Pattern δ\} \{d\} → Expr p d γ-\}}\<%
 \\
 \>[0]\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}\textasciicircum{}/exp}}\AgdaSpace{}%
 \AgdaSymbol{:}%
-\>[325I]\AgdaFunction{Weakenable}\<%
+\>[327I]\AgdaFunction{Weakenable}\<%
 \\
-\>[325I][@{}l@{\AgdaIndent{0}}]%
+\>[327I][@{}l@{\AgdaIndent{0}}]%
 \>[10]\AgdaSymbol{(}\AgdaGeneralizable{γ}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{⇒[}}\AgdaSpace{}%
 \AgdaFunction{Expr}\AgdaSpace{}%
@@ -1100,7 +1102,7 @@ Expression γ = ∀ \{δ\} \{p : Pattern δ\} \{d\} → Expr p d γ-\}}\<%
 \\
 \>[0][@{}l@{\AgdaIndent{0}}]%
 \>[2]\AgdaSymbol{=}%
-\>[769I]\AgdaKeyword{let}\AgdaSpace{}%
+\>[771I]\AgdaKeyword{let}\AgdaSpace{}%
 \AgdaBound{σpenv}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
 \AgdaFunction{helper}\AgdaSpace{}%
@@ -1108,7 +1110,7 @@ Expression γ = ∀ \{δ\} \{p : Pattern δ\} \{d\} → Expr p d γ-\}}\<%
 \AgdaBound{penv}\AgdaSpace{}%
 \AgdaKeyword{in}\<%
 \\
-\>[.][@{}l@{}]\<[769I]%
+\>[.][@{}l@{}]\<[771I]%
 \>[4]\AgdaKeyword{let}\AgdaSpace{}%
 \AgdaBound{thingy}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
@@ -1130,7 +1132,7 @@ Expression γ = ∀ \{δ\} \{p : Pattern δ\} \{d\} → Expr p d γ-\}}\<%
 \AgdaBound{penv}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{/term}}\AgdaSpace{}%
 \AgdaSymbol{((}\AgdaBound{thingy}\AgdaSpace{}%
-\AgdaOperator{\AgdaFunction{++sub}}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{++}}\AgdaSpace{}%
 \AgdaBound{σpenv}\AgdaSymbol{))}\<%
 \\
 %

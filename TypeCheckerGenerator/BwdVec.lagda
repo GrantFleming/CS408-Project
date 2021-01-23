@@ -8,7 +8,19 @@ module BwdVec where
 
 \hide
 \begin{code}
-open import Data.Nat using (ℕ; suc)
+open import Data.Nat using (ℕ; zero; suc; _+_)
+open import Data.Nat.Properties using (+-identityʳ; +-suc)
+\end{code}
+}
+
+\hide
+\begin{code}
+private
+  variable
+    X : Set
+    Y : Set
+    n : ℕ
+    m : ℕ
 \end{code}
 }
 
@@ -19,8 +31,14 @@ data BwdVec (X : Set) : ℕ → Set where
 
 infixl 20 _-,_
 
-map : ∀ {X} {Y} {n} → (X → Y) → BwdVec X n → BwdVec Y n
+map : (X → Y) → BwdVec X n → BwdVec Y n
 map f  ε       = ε
 map f (v -, x) = map f v -, f x
+
+_++_ : BwdVec X n → BwdVec X m → BwdVec X (n + m)
+_++_ {n = n} v ε
+  rewrite +-identityʳ n = v
+_++_ {n = n} {m = suc m} v (v' -, x)
+  rewrite +-suc n m = (v ++ v') -, x
 \end{code}
 

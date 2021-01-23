@@ -19,47 +19,70 @@ open import TermSubstitution
 
 \hide{
 \begin{code}
-Context : Scope → Set
-Context γ = γ ⇒[ Term const ] γ
-
 private
   variable
     δ : Scope
     γ : Scope
     γ' : Scope
+\end{code}
+}
 
--- since contexts are just substitutions we can use the selection
--- already defined for BwdVec _!_ and define variables lookup in
--- terms of this
+Building on our definitions of substitution and thinning we are now
+able to describe our context.
+
+A context is a substitution of constructions. We ensure that the target
+of the substitution is scoped identically to the things we will substitute,
+keeping our contexts in a pre-thinned state.This allows us to use terms
+directly from it without having to fix up the scope first.
+
+We define actions of thinnings and weakenings on substitutions of constructions
+but are careful to note that by thinning or weakening a context, the result
+is not necessarily a context as the scope of the targets and substituted terms
+may no longer be equal.
+
+\begin{code}
+Context : Scope → Set
+Context γ = γ ⇒[ Term const ] γ
+
+_⟨Γ_  : Thinnable (δ ⇒[ Term const ]_)
+_^Γ   : Weakenable (δ ⇒[ Term const ]_)
+\end{code}
+
+\hide{
+\begin{code}
 _‼V_ : Var γ → (Context γ) → Term const γ
-v ‼V Γ with ⟦ v ⟧var ! Γ
-... | ε -, x = x
+v ‼V Γ = lookup (Term const) Γ v
 
--- we can apply a thinning generally to _⇒[ Term lib const ]_
--- but we are not guaranteed that the result will be a context
-_⟨Γ_ : Thinnable (δ ⇒[ Term const ]_)
 Γ ⟨Γ θ = ⟨sub _⟨term_ Γ θ
-
--- and therefore _⇒[ Term lib const ]_  can be weakened
--- (thus contexts can be weakened but are no longer contexts)
-_^Γ : Weakenable (δ ⇒[ Term const ]_)
 _^Γ = weaken _⟨Γ_
+\end{code}
+}
 
--- Which means we can define context extension
+We provide a special function to extend contexts which appends a new
+element to the context (making it no longer a context as $suc γ \neq γ$ in
+$(suc γ) ⇒[ \mbox{Term const} ] γ$) before weakening the whole substitution
+yielding the context $(suc γ) \mbox{⇒[Term const]} (suc γ)$. The extra effort
+exerted here keeps our contexts in a pre-thinned state allowing us
+to use terms directly from it without having to fix up the scope first.
+
+If we only ever use $ε$ and $\_ , \_$ to construct our contexts, we can be assured
+that they will always be valid and pre-thinned. No such assurances can
+be made if the raw vector appending data constructor $\_ -,\_$ is used.
+
+\begin{code}
 _,_ : Context γ → Term const γ → Context (suc γ)
 Γ , t = (Γ -, t) ^Γ
+\end{code}
 
--- Now if we only ever use ε and _,_ context extension, we are
--- guaranteed that our contexts WILL BE VALID AND PRE-THINNED
-
--- and we can apply substitutions generally to _⇒[ Term lib const ]_
--- but we are not guaranteed that the result will be a Context
--- unless γ = γ'
+Finally, we define the application of a substitution of constructions
+so that the substitution might be mapped across all elements in the
+context conveniently, but again we are careful to note that applying
+this action to a context may not yield a context as explained previously.
+\begin{code}
 _/Γ_ : δ ⇒[ Term const ] γ → γ ⇒ γ' → δ ⇒[ Term const ] γ'
-ε /Γ σ = ε
-(Γ -, x) /Γ σ = (Γ /Γ σ) -, (x /term σ)
-
--- since contexts are just substitutions, we can look up variables in
--- contexts using 'Thinning.lookup'
+\end{code}
+\hide{
+\begin{code}
+Γ /Γ σ = map (_/term σ) Γ
 \end{code}
 }

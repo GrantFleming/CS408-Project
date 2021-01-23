@@ -25,10 +25,13 @@
 \end{code}
 }
 
-\hide{
+A useful operation later will be to open up scoped entities. We take this
+to mean lifting an entity scoped in $δ$ by some scope $γ$ so that no part
+of the entity refers to anything in $γ$, this is accomplished by assuming
+there the outer and inner scopes do not intersect and so the result will be
+some entity scoped in $γ + δ$.
+
 \begin{code}%
-\>[0]\AgdaComment{-- scoped things can are openable}\<%
-\\
 \>[0]\AgdaFunction{Openable}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaBound{T}\AgdaSpace{}%
@@ -55,4 +58,6 @@
 \AgdaOperator{\AgdaPrimitive{+}}\AgdaSpace{}%
 \AgdaBound{δ}\AgdaSymbol{)}\<%
 \end{code}
-}
+
+As with previous concepts, we adopt a naming convension when constructing
+openings where we use ⊗ often suffexed with the kind of thing we are opening.

@@ -12,4 +12,3 @@ open import Test.STLCTest
 \end{code}
 }
 
-cc

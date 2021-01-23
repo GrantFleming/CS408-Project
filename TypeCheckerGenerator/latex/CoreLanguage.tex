@@ -1,4 +1,4 @@
-\section{A core language}
+\section{A Core Language}
 
 \hide{
 \begin{code}%
@@ -26,11 +26,29 @@
 \AgdaKeyword{import}\AgdaSpace{}%
 \AgdaModule{Data.String}\<%
 \end{code}
+
+\hide{
+\begin{code}%
+\>[0]\<%
+\end{code}
+}
 }
 
+The general tactic for type-checking generic code, will be to
+convert user code into an internal language of our design. Our
+internal language will be agnostic with regards to possible external
+syntax but will have the key features needed to represent arbitrary
+syntax.
+
+First we introduce the concept of scope and what it means to be
+scoped. In our system, all variables are de-bruijn indexed and our
+scope can be represented by a single natural number. We take 0 to
+mean nothing in scope, 1 to mean a single thing in scope etc. A
+scoped entity is one which is defined in terms of a scope.
+
 \begin{code}%
-\>[0]\AgdaFunction{Scope}\AgdaSpace{}%
-\AgdaSymbol{=}\AgdaSpace{}%
+\>[0]\AgdaFunction{Scope}%
+\>[7]\AgdaSymbol{=}\AgdaSpace{}%
 \AgdaDatatype{ℕ}\<%
 \\
 \>[0]\AgdaFunction{Scoped}\AgdaSpace{}%
@@ -38,50 +56,61 @@
 \AgdaFunction{Scope}\AgdaSpace{}%
 \AgdaSymbol{→}\AgdaSpace{}%
 \AgdaPrimitiveType{Set}\<%
+\end{code}
+
+A variable is our first example of such a scoped entity which we
+construct in order to maintain the invariant that a variable should
+always refer to something in scope.
+
+\begin{code}%
+\>[0]\<%
+\end{code}
+
+\hide{
+\begin{code}%
+\>[0]\AgdaKeyword{private}\<%
 \\
-%
-\\[\AgdaEmptyExtraSkip]%
+\>[0][@{}l@{\AgdaIndent{0}}]%
+\>[2]\AgdaKeyword{variable}\<%
+\\
+\>[2][@{}l@{\AgdaIndent{0}}]%
+\>[4]\AgdaGeneralizable{γ}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaFunction{Scope}\<%
+\end{code}
+}
+
+\begin{code}%
 \>[0]\AgdaKeyword{data}\AgdaSpace{}%
 \AgdaDatatype{Var}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
-\AgdaFunction{Scope}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaPrimitiveType{Set}\AgdaSpace{}%
+\AgdaFunction{Scoped}\AgdaSpace{}%
 \AgdaKeyword{where}\<%
 \\
 \>[0][@{}l@{\AgdaIndent{0}}]%
 \>[2]\AgdaInductiveConstructor{ze}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
-\AgdaSymbol{\{}\AgdaBound{s}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaFunction{Scope}\AgdaSymbol{\}}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
 \AgdaDatatype{Var}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{suc}\AgdaSpace{}%
-\AgdaBound{s}\AgdaSymbol{)}\<%
+\AgdaGeneralizable{γ}\AgdaSymbol{)}\<%
 \\
 %
 \>[2]\AgdaInductiveConstructor{su}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
-\AgdaSymbol{\{}\AgdaBound{s}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaFunction{Scope}\AgdaSymbol{\}}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
 \AgdaDatatype{Var}\AgdaSpace{}%
-\AgdaBound{s}\AgdaSpace{}%
+\AgdaGeneralizable{γ}\AgdaSpace{}%
 \AgdaSymbol{→}\AgdaSpace{}%
 \AgdaDatatype{Var}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{suc}\AgdaSpace{}%
-\AgdaBound{s}\AgdaSymbol{)}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
+\AgdaGeneralizable{γ}\AgdaSymbol{)}\<%
+\end{code}
+
+\hide{
+\begin{code}%
 \>[0]\AgdaFunction{toNum}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
-\AgdaSymbol{∀\{}\AgdaBound{γ}\AgdaSymbol{\}}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
 \AgdaDatatype{Var}\AgdaSpace{}%
-\AgdaBound{γ}\AgdaSpace{}%
+\AgdaGeneralizable{γ}\AgdaSpace{}%
 \AgdaSymbol{→}\AgdaSpace{}%
 \AgdaDatatype{ℕ}\<%
 \\
@@ -122,9 +151,16 @@
 \AgdaInductiveConstructor{su}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaFunction{fromNum}\AgdaSpace{}%
 \AgdaBound{n}\AgdaSymbol{)}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
+\end{code}
+}
+
+
+Our internal syntax is split into two broad categories grammatical
+classes: constructions and computations. Constructions will have
+their type checked, while computations have their type synthesized.
+
+\hide{
+\begin{code}%
 \>[0]\AgdaKeyword{data}\AgdaSpace{}%
 \AgdaDatatype{Const}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaBound{γ}\AgdaSpace{}%
@@ -140,9 +176,10 @@
 \AgdaFunction{Scope}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaPrimitiveType{Set}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
+\end{code}
+}
+
+\begin{code}%
 \>[0]\AgdaKeyword{data}\AgdaSpace{}%
 \AgdaDatatype{Const}\AgdaSpace{}%
 \AgdaBound{γ}\AgdaSpace{}%
@@ -189,12 +226,6 @@
 \\
 %
 \\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaKeyword{infixr}\AgdaSpace{}%
-\AgdaNumber{20}\AgdaSpace{}%
-\AgdaOperator{\AgdaInductiveConstructor{\AgdaUnderscore{}∙\AgdaUnderscore{}}}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
 \>[0]\AgdaKeyword{data}\AgdaSpace{}%
 \AgdaDatatype{Compu}\AgdaSpace{}%
 \AgdaBound{γ}\AgdaSpace{}%
@@ -235,32 +266,6 @@
 \\
 %
 \\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaFunction{↠}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaSymbol{∀}\AgdaSpace{}%
-\AgdaSymbol{\{}\AgdaBound{γ}\AgdaSymbol{\}}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaDatatype{Compu}\AgdaSpace{}%
-\AgdaBound{γ}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaDatatype{Const}\AgdaSpace{}%
-\AgdaBound{γ}\<%
-\\
-\>[0]\AgdaFunction{↠}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaBound{t}\AgdaSpace{}%
-\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
-\AgdaBound{T}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaSymbol{=}\AgdaSpace{}%
-\AgdaBound{t}\<%
-\\
-\>[0]\AgdaCatchallClause{\AgdaFunction{↠}}%
-\>[3]\AgdaCatchallClause{\AgdaBound{x}}%
-\>[10]\AgdaSymbol{=}\AgdaSpace{}%
-\AgdaInductiveConstructor{thunk}\AgdaSpace{}%
-\AgdaBound{x}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
 \>[0]\AgdaKeyword{data}\AgdaSpace{}%
 \AgdaDatatype{Dir}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
@@ -277,9 +282,7 @@
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaDatatype{Dir}\AgdaSpace{}%
 \AgdaSymbol{→}\AgdaSpace{}%
-\AgdaFunction{Scope}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaPrimitiveType{Set}\<%
+\AgdaFunction{Scoped}\<%
 \\
 \>[0]\AgdaFunction{Term}\AgdaSpace{}%
 \AgdaInductiveConstructor{const}\AgdaSpace{}%
@@ -294,6 +297,50 @@
 \AgdaSymbol{=}\AgdaSpace{}%
 \AgdaDatatype{Compu}\AgdaSpace{}%
 \AgdaBound{γ}\<%
+\end{code}
+
+This syntax gives us the means to represent atoms of original syntax
+with `, pairs of syntax elements, binding sites (thus increasing the scope
+for a subterm), variables, type annotated terms and eliminations - the
+sites of $β$-reductions. We are also able to embed computations into
+constructions, as we can always check the type of a synthesizable term by
+synthesizing its type and ascertaining if it matches a provided
+type.
+
+Note that blindly embedding synthesizable terms with 'thunk' is
+not always the best course of action \hl{why?}, in the case of an
+annotated term, we already have a suitable construction under the
+annotation. For convenience we provide a function to perform
+this embedding.
+
+\begin{code}%
+\>[0]\AgdaFunction{↠}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaDatatype{Compu}\AgdaSpace{}%
+\AgdaGeneralizable{γ}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaDatatype{Const}\AgdaSpace{}%
+\AgdaGeneralizable{γ}\<%
+\\
+\>[0]\AgdaFunction{↠}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{t}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{T}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaBound{t}\<%
+\\
+\>[0]\AgdaCatchallClause{\AgdaFunction{↠}}%
+\>[3]\AgdaCatchallClause{\AgdaBound{x}}%
+\>[10]\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{thunk}\AgdaSpace{}%
+\AgdaBound{x}\<%
+\end{code}
+
+\hide{
+\begin{code}%
+\>[0]\AgdaKeyword{infixr}\AgdaSpace{}%
+\AgdaNumber{20}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{\AgdaUnderscore{}∙\AgdaUnderscore{}}}\<%
 \\
 %
 \\[\AgdaEmptyExtraSkip]%
@@ -306,11 +353,6 @@
 \>[4]\AgdaGeneralizable{d}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaDatatype{Dir}\<%
-\\
-%
-\>[4]\AgdaGeneralizable{γ}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaFunction{Scope}\<%
 \\
 %
 \\[\AgdaEmptyExtraSkip]%
@@ -534,3 +576,4 @@
 \AgdaOperator{\AgdaFunction{++}}\AgdaSpace{}%
 \AgdaString{")"}\<%
 \end{code}
+}

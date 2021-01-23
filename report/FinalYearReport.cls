@@ -62,7 +62,7 @@
                   \begin{tabular}{@{}p{15em}p{18em}@{}}
 		     Signed:        & \hrulefill \\[1em]
 		     & \@author \\[1em]
-                     Date: & 29/03/2021 \\[1em]
+                     Date: & \today \\[1em]
 		  \end{tabular}
 		\end{center}\par
 		\vfill

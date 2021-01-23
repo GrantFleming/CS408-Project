@@ -13,6 +13,7 @@
 \end{code}
 }
 
+\hide{
 \begin{code}%
 \>[0]\AgdaKeyword{open}\AgdaSpace{}%
 \AgdaKeyword{import}\AgdaSpace{}%
@@ -30,9 +31,6 @@
 \AgdaFunction{Ø}\AgdaSymbol{;}\AgdaSpace{}%
 \AgdaFunction{ι}\AgdaSymbol{;}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{\AgdaUnderscore{}++\AgdaUnderscore{}}}\AgdaSymbol{;}\AgdaSpace{}%
-\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}◃\AgdaUnderscore{}}}\AgdaSymbol{;}\AgdaSpace{}%
-\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}⟨var\AgdaUnderscore{}}}\AgdaSymbol{;}\AgdaSpace{}%
-\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}⟨term\AgdaUnderscore{}}}\AgdaSymbol{;}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{\AgdaUnderscore{}⟨term⊗\AgdaUnderscore{}}}\AgdaSymbol{;}\AgdaSpace{}%
 \AgdaFunction{++-identityʳ}\AgdaSymbol{)}\<%
 \\
@@ -50,8 +48,7 @@
 \AgdaKeyword{import}\AgdaSpace{}%
 \AgdaModule{Data.Nat.Properties}\AgdaSpace{}%
 \AgdaKeyword{using}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}≟\AgdaUnderscore{}}}\AgdaSymbol{;}\AgdaSpace{}%
-\AgdaFunction{+-identityʳ}\AgdaSymbol{)}\<%
+\AgdaSymbol{(}\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}≟\AgdaUnderscore{}}}\AgdaSymbol{)}\<%
 \\
 \>[0]\AgdaKeyword{open}\AgdaSpace{}%
 \AgdaKeyword{import}\AgdaSpace{}%
@@ -471,9 +468,9 @@
 \AgdaOperator{\AgdaInductiveConstructor{∙}}\AgdaSpace{}%
 \AgdaBound{q}\AgdaSymbol{)}%
 \>[24]\AgdaSymbol{=}%
-\>[301I]\AgdaKeyword{do}\<%
+\>[297I]\AgdaKeyword{do}\<%
 \\
-\>[301I][@{}l@{\AgdaIndent{0}}]%
+\>[297I][@{}l@{\AgdaIndent{0}}]%
 \>[28]\AgdaBound{x}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{←}}\AgdaSpace{}%
 \AgdaFunction{match}\AgdaSpace{}%
@@ -499,9 +496,9 @@
 \AgdaSymbol{(}\AgdaInductiveConstructor{bind}\AgdaSpace{}%
 \AgdaBound{p}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaSymbol{=}%
-\>[318I]\AgdaKeyword{do}\<%
+\>[314I]\AgdaKeyword{do}\<%
 \\
-\>[318I][@{}l@{\AgdaIndent{0}}]%
+\>[314I][@{}l@{\AgdaIndent{0}}]%
 \>[28]\AgdaBound{x}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{←}}\AgdaSpace{}%
 \AgdaFunction{match}\AgdaSpace{}%
@@ -1138,4 +1135,5 @@
 \AgdaInductiveConstructor{⊥}\AgdaSpace{}%
 \AgdaSymbol{()}\<%
 \end{code}
+}
 

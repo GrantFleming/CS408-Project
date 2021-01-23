@@ -1,12 +1,12 @@
 \section{Term Substitution}
 
-\hide
+\hide{
 \begin{code}
 module TermSubstitution where
 \end{code}
 }
 
-\hide
+\hide{
 \begin{code}
 open import CoreLanguage
 open import Substitution
@@ -16,6 +16,7 @@ open import Data.Nat using (zero; suc; _+_)
 \end{code}
 }
 
+\hide{
 \begin{code}
 private
   variable
@@ -55,4 +56,4 @@ _/term_ {compu} (var v)     σ  with ⟦ v ⟧var ! σ
 _/term_ {compu} (elim e s)  σ  = elim (e /term σ) (s /term σ)
 _/term_ {compu} (t ∷ T)     σ  = (t /term σ) ∷ (T /term σ)
 \end{code}
-
+}

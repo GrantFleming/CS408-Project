@@ -1,5 +1,6 @@
-⊗\section{Thinnings}
+\section{Thinnings}
 
+\hide{
 \begin{code}
 {-# OPTIONS --rewriting #-}
 module Thinning where
@@ -179,3 +180,4 @@ _^term {d} t = weaken {Term d} _⟨term_ t
 ^sub ⟨T ε                  = ε
 ^sub ⟨T {γ} (_-,_ {n} σ x) = (^sub ⟨T {γ} σ) -, weaken ⟨T x
 \end{code}
+}

@@ -17,6 +17,7 @@ open import TermSubstitution
 \end{code}
 }
 
+\hide{
 \begin{code}
 Context : Scope → Set
 Context γ = γ ⇒[ Term const ] γ
@@ -61,4 +62,4 @@ _/Γ_ : δ ⇒[ Term const ] γ → γ ⇒ γ' → δ ⇒[ Term const ] γ'
 -- since contexts are just substitutions, we can look up variables in
 -- contexts using 'Thinning.lookup'
 \end{code}
-
+}

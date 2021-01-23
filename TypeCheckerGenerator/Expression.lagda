@@ -21,6 +21,7 @@ open import BwdVec
 \end{code}
 }
 
+\hide{
 \begin{code}
 private
   variable
@@ -146,3 +147,4 @@ toTerm {γ = γ} {d = compu} {γ' = γ'} penv (var x) = var (x ⟨var (γ ▹ γ
 toTerm {d = compu} penv (elim e s) = elim (toTerm penv e) (toTerm penv s)
 toTerm {d = compu} penv (t ∷ T) = toTerm penv t ∷ toTerm penv T
 \end{code}
+}

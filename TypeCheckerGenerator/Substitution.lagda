@@ -15,6 +15,7 @@ open import Data.Nat using (zero; suc)
 \end{code}
 }
 
+\hide{
 \begin{code}
 private
   variable
@@ -41,4 +42,4 @@ Substitutable T = ∀ {γ} {γ'} → T γ → γ ⇒[ T ] γ' → T γ'
 [ / ]  ε       ∘σ σ' = ε
 [ / ] (σ -, x) ∘σ σ' = ([ / ] σ ∘σ σ') -, / x σ'
 \end{code}
-
+}

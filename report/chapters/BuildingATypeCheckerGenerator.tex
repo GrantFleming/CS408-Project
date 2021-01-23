@@ -5,16 +5,20 @@ be shifted onto the building of the system in question.
 
 We will describe key aspects of our code as it is written by inluding
 the code as literate agda files, however we hide areas of the code
-from being rendered for brevity and so code shown here may not be
+from being rendered for brevity and so code shown here is not
 complete. In order to make the code as concise and readable as
 possible, heavy use is made of Agda's implicit generalisation feature.
 
 \input{../../TypeCheckerGenerator/latex/CoreLanguage.tex}
 \input{../../TypeCheckerGenerator/latex/Thinning.tex}
 \input{../../TypeCheckerGenerator/latex/Opening.tex}
-\input{../../TypeCheckerGenerator/latex/Substitution.tex}
 \input{../../TypeCheckerGenerator/latex/Context.tex}
 \input{../../TypeCheckerGenerator/latex/Pattern.tex}
+\input{../../TypeCheckerGenerator/latex/Expression.tex}
 \input{../../TypeCheckerGenerator/latex/Rules.tex}
+\input{../../TypeCheckerGenerator/latex/Failable.tex}
 \input{../../TypeCheckerGenerator/latex/TypeChecker.tex}
+\input{../../TypeCheckerGenerator/latex/Substitution.tex}
+\input{../../TypeCheckerGenerator/latex/TermSubstitution.tex}
+\section{Semantics}
 \input{../../TypeCheckerGenerator/latex/Parser.tex}

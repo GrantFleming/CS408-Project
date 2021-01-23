@@ -7,6 +7,7 @@ module Pattern where
 \end{code}
 }
 
+\hide{
 \begin{code}
 open import CoreLanguage renaming (↠ to ↠↠)
 open import Thinning using (_⊑_; Ø; ι; _++_; _⟨term⊗_; ++-identityʳ)
@@ -154,4 +155,5 @@ termFrom (bind p) (bind e)    = bind (termFrom p e)
 termFrom (place θ) (thing x₁) = x₁ ⟨term⊗ θ
 termFrom ⊥ ()
 \end{code}
+}
 

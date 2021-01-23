@@ -1,5 +1,6 @@
 \section{Failable}
 
+\hide{
 \begin{code}
 module Failable where
 \end{code}
@@ -28,3 +29,4 @@ fail x    >>= k = fail x
 return : A → Failable A
 return a = succeed a
 \end{code}
+}

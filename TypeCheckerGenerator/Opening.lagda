@@ -13,8 +13,10 @@ open import Data.Nat using (_+_)
 \end{code}
 }
 
+\hide{
 \begin{code}
 -- scoped things can are openable
 Openable : (T : Scoped) → Set
 Openable T = ∀ {δ} → (γ : Scope) → T δ → T (γ + δ)
 \end{code}
+}

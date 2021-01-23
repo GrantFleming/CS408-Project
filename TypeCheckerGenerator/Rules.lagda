@@ -7,6 +7,7 @@ module Rules where
 \end{code}
 }
 
+\hide{
 \begin{code}
 open import CoreLanguage
 open import Thinning using (_⊑_; ι; _++_)
@@ -165,3 +166,4 @@ match-erule rule T s = do
 data Rules : Set where
   rs : List TypeRule → List UnivRule → List ∋rule → List ElimRule → Rules
 \end{code}
+}

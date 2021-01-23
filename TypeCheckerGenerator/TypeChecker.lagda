@@ -1,5 +1,6 @@
 \section{Checking Types}
 
+\hide{
 \begin{code}
 {-# OPTIONS --rewriting #-}
 module TypeChecker where
@@ -226,3 +227,4 @@ check {_} {compu} rules@(rs tr u ∋ e) Γ T t = do
                             _ ← type-check Γ rules tr S
                             S ≡ᵗ T
 \end{code}
+}

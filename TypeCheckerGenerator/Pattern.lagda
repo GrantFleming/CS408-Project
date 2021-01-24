@@ -82,6 +82,7 @@ match (bind t) (bind p) = do
 match  {γ = γ} t   (place {δ'} θ) with γ ≟ δ'
 ... | true because ofʸ refl = just (thing t)
 ... | false because _       = nothing
+-- TO DO, THUNK MATCHING!! evaluate it to head normal form
 match _ _                   = nothing
 
 --schematic variables
@@ -116,29 +117,8 @@ _⊗svar_ : (γ : Scope) → svar p δ → svar (γ ⊗ p) (γ + δ)
 
 -- we can 'open up' variables using the thinning
 _⊗var_ : Openable Var
-zero  ⊗var v = v
-suc γ ⊗var v = su (γ ⊗var v)
-
-private
-  variable
-    d : Dir
-
--- we can 'open up' a term using the thinning
-_⊗term_ : Openable (Term d)
-_⊗term_ {const} γ (` x)      = ` x
-_⊗term_ {const} γ (s ∙ t)    = (γ ⊗term s) ∙ (γ ⊗term t)
-_⊗term_ {const} γ (bind t)   = bind (γ ⊗term t)
-_⊗term_ {const} γ (thunk x)  = thunk (γ ⊗term x)
-_⊗term_ {compu} γ (var x)    = var (γ ⊗var x)
-_⊗term_ {compu} γ (elim e s) = elim (γ ⊗term e) (γ ⊗term s)
-_⊗term_ {compu} γ (t ∷ T)    = (γ ⊗term t) ∷ (γ ⊗term T)
-
--- and we can open environments
-_⊗env_ : p -Env → (γ : Scope) → (γ ⊗ p) -Env
-`       ⊗env γ = `
-(s ∙ t) ⊗env γ = (s ⊗env γ) ∙ (t ⊗env γ)
-bind e  ⊗env γ = bind (e ⊗env γ)
-thing x ⊗env γ = thing (γ ⊗term x)
+γ ⊗var ze = ze
+γ ⊗var su v = su (γ ⊗var v)
 
 -- crucually, we can now look up terms in an environment
 _‼_ : ∀ {γ} {p : Pattern γ} → svar p δ → (γ' ⊗ p) -Env → Term const (γ' + δ)

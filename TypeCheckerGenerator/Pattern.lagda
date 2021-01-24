@@ -203,4 +203,3 @@ termFrom (bind p) (bind e)    = bind (termFrom p e)
 termFrom (place θ) (thing x₁) = x₁ ⟨term⊗ θ
 \end{code}
 }
-}

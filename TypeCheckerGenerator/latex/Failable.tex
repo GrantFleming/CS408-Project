@@ -6,7 +6,9 @@
 \AgdaModule{Failable}\AgdaSpace{}%
 \AgdaKeyword{where}\<%
 \end{code}
+}
 
+\hide{
 \begin{code}%
 \>[0]\AgdaKeyword{open}\AgdaSpace{}%
 \AgdaKeyword{import}\AgdaSpace{}%
@@ -14,10 +16,36 @@
 \AgdaKeyword{using}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaPostulate{String}\AgdaSymbol{)}\<%
 \end{code}
+}
+
+\hide{
+\begin{code}%
+\>[0]\AgdaKeyword{private}\<%
+\\
+\>[0][@{}l@{\AgdaIndent{0}}]%
+\>[2]\AgdaKeyword{variable}\<%
+\\
+\>[2][@{}l@{\AgdaIndent{0}}]%
+\>[4]\AgdaGeneralizable{A}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaPrimitiveType{Set}\<%
+\\
+%
+\>[4]\AgdaGeneralizable{B}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaPrimitiveType{Set}\<%
+\\
+\>[0]\AgdaKeyword{infixl}\AgdaSpace{}%
+\AgdaNumber{1}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}>>=\AgdaUnderscore{}}}\<%
+\end{code}
+}
+
+To ready ourselves for the act of type-checking we here define our monad for
+failure handling. We could have used the Either monad here but having descriptive
+data constructors improves the readability of the code.
 
 \begin{code}%
-\>[0]\AgdaComment{-- We can either succeed with a value, or fail with an error message}\<%
-\\
 \>[0]\AgdaKeyword{data}\AgdaSpace{}%
 \AgdaDatatype{Failable}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaBound{X}\AgdaSpace{}%
@@ -45,29 +73,6 @@
 \\
 %
 \\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaComment{-- Failable is a monad}\<%
-\\
-\>[0]\AgdaKeyword{private}\<%
-\\
-\>[0][@{}l@{\AgdaIndent{0}}]%
-\>[2]\AgdaKeyword{variable}\<%
-\\
-\>[2][@{}l@{\AgdaIndent{0}}]%
-\>[4]\AgdaGeneralizable{A}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaPrimitiveType{Set}\<%
-\\
-%
-\>[4]\AgdaGeneralizable{B}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaPrimitiveType{Set}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaKeyword{infixl}\AgdaSpace{}%
-\AgdaNumber{1}\AgdaSpace{}%
-\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}>>=\AgdaUnderscore{}}}\<%
-\\
 \>[0]\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}>>=\AgdaUnderscore{}}}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaDatatype{Failable}\AgdaSpace{}%
@@ -112,4 +117,3 @@
 \AgdaInductiveConstructor{succeed}\AgdaSpace{}%
 \AgdaBound{a}\<%
 \end{code}
-}

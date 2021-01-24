@@ -846,35 +846,30 @@ how it is that we process our svar instantiations
 \>[0][@{}l@{\AgdaIndent{0}}]%
 \>[2]\AgdaSymbol{=}%
 \>[561I]\AgdaKeyword{let}\AgdaSpace{}%
-\AgdaBound{σ'}\AgdaSpace{}%
-\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaBound{σ'}%
+\>[15]\AgdaSymbol{=}\AgdaSpace{}%
 \AgdaFunction{map-toTerm}\AgdaSpace{}%
 \AgdaBound{σ}\AgdaSpace{}%
-\AgdaBound{penv}\AgdaSpace{}%
-\AgdaKeyword{in}\<%
+\AgdaBound{penv}%
+\>[36]\AgdaKeyword{in}\<%
 \\
 \>[.][@{}l@{}]\<[561I]%
 \>[4]\AgdaKeyword{let}\AgdaSpace{}%
-\AgdaBound{freevars}\AgdaSpace{}%
-\AgdaSymbol{=}\AgdaSpace{}%
-\AgdaFunction{⟨sub}\AgdaSpace{}%
-\AgdaSymbol{\{}\AgdaArgument{T}\AgdaSpace{}%
-\AgdaSymbol{=}\AgdaSpace{}%
-\AgdaFunction{Term}\AgdaSpace{}%
-\AgdaInductiveConstructor{compu}\AgdaSymbol{\}}\AgdaSpace{}%
-\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}⟨term\AgdaUnderscore{}}}\AgdaSpace{}%
+\AgdaBound{id-fv}%
+\>[15]\AgdaSymbol{=}\AgdaSpace{}%
 \AgdaFunction{id}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{⟨σ}}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaBound{γ}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{◃}}\AgdaSpace{}%
-\AgdaBound{γ'}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaKeyword{in}\<%
+\AgdaBound{γ'}\AgdaSymbol{)}%
+\>[36]\AgdaKeyword{in}\<%
 \\
-%
-\>[4]\AgdaSymbol{(}\AgdaBound{ξ}\AgdaSpace{}%
+\>[4][@{}l@{\AgdaIndent{0}}]%
+\>[6]\AgdaSymbol{(}\AgdaBound{ξ}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{‼}}\AgdaSpace{}%
 \AgdaBound{penv}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{/term}}\AgdaSpace{}%
-\AgdaSymbol{((}\AgdaBound{freevars}\AgdaSpace{}%
+\AgdaSymbol{((}\AgdaBound{id-fv}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{++}}\AgdaSpace{}%
 \AgdaBound{σ'}\AgdaSymbol{))}\<%
 \\
@@ -887,7 +882,7 @@ termination checker) before extending it with the identity substitution for
 all the free variables and finally performing the substitution on the term
 taken from the environment.
 
-In short, we subtitute the bound variables in the term but ensure not to
+In short, we substitute the bound variables in the term but ensure not to
 affect any free variables that may exist.
 
 \hide{
@@ -1008,12 +1003,12 @@ affect any free variables that may exist.
 \AgdaInductiveConstructor{compu}\AgdaSymbol{\}}\AgdaSpace{}%
 \AgdaSymbol{\{}\AgdaArgument{γ'}\AgdaSpace{}%
 \AgdaSymbol{=}%
-\>[676I]\AgdaBound{γ'}\AgdaSymbol{\}}\AgdaSpace{}%
+\>[667I]\AgdaBound{γ'}\AgdaSymbol{\}}\AgdaSpace{}%
 \AgdaBound{penv}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{var}\AgdaSpace{}%
 \AgdaBound{x}\AgdaSymbol{)}\<%
 \\
-\>[676I][@{}l@{\AgdaIndent{0}}]%
+\>[667I][@{}l@{\AgdaIndent{0}}]%
 \>[35]\AgdaSymbol{=}\AgdaSpace{}%
 \AgdaInductiveConstructor{var}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaBound{γ}\AgdaSpace{}%

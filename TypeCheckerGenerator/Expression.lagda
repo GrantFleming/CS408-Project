@@ -138,9 +138,9 @@ how it is that we process our svar instantiations
 toTerm  : (γ ⊗ p) -Env → Expr p d γ' → Term d (γ + γ')
 -- ...
 toTerm {γ = γ} {d = const} {γ' = γ'} penv (ξ / σ)
-  = let σ' = map-toTerm σ penv in
-    let freevars = ⟨sub {Term compu} _⟨term_ id (γ ◃ γ') in
-    (ξ ‼ penv) /term ((freevars ++ σ'))
+  = let σ'     = map-toTerm σ penv  in
+    let id-fv  = id ⟨σ (γ ◃ γ')     in
+      (ξ ‼ penv) /term ((id-fv ++ σ'))
 -- ...
 \end{code}
 
@@ -150,7 +150,7 @@ termination checker) before extending it with the identity substitution for
 all the free variables and finally performing the substitution on the term
 taken from the environment.
 
-In short, we subtitute the bound variables in the term but ensure not to
+In short, we substitute the bound variables in the term but ensure not to
 affect any free variables that may exist.
 
 \hide{

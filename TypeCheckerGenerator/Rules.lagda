@@ -11,7 +11,7 @@ module Rules where
 \begin{code}
 open import CoreLanguage
 open import Thinning using (_⊑_; ι; _++_)
-open import Pattern using (Pattern; svar; bind; _∙; ∙_; place; ⋆; _∙_; `; ⊥; _-Env; match; _-_; _⊗_; _⊗svar_)
+open import Pattern using (Pattern; svar; bind; _∙; ∙_; place; ⋆; _∙_; `; _-Env; match; _-_; _⊗_; _⊗svar_)
 open import Expression using (Expr; _⊗expr_)
 open import Data.Product using (_×_; _,_; proj₁; Σ-syntax)
 open import Data.List using (List)
@@ -62,7 +62,6 @@ helper δ (place x) ⋆        = refl
 -- pattern that contains no places
 data _Placeless {γ : Scope} : Pattern γ → Set where
   `    : (c : Char) → ` c Placeless
-  ⊥    : ⊥ Placeless
   _∙_  : {l r : Pattern γ} → (l Placeless) → (r Placeless) → (l ∙ r) Placeless
   bind : {t : Pattern (suc γ)} → (t Placeless) → (bind t) Placeless
 
@@ -72,7 +71,6 @@ _-places : Pattern γ → Pattern γ
 (s ∙ t)  -places = (s -places) ∙ (t -places)
 bind t   -places = bind (t -places)
 place x  -places = ` '⊤'
-⊥        -places = ⊥
 
 -- hence we can make a placeless thing from any pattern 
 _placeless : (p : Pattern γ) → (p -places) Placeless
@@ -80,12 +78,10 @@ _placeless : (p : Pattern γ) → (p -places) Placeless
 (s ∙ t) placeless  = (s placeless) ∙ (t placeless)
 bind p placeless   = bind (p placeless)
 place x placeless  = ` '⊤'
-⊥ placeless        = ⊥
 
 -- we can also 'open' placeless things trivially, just fixing up the type
 _⊗pl_ : ∀ {p : Pattern γ} → p Placeless → (δ : Scope) → (δ ⊗ p) Placeless
 ` c     ⊗pl δ = ` c
-⊥       ⊗pl δ = ⊥
 (s ∙ t) ⊗pl δ = (s ⊗pl δ) ∙ (t ⊗pl δ)
 bind t  ⊗pl δ = bind (t ⊗pl δ)
 

@@ -98,7 +98,9 @@
 \AgdaKeyword{using}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaFunction{Openable}\AgdaSymbol{)}\<%
 \end{code}
+}
 
+\hide{
 \begin{code}%
 \>[0]\AgdaKeyword{private}\<%
 \\
@@ -119,11 +121,32 @@
 \>[4]\AgdaGeneralizable{γ'}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaFunction{Scope}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaComment{-- a pattern}\<%
-\\
+\end{code}
+}
+
+Key to implementing our generic type-checker, is the concept of a pattern. Our
+rules are defined not in terms of concrete pieces of syntax, but in terms of
+patterns of constructions, which we then match against concrete syntax.
+
+Our concept of a pattern is structurally identical to that of a construction,
+except that we exclude thunks, and introduce the notion of a \emph{place} which
+may stand for any arbitrary construction scoped in some $δ$ so long as we show
+how it might be thinned to $γ$.
+
+The dual concept of a pattern is that of an environment. It is structurally
+similar to a pattern except where a pattern may have a \emph{place}, an
+environment answers this call with a \emph{thing} that can fit in the place.
+As always, we must be careful to handle scope correctly in the case of $bind$
+when constructing environments so that the underlying entity is defined in
+the weakened scope.
+
+Environments are indexed by a pattern so that we can ensure that it always
+matches exactly the pattern intended (in that it has an identical structure
+and a \emph{thing} for every \emph{place}). Consequently this allows us a
+non-failable operation to generate a term from from pattern $p$ and its
+associated $p\mbox{-Env}$
+
+\begin{code}%
 \>[0]\AgdaKeyword{data}\AgdaSpace{}%
 \AgdaDatatype{Pattern}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaBound{γ}\AgdaSpace{}%
@@ -176,15 +199,13 @@
 \AgdaSymbol{→}\AgdaSpace{}%
 \AgdaDatatype{Pattern}\AgdaSpace{}%
 \AgdaBound{γ}\<%
+\end{code}
+\hide{
+\begin{code}%
+\>[0]\AgdaKeyword{infixr}\AgdaSpace{}%
+\AgdaNumber{20}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{\AgdaUnderscore{}∙\AgdaUnderscore{}}}\<%
 \\
-%
-\>[2]\AgdaInductiveConstructor{⊥}%
-\>[9]\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaDatatype{Pattern}\AgdaSpace{}%
-\AgdaBound{γ}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
 \>[0]\AgdaKeyword{private}\<%
 \\
 \>[0][@{}l@{\AgdaIndent{0}}]%
@@ -214,15 +235,9 @@
 \AgdaDatatype{Pattern}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{suc}\AgdaSpace{}%
 \AgdaGeneralizable{γ}\AgdaSymbol{)}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaKeyword{infixr}\AgdaSpace{}%
-\AgdaNumber{20}\AgdaSpace{}%
-\AgdaOperator{\AgdaInductiveConstructor{\AgdaUnderscore{}∙\AgdaUnderscore{}}}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
+\end{code}
+}
+\begin{code}%
 \>[0]\AgdaKeyword{data}\AgdaSpace{}%
 \AgdaOperator{\AgdaDatatype{\AgdaUnderscore{}-Env}}\AgdaSpace{}%
 \AgdaSymbol{\{}\AgdaBound{γ}\AgdaSpace{}%
@@ -286,15 +301,21 @@
 \AgdaSymbol{(}\AgdaInductiveConstructor{place}\AgdaSpace{}%
 \AgdaBound{θ}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaOperator{\AgdaDatatype{-Env}}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaComment{-- We can 'open' patterns}\<%
-\\
+\end{code}
+
+We define the opening of a pattern by recursing structurally and opening
+the thinnings of the places in the matter described in section \ref{sec:Opening}.
+
+\begin{code}%
 \>[0]\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}⊗\AgdaUnderscore{}}}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaFunction{Openable}\AgdaSpace{}%
 \AgdaDatatype{Pattern}\<%
+\end{code}
+
+\hide{
+\begin{code}%
+\>[0]\AgdaComment{-- We can 'open' patterns}\<%
 \\
 \>[0]\AgdaBound{γ}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{⊗}}\AgdaSpace{}%
@@ -338,12 +359,6 @@
 \AgdaSymbol{\{}\AgdaBound{γ}\AgdaSymbol{\}}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{++}}\AgdaSpace{}%
 \AgdaBound{θ}\AgdaSymbol{)}\<%
-\\
-\>[0]\AgdaBound{γ}\AgdaSpace{}%
-\AgdaOperator{\AgdaFunction{⊗}}\AgdaSpace{}%
-\AgdaInductiveConstructor{⊥}%
-\>[13]\AgdaSymbol{=}\AgdaSpace{}%
-\AgdaInductiveConstructor{⊥}\<%
 \\
 %
 \\[\AgdaEmptyExtraSkip]%
@@ -405,16 +420,21 @@
 \AgdaBound{θ}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
 \AgdaInductiveConstructor{refl}\<%
-\\
-\>[0]\AgdaFunction{⊗-identityʳ}\AgdaSpace{}%
-\AgdaSymbol{\{}\AgdaArgument{p}\AgdaSpace{}%
-\AgdaSymbol{=}\AgdaSpace{}%
-\AgdaInductiveConstructor{⊥}\AgdaSymbol{\}}%
-\>[26]\AgdaSymbol{=}\AgdaSpace{}%
-\AgdaInductiveConstructor{refl}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
+\end{code}
+}
+
+We now have the required machinery to define pattern matching. We do not
+define matching over some term and pattern scoped identially, but more 
+generally over some term that might be operating in some wider scope. This
+is crucial as a pattern is often defined in the empty scope so that we might
+not refer to arbirary free variables when defining formal rules. When
+type-checking, the terms we match against them may operate in a wider scope.
+
+For this reason, our matching allows the matching of a term in some wider
+scope, to a pattern in a potentially narrower scope and if it succeeds it
+returns an environment for the \emph{opened} pattern.
+
+\begin{code}%
 \>[0]\AgdaFunction{match}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaFunction{Term}\AgdaSpace{}%
@@ -433,6 +453,38 @@
 \AgdaOperator{\AgdaFunction{⊗}}\AgdaSpace{}%
 \AgdaBound{p}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaOperator{\AgdaDatatype{-Env}}\AgdaSymbol{)}\<%
+\\
+\>[0]\AgdaFunction{match}%
+\>[7]\AgdaSymbol{\{}\AgdaArgument{γ}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaBound{γ}\AgdaSymbol{\}}\AgdaSpace{}%
+\AgdaBound{t}%
+\>[19]\AgdaSymbol{(}\AgdaInductiveConstructor{place}\AgdaSpace{}%
+\AgdaSymbol{\{}\AgdaBound{δ'}\AgdaSymbol{\}}\AgdaSpace{}%
+\AgdaBound{θ}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaKeyword{with}\AgdaSpace{}%
+\AgdaBound{γ}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{≟}}\AgdaSpace{}%
+\AgdaBound{δ'}\<%
+\\
+\>[0]\AgdaSymbol{...}\AgdaSpace{}%
+\AgdaSymbol{|}\AgdaSpace{}%
+\AgdaInductiveConstructor{true}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{because}}\AgdaSpace{}%
+\AgdaInductiveConstructor{ofʸ}\AgdaSpace{}%
+\AgdaInductiveConstructor{refl}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{just}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{thing}\AgdaSpace{}%
+\AgdaBound{t}\AgdaSymbol{)}\<%
+\\
+\>[0]\AgdaSymbol{...}\AgdaSpace{}%
+\AgdaSymbol{|}\AgdaSpace{}%
+\AgdaInductiveConstructor{false}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{because}}\AgdaSpace{}%
+\AgdaSymbol{\AgdaUnderscore{}}%
+\>[28]\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{nothing}\<%
 \\
 \>[0]\AgdaFunction{match}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{`}\AgdaSpace{}%
@@ -454,9 +506,11 @@
 \AgdaInductiveConstructor{just}\AgdaSpace{}%
 \AgdaInductiveConstructor{`}\<%
 \\
-\>[0]\AgdaCatchallClause{\AgdaSymbol{...}}\AgdaSpace{}%
-\AgdaCatchallClause{\AgdaSymbol{|}}\AgdaSpace{}%
-\AgdaCatchallClause{\AgdaSymbol{\AgdaUnderscore{}}}%
+\>[0]\AgdaSymbol{...}\AgdaSpace{}%
+\AgdaSymbol{|}\AgdaSpace{}%
+\AgdaInductiveConstructor{false}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{because}}\AgdaSpace{}%
+\AgdaSymbol{\AgdaUnderscore{}}%
 \>[28]\AgdaSymbol{=}\AgdaSpace{}%
 \AgdaInductiveConstructor{nothing}\<%
 \\
@@ -468,9 +522,9 @@
 \AgdaOperator{\AgdaInductiveConstructor{∙}}\AgdaSpace{}%
 \AgdaBound{q}\AgdaSymbol{)}%
 \>[24]\AgdaSymbol{=}%
-\>[297I]\AgdaKeyword{do}\<%
+\>[313I]\AgdaKeyword{do}\<%
 \\
-\>[297I][@{}l@{\AgdaIndent{0}}]%
+\>[313I][@{}l@{\AgdaIndent{0}}]%
 \>[28]\AgdaBound{x}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{←}}\AgdaSpace{}%
 \AgdaFunction{match}\AgdaSpace{}%
@@ -496,9 +550,9 @@
 \AgdaSymbol{(}\AgdaInductiveConstructor{bind}\AgdaSpace{}%
 \AgdaBound{p}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaSymbol{=}%
-\>[314I]\AgdaKeyword{do}\<%
+\>[330I]\AgdaKeyword{do}\<%
 \\
-\>[314I][@{}l@{\AgdaIndent{0}}]%
+\>[330I][@{}l@{\AgdaIndent{0}}]%
 \>[28]\AgdaBound{x}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{←}}\AgdaSpace{}%
 \AgdaFunction{match}\AgdaSpace{}%
@@ -510,38 +564,8 @@
 \AgdaSymbol{(}\AgdaInductiveConstructor{bind}\AgdaSpace{}%
 \AgdaBound{x}\AgdaSymbol{)}\<%
 \\
-\>[0]\AgdaCatchallClause{\AgdaFunction{match}}%
-\>[7]\AgdaCatchallClause{\AgdaSymbol{\{}}\AgdaCatchallClause{\AgdaArgument{γ}}\AgdaSpace{}%
-\AgdaCatchallClause{\AgdaSymbol{=}}\AgdaSpace{}%
-\AgdaCatchallClause{\AgdaBound{γ}}\AgdaCatchallClause{\AgdaSymbol{\}}}\AgdaSpace{}%
-\AgdaCatchallClause{\AgdaBound{t}}%
-\>[19]\AgdaCatchallClause{\AgdaSymbol{(}}\AgdaCatchallClause{\AgdaInductiveConstructor{place}}\AgdaSpace{}%
-\AgdaCatchallClause{\AgdaSymbol{\{}}\AgdaCatchallClause{\AgdaBound{δ'}}\AgdaCatchallClause{\AgdaSymbol{\}}}\AgdaSpace{}%
-\AgdaCatchallClause{\AgdaBound{θ}}\AgdaCatchallClause{\AgdaSymbol{)}}\AgdaSpace{}%
-\AgdaKeyword{with}\AgdaSpace{}%
-\AgdaBound{γ}\AgdaSpace{}%
-\AgdaOperator{\AgdaFunction{≟}}\AgdaSpace{}%
-\AgdaBound{δ'}\<%
-\\
-\>[0]\AgdaSymbol{...}\AgdaSpace{}%
-\AgdaSymbol{|}\AgdaSpace{}%
-\AgdaInductiveConstructor{true}\AgdaSpace{}%
-\AgdaOperator{\AgdaInductiveConstructor{because}}\AgdaSpace{}%
-\AgdaInductiveConstructor{ofʸ}\AgdaSpace{}%
-\AgdaInductiveConstructor{refl}\AgdaSpace{}%
-\AgdaSymbol{=}\AgdaSpace{}%
-\AgdaInductiveConstructor{just}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaInductiveConstructor{thing}\AgdaSpace{}%
-\AgdaBound{t}\AgdaSymbol{)}\<%
-\\
-\>[0]\AgdaSymbol{...}\AgdaSpace{}%
-\AgdaSymbol{|}\AgdaSpace{}%
-\AgdaInductiveConstructor{false}\AgdaSpace{}%
-\AgdaOperator{\AgdaInductiveConstructor{because}}\AgdaSpace{}%
-\AgdaSymbol{\AgdaUnderscore{}}%
-\>[28]\AgdaSymbol{=}\AgdaSpace{}%
-\AgdaInductiveConstructor{nothing}\<%
-\\
+%
+\\[\AgdaEmptyExtraSkip]%
 \>[0]\AgdaComment{-- TO DO, THUNK MATCHING!! evaluate it to head normal form}\<%
 \\
 \>[0]\AgdaCatchallClause{\AgdaFunction{match}}\AgdaSpace{}%
@@ -549,13 +573,19 @@
 \AgdaCatchallClause{\AgdaSymbol{\AgdaUnderscore{}}}%
 \>[28]\AgdaSymbol{=}\AgdaSpace{}%
 \AgdaInductiveConstructor{nothing}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaComment{--schematic variables}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
+\end{code}
+
+When contructing formal rules, it is critical that we are able to refer
+to distinct places in a pattern. For this purpose we define a schematic
+variable. This variable is able to trace a path through the pattern that
+indexes it, terminating with a $⋆$ to mark the place we refer to. We
+construct this concept with care to ensure it is well-scoped by construction.
+
+Using a schematic variable, we are able to look up the term associated to
+a place by an environment by merely proceeding structually down the path
+described by the svar and extracting the term from the thing it points to.
+
+\begin{code}%
 \>[0]\AgdaKeyword{data}\AgdaSpace{}%
 \AgdaDatatype{svar}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
@@ -569,7 +599,7 @@
 \\
 \>[0][@{}l@{\AgdaIndent{0}}]%
 \>[2]\AgdaInductiveConstructor{⋆}%
-\>[7]\AgdaSymbol{:}\AgdaSpace{}%
+\>[8]\AgdaSymbol{:}\AgdaSpace{}%
 \AgdaSymbol{\{}\AgdaBound{θ}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaGeneralizable{δ}\AgdaSpace{}%
@@ -579,12 +609,11 @@
 \AgdaDatatype{svar}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{place}\AgdaSpace{}%
 \AgdaBound{θ}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaGeneralizable{δ}\AgdaSpace{}%
-\AgdaComment{-- ⋆ marks the spot}\<%
+\AgdaGeneralizable{δ}\<%
 \\
 %
 \>[2]\AgdaOperator{\AgdaInductiveConstructor{\AgdaUnderscore{}∙}}%
-\>[7]\AgdaSymbol{:}\AgdaSpace{}%
+\>[8]\AgdaSymbol{:}\AgdaSpace{}%
 \AgdaDatatype{svar}\AgdaSpace{}%
 \AgdaGeneralizable{p}\AgdaSpace{}%
 \AgdaGeneralizable{δ}\AgdaSpace{}%
@@ -597,7 +626,7 @@
 \\
 %
 \>[2]\AgdaOperator{\AgdaInductiveConstructor{∙\AgdaUnderscore{}}}%
-\>[7]\AgdaSymbol{:}\AgdaSpace{}%
+\>[8]\AgdaSymbol{:}\AgdaSpace{}%
 \AgdaDatatype{svar}\AgdaSpace{}%
 \AgdaGeneralizable{q}\AgdaSpace{}%
 \AgdaGeneralizable{δ}\AgdaSpace{}%
@@ -609,8 +638,8 @@
 \AgdaGeneralizable{δ}\<%
 \\
 %
-\>[2]\AgdaInductiveConstructor{bind}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
+\>[2]\AgdaInductiveConstructor{bind}%
+\>[8]\AgdaSymbol{:}\AgdaSpace{}%
 \AgdaDatatype{svar}\AgdaSpace{}%
 \AgdaGeneralizable{q}\AgdaSpace{}%
 \AgdaGeneralizable{δ}\AgdaSpace{}%
@@ -622,10 +651,77 @@
 \\
 %
 \\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaComment{-- we can remove places from a pattern identified with a schematic variable}\<%
-\\
-\>[0]\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}-\AgdaUnderscore{}}}\AgdaSpace{}%
+%
+\\[\AgdaEmptyExtraSkip]%
+\>[0]\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}‼\AgdaUnderscore{}}}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
+\AgdaDatatype{svar}\AgdaSpace{}%
+\AgdaGeneralizable{p}\AgdaSpace{}%
+\AgdaGeneralizable{δ}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaGeneralizable{γ'}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{⊗}}\AgdaSpace{}%
+\AgdaGeneralizable{p}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaDatatype{-Env}}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaFunction{Term}\AgdaSpace{}%
+\AgdaInductiveConstructor{const}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaGeneralizable{γ'}\AgdaSpace{}%
+\AgdaOperator{\AgdaPrimitive{+}}\AgdaSpace{}%
+\AgdaGeneralizable{δ}\AgdaSymbol{)}\<%
+\\
+\>[0]\AgdaInductiveConstructor{⋆}%
+\>[8]\AgdaOperator{\AgdaFunction{‼}}\AgdaSpace{}%
+\AgdaInductiveConstructor{thing}\AgdaSpace{}%
+\AgdaBound{x}%
+\>[19]\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaBound{x}\<%
+\\
+\>[0]\AgdaSymbol{(}\AgdaBound{v}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∙}}\AgdaSymbol{)}%
+\>[8]\AgdaOperator{\AgdaFunction{‼}}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{p}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∙}}\AgdaSpace{}%
+\AgdaBound{q}\AgdaSymbol{)}%
+\>[19]\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaBound{v}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{‼}}\AgdaSpace{}%
+\AgdaBound{p}\<%
+\\
+\>[0]\AgdaSymbol{(}\AgdaOperator{\AgdaInductiveConstructor{∙}}\AgdaSpace{}%
+\AgdaBound{v}\AgdaSymbol{)}%
+\>[8]\AgdaOperator{\AgdaFunction{‼}}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{p}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∙}}\AgdaSpace{}%
+\AgdaBound{q}\AgdaSymbol{)}%
+\>[19]\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaBound{v}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{‼}}\AgdaSpace{}%
+\AgdaBound{q}\<%
+\\
+\>[0]\AgdaInductiveConstructor{bind}\AgdaSpace{}%
+\AgdaBound{v}%
+\>[8]\AgdaOperator{\AgdaFunction{‼}}\AgdaSpace{}%
+\AgdaInductiveConstructor{bind}\AgdaSpace{}%
+\AgdaBound{t}%
+\>[19]\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaBound{v}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{‼}}\AgdaSpace{}%
+\AgdaBound{t}\<%
+\end{code}
+
+We define a few less interesting but critical utility functions for later
+use. We give a means to remove a place from a pattern, replacing it with
+a trivial atom. Similarly we extend the same functionality to environments.
+
+We also define some openings and a method for retrieving a term from a pattern
+and some opening of its environment. We are unable to use our previously defined
+Openable for schematic variables as the type is a little difference due to it
+having a pattern index which also needs to be opened in the return type.
+
+\begin{code}%
+\>[0]\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}-\AgdaUnderscore{}}}%
+\>[10]\AgdaSymbol{:}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaBound{p}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaDatatype{Pattern}\AgdaSpace{}%
@@ -638,6 +734,65 @@
 \AgdaDatatype{Pattern}\AgdaSpace{}%
 \AgdaGeneralizable{γ}\<%
 \\
+\>[0]\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}-penv\AgdaUnderscore{}}}%
+\>[10]\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaGeneralizable{p}\AgdaSpace{}%
+\AgdaOperator{\AgdaDatatype{-Env}}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{ξ}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaDatatype{svar}\AgdaSpace{}%
+\AgdaGeneralizable{p}\AgdaSpace{}%
+\AgdaGeneralizable{δ}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaGeneralizable{p}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{-}}\AgdaSpace{}%
+\AgdaBound{ξ}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaDatatype{-Env}}\<%
+\\
+\>[0]\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}⊗svar\AgdaUnderscore{}}}%
+\>[10]\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{γ}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaFunction{Scope}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaDatatype{svar}\AgdaSpace{}%
+\AgdaGeneralizable{p}\AgdaSpace{}%
+\AgdaGeneralizable{δ}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaDatatype{svar}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{γ}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{⊗}}\AgdaSpace{}%
+\AgdaGeneralizable{p}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{γ}\AgdaSpace{}%
+\AgdaOperator{\AgdaPrimitive{+}}\AgdaSpace{}%
+\AgdaGeneralizable{δ}\AgdaSymbol{)}\<%
+\\
+\>[0]\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}⊗var\AgdaUnderscore{}}}%
+\>[10]\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaFunction{Openable}\AgdaSpace{}%
+\AgdaDatatype{Var}\<%
+\\
+\>[0]\AgdaFunction{termFrom}%
+\>[10]\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{p}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaDatatype{Pattern}\AgdaSpace{}%
+\AgdaGeneralizable{γ}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaGeneralizable{δ}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{⊗}}\AgdaSpace{}%
+\AgdaBound{p}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaDatatype{-Env}}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaFunction{Term}\AgdaSpace{}%
+\AgdaInductiveConstructor{const}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaGeneralizable{δ}\AgdaSpace{}%
+\AgdaOperator{\AgdaPrimitive{+}}\AgdaSpace{}%
+\AgdaGeneralizable{γ}\AgdaSymbol{)}\<%
+\end{code}
+\hide{
+\begin{code}%
 \>[0]\AgdaSymbol{(}\AgdaBound{p}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{∙}}\AgdaSpace{}%
 \AgdaBound{q}\AgdaSymbol{)}\AgdaSpace{}%
@@ -685,24 +840,6 @@
 \\
 %
 \\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaComment{-- we can also remove places from a pattern environment in a similar way}\<%
-\\
-\>[0]\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}-penv\AgdaUnderscore{}}}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaGeneralizable{p}\AgdaSpace{}%
-\AgdaOperator{\AgdaDatatype{-Env}}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaBound{ξ}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaDatatype{svar}\AgdaSpace{}%
-\AgdaGeneralizable{p}\AgdaSpace{}%
-\AgdaGeneralizable{δ}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaGeneralizable{p}\AgdaSpace{}%
-\AgdaOperator{\AgdaFunction{-}}\AgdaSpace{}%
-\AgdaBound{ξ}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaOperator{\AgdaDatatype{-Env}}\<%
-\\
 \>[0]\AgdaSymbol{(}\AgdaBound{s}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{∙}}\AgdaSpace{}%
 \AgdaBound{t}\AgdaSymbol{)}\AgdaSpace{}%
@@ -749,28 +886,6 @@
 \\
 %
 \\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaComment{-- we can 'open up' a svar but not using Openable as}\<%
-\\
-\>[0]\AgdaComment{-- the resulting svar is indexed by a newly opened pattern}\<%
-\\
-\>[0]\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}⊗svar\AgdaUnderscore{}}}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaBound{γ}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaFunction{Scope}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaDatatype{svar}\AgdaSpace{}%
-\AgdaGeneralizable{p}\AgdaSpace{}%
-\AgdaGeneralizable{δ}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaDatatype{svar}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaBound{γ}\AgdaSpace{}%
-\AgdaOperator{\AgdaFunction{⊗}}\AgdaSpace{}%
-\AgdaGeneralizable{p}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaBound{γ}\AgdaSpace{}%
-\AgdaOperator{\AgdaPrimitive{+}}\AgdaSpace{}%
-\AgdaGeneralizable{δ}\AgdaSymbol{)}\<%
-\\
 \>[0]\AgdaBound{γ}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{⊗svar}}\AgdaSpace{}%
 \AgdaInductiveConstructor{⋆}%
@@ -809,13 +924,6 @@
 \\
 %
 \\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaComment{-- we can 'open up' variables using the thinning}\<%
-\\
-\>[0]\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}⊗var\AgdaUnderscore{}}}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaFunction{Openable}\AgdaSpace{}%
-\AgdaDatatype{Var}\<%
-\\
 \>[0]\AgdaBound{γ}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{⊗var}}\AgdaSpace{}%
 \AgdaInductiveConstructor{ze}\AgdaSpace{}%
@@ -834,93 +942,6 @@
 \\
 %
 \\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaComment{-- crucually, we can now look up terms in an environment}\<%
-\\
-\>[0]\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}‼\AgdaUnderscore{}}}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaSymbol{∀}\AgdaSpace{}%
-\AgdaSymbol{\{}\AgdaBound{γ}\AgdaSymbol{\}}\AgdaSpace{}%
-\AgdaSymbol{\{}\AgdaBound{p}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaDatatype{Pattern}\AgdaSpace{}%
-\AgdaBound{γ}\AgdaSymbol{\}}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaDatatype{svar}\AgdaSpace{}%
-\AgdaBound{p}\AgdaSpace{}%
-\AgdaGeneralizable{δ}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaGeneralizable{γ'}\AgdaSpace{}%
-\AgdaOperator{\AgdaFunction{⊗}}\AgdaSpace{}%
-\AgdaBound{p}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaOperator{\AgdaDatatype{-Env}}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaFunction{Term}\AgdaSpace{}%
-\AgdaInductiveConstructor{const}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaGeneralizable{γ'}\AgdaSpace{}%
-\AgdaOperator{\AgdaPrimitive{+}}\AgdaSpace{}%
-\AgdaGeneralizable{δ}\AgdaSymbol{)}\<%
-\\
-\>[0]\AgdaInductiveConstructor{⋆}%
-\>[7]\AgdaOperator{\AgdaFunction{‼}}\AgdaSpace{}%
-\AgdaInductiveConstructor{thing}\AgdaSpace{}%
-\AgdaBound{x}\AgdaSpace{}%
-\AgdaSymbol{=}\AgdaSpace{}%
-\AgdaBound{x}\<%
-\\
-\>[0]\AgdaSymbol{(}\AgdaBound{v}\AgdaSpace{}%
-\AgdaOperator{\AgdaInductiveConstructor{∙}}\AgdaSymbol{)}%
-\>[7]\AgdaOperator{\AgdaFunction{‼}}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaBound{p}\AgdaSpace{}%
-\AgdaOperator{\AgdaInductiveConstructor{∙}}\AgdaSpace{}%
-\AgdaBound{q}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaSymbol{=}\AgdaSpace{}%
-\AgdaBound{v}\AgdaSpace{}%
-\AgdaOperator{\AgdaFunction{‼}}\AgdaSpace{}%
-\AgdaBound{p}\<%
-\\
-\>[0]\AgdaSymbol{(}\AgdaOperator{\AgdaInductiveConstructor{∙}}\AgdaSpace{}%
-\AgdaBound{v}\AgdaSymbol{)}%
-\>[7]\AgdaOperator{\AgdaFunction{‼}}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaBound{p}\AgdaSpace{}%
-\AgdaOperator{\AgdaInductiveConstructor{∙}}\AgdaSpace{}%
-\AgdaBound{q}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaSymbol{=}\AgdaSpace{}%
-\AgdaBound{v}\AgdaSpace{}%
-\AgdaOperator{\AgdaFunction{‼}}\AgdaSpace{}%
-\AgdaBound{q}\<%
-\\
-\>[0]\AgdaInductiveConstructor{bind}\AgdaSpace{}%
-\AgdaBound{v}\AgdaSpace{}%
-\AgdaOperator{\AgdaFunction{‼}}\AgdaSpace{}%
-\AgdaInductiveConstructor{bind}\AgdaSpace{}%
-\AgdaBound{t}%
-\>[17]\AgdaSymbol{=}\AgdaSpace{}%
-\AgdaBound{v}\AgdaSpace{}%
-\AgdaOperator{\AgdaFunction{‼}}\AgdaSpace{}%
-\AgdaBound{t}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaComment{-- we can also get the term back from the pattern and the environment}\<%
-\\
-\>[0]\AgdaFunction{termFrom}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaBound{p}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaDatatype{Pattern}\AgdaSpace{}%
-\AgdaGeneralizable{γ}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaGeneralizable{δ}\AgdaSpace{}%
-\AgdaOperator{\AgdaFunction{⊗}}\AgdaSpace{}%
-\AgdaBound{p}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaOperator{\AgdaDatatype{-Env}}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaFunction{Term}\AgdaSpace{}%
-\AgdaInductiveConstructor{const}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaGeneralizable{δ}\AgdaSpace{}%
-\AgdaOperator{\AgdaPrimitive{+}}\AgdaSpace{}%
-\AgdaGeneralizable{γ}\AgdaSymbol{)}\<%
-\\
 \>[0]\AgdaFunction{termFrom}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{`}\AgdaSpace{}%
 \AgdaBound{x}\AgdaSymbol{)}\AgdaSpace{}%
@@ -965,10 +986,6 @@
 \AgdaBound{x₁}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{⟨term⊗}}\AgdaSpace{}%
 \AgdaBound{θ}\<%
-\\
-\>[0]\AgdaFunction{termFrom}\AgdaSpace{}%
-\AgdaInductiveConstructor{⊥}\AgdaSpace{}%
-\AgdaSymbol{()}\<%
 \end{code}
 }
-
+}

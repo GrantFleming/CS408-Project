@@ -1,4 +1,4 @@
-\section{Representing Judgements and Rules}
+\section{Premises}
 
 \hide{
 \begin{code}%
@@ -30,17 +30,18 @@
 \>[0]\AgdaKeyword{open}\AgdaSpace{}%
 \AgdaKeyword{import}\AgdaSpace{}%
 \AgdaModule{Pattern}\AgdaSpace{}%
-\AgdaKeyword{using}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaDatatype{Pattern}\AgdaSymbol{;}\AgdaSpace{}%
+\AgdaKeyword{using}%
+\>[16I]\AgdaSymbol{(}\AgdaDatatype{Pattern}\AgdaSymbol{;}\AgdaSpace{}%
 \AgdaDatatype{svar}\AgdaSymbol{;}\AgdaSpace{}%
 \AgdaInductiveConstructor{bind}\AgdaSymbol{;}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{\AgdaUnderscore{}∙}}\AgdaSymbol{;}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{∙\AgdaUnderscore{}}}\AgdaSymbol{;}\AgdaSpace{}%
 \AgdaInductiveConstructor{place}\AgdaSymbol{;}\AgdaSpace{}%
 \AgdaInductiveConstructor{⋆}\AgdaSymbol{;}\AgdaSpace{}%
-\AgdaOperator{\AgdaInductiveConstructor{\AgdaUnderscore{}∙\AgdaUnderscore{}}}\AgdaSymbol{;}\AgdaSpace{}%
-\AgdaInductiveConstructor{`}\AgdaSymbol{;}\AgdaSpace{}%
-\AgdaInductiveConstructor{⊥}\AgdaSymbol{;}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{\AgdaUnderscore{}∙\AgdaUnderscore{}}}\AgdaSymbol{;}\<%
+\\
+\>[16I][@{}l@{\AgdaIndent{0}}]%
+\>[27]\AgdaInductiveConstructor{`}\AgdaSymbol{;}\AgdaSpace{}%
 \AgdaOperator{\AgdaDatatype{\AgdaUnderscore{}-Env}}\AgdaSymbol{;}\AgdaSpace{}%
 \AgdaFunction{match}\AgdaSymbol{;}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{\AgdaUnderscore{}-\AgdaUnderscore{}}}\AgdaSymbol{;}\AgdaSpace{}%
@@ -92,13 +93,17 @@
 \>[0]\AgdaKeyword{open}\AgdaSpace{}%
 \AgdaKeyword{import}\AgdaSpace{}%
 \AgdaModule{Relation.Binary.PropositionalEquality}\AgdaSpace{}%
-\AgdaKeyword{using}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaFunction{cong}\AgdaSymbol{;}\AgdaSpace{}%
-\AgdaFunction{sym}\AgdaSymbol{;}\AgdaSpace{}%
-\AgdaOperator{\AgdaDatatype{\AgdaUnderscore{}≡\AgdaUnderscore{}}}\AgdaSymbol{;}\AgdaSpace{}%
+\AgdaKeyword{using}%
+\>[62I]\AgdaSymbol{(}\AgdaFunction{cong}\AgdaSymbol{;}\AgdaSpace{}%
+\AgdaFunction{sym}\AgdaSymbol{;}\<%
+\\
+\>[62I][@{}l@{\AgdaIndent{0}}]%
+\>[57]\AgdaOperator{\AgdaDatatype{\AgdaUnderscore{}≡\AgdaUnderscore{}}}\AgdaSymbol{;}\AgdaSpace{}%
 \AgdaInductiveConstructor{refl}\AgdaSymbol{)}\<%
 \end{code}
+}
 
+\hide{
 \begin{code}%
 \>[0]\AgdaKeyword{private}\<%
 \\
@@ -106,44 +111,44 @@
 \>[2]\AgdaKeyword{variable}\<%
 \\
 \>[2][@{}l@{\AgdaIndent{0}}]%
-\>[4]\AgdaGeneralizable{δ}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
+\>[4]\AgdaGeneralizable{δ}%
+\>[8]\AgdaSymbol{:}\AgdaSpace{}%
 \AgdaFunction{Scope}\<%
 \\
 %
-\>[4]\AgdaGeneralizable{δ'}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
+\>[4]\AgdaGeneralizable{δ'}%
+\>[8]\AgdaSymbol{:}\AgdaSpace{}%
 \AgdaFunction{Scope}\<%
 \\
 %
-\>[4]\AgdaGeneralizable{γ}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
+\>[4]\AgdaGeneralizable{γ}%
+\>[8]\AgdaSymbol{:}\AgdaSpace{}%
 \AgdaFunction{Scope}\<%
 \\
 %
-\>[4]\AgdaGeneralizable{p}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
+\>[4]\AgdaGeneralizable{p}%
+\>[8]\AgdaSymbol{:}\AgdaSpace{}%
 \AgdaDatatype{Pattern}\AgdaSpace{}%
-\AgdaNumber{0}\<%
+\AgdaGeneralizable{δ}\<%
 \\
 %
-\>[4]\AgdaGeneralizable{pᵍ}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
+\>[4]\AgdaGeneralizable{p'}%
+\>[8]\AgdaSymbol{:}\AgdaSpace{}%
 \AgdaDatatype{Pattern}\AgdaSpace{}%
 \AgdaGeneralizable{γ}\<%
 \\
 %
-\>[4]\AgdaGeneralizable{p`}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
+\>[4]\AgdaGeneralizable{pᵍ}%
+\>[8]\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaDatatype{Pattern}\AgdaSpace{}%
+\AgdaGeneralizable{γ}\<%
+\\
+%
+\>[4]\AgdaGeneralizable{p`}%
+\>[8]\AgdaSymbol{:}\AgdaSpace{}%
 \AgdaDatatype{Pattern}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{suc}\AgdaSpace{}%
 \AgdaGeneralizable{γ}\AgdaSymbol{)}\<%
-\\
-%
-\>[4]\AgdaGeneralizable{q`}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaDatatype{Pattern}\AgdaSpace{}%
-\AgdaNumber{0}\<%
 \\
 %
 \>[4]\AgdaGeneralizable{q``}\AgdaSpace{}%
@@ -152,22 +157,62 @@
 \AgdaGeneralizable{δ}\<%
 \\
 %
-\>[4]\AgdaGeneralizable{q}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
+\>[4]\AgdaGeneralizable{q}%
+\>[8]\AgdaSymbol{:}\AgdaSpace{}%
 \AgdaDatatype{Pattern}\AgdaSpace{}%
-\AgdaNumber{0}\<%
+\AgdaGeneralizable{δ}\<%
 \\
 %
-\>[4]\AgdaGeneralizable{q'}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
+\>[4]\AgdaGeneralizable{q'}%
+\>[8]\AgdaSymbol{:}\AgdaSpace{}%
 \AgdaDatatype{Pattern}\AgdaSpace{}%
-\AgdaNumber{0}\<%
+\AgdaGeneralizable{δ}\<%
 \\
 %
-\\[\AgdaEmptyExtraSkip]%
+\>[4]\AgdaGeneralizable{p₂}%
+\>[8]\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaDatatype{Pattern}\AgdaSpace{}%
+\AgdaGeneralizable{γ}\<%
+\\
+%
+\>[4]\AgdaGeneralizable{q₁`}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaDatatype{Pattern}\AgdaSpace{}%
+\AgdaGeneralizable{γ}\<%
+\\
+%
+\>[4]\AgdaGeneralizable{p₂`}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaDatatype{Pattern}\AgdaSpace{}%
+\AgdaGeneralizable{γ}\<%
+\end{code}
+}
+
+A key concept we will use when defining rules is that of a premise. We use
+premise in order to accumulate trust in some pattern, potentially discharging
+a place in the pattern. For our premise, $p$ is some pattern that identifies places
+that we already trust while $q$ is the pattern of untrusted places. The premise
+establishes trust in some $p'$ and shows what remains untrusted with $q'$.
+
+The general form is to pick a place in q, identifying how it is that we trust it
+(via the data constructor used) and say that we have fresh trust in this place and so
+we give back q with this place removed (by replacing the place with a trivial atom).
+This is not the case for every premise as we also include premise that discharge no
+untrusted place from q such as equivalence and universe checks while also providing
+a constructor allowing us to represent a premise in an extended context. Regardless
+it is useful to think of a premise as an entity who's role is trust establishment.
+
+In the definition of formal rules, we do not have the luxury of referring to arbitrary
+free variables and will give a chain of premises where the patterns are defined
+in the empty scope (unless we have ducked under the $\vdash$ premise). We will later
+require the ability to open such premises when using them to establish trust in
+an arbitrary scope and so we define such an opening function $⊗premise$, the type
+is also given here.
+
+\begin{code}%
 \>[0]\AgdaKeyword{data}\AgdaSpace{}%
-\AgdaDatatype{Prem}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaBound{p}\AgdaSpace{}%
+\AgdaDatatype{Prem}%
+\>[11]\AgdaSymbol{(}\AgdaBound{p}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaDatatype{Pattern}\AgdaSpace{}%
 \AgdaGeneralizable{δ}\AgdaSymbol{)}\AgdaSpace{}%
@@ -178,8 +223,10 @@
 \AgdaSymbol{(}\AgdaBound{γ}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaFunction{Scope}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaBound{p'}\AgdaSpace{}%
+\AgdaSymbol{:}\<%
+\\
+%
+\>[11]\AgdaSymbol{(}\AgdaBound{p'}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaDatatype{Pattern}\AgdaSpace{}%
 \AgdaBound{γ}\AgdaSymbol{)}\AgdaSpace{}%
@@ -194,7 +241,7 @@
 \\
 \>[0][@{}l@{\AgdaIndent{0}}]%
 \>[3]\AgdaInductiveConstructor{type}%
-\>[11]\AgdaSymbol{:}\AgdaSpace{}%
+\>[12]\AgdaSymbol{:}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaBound{ξ}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaDatatype{svar}\AgdaSpace{}%
@@ -218,8 +265,8 @@
 \AgdaBound{ξ}\AgdaSymbol{)}\<%
 \\
 %
-\>[3]\AgdaOperator{\AgdaInductiveConstructor{\AgdaUnderscore{}∋'\AgdaUnderscore{}[\AgdaUnderscore{}]}}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
+\>[3]\AgdaOperator{\AgdaInductiveConstructor{\AgdaUnderscore{}∋'\AgdaUnderscore{}[\AgdaUnderscore{}]}}%
+\>[12]\AgdaSymbol{:}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaBound{T}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaFunction{Expr}\AgdaSpace{}%
@@ -238,7 +285,7 @@
 \AgdaGeneralizable{δ'}\AgdaSpace{}%
 \AgdaOperator{\AgdaDatatype{⊑}}\AgdaSpace{}%
 \AgdaBound{γ}\AgdaSymbol{)}%
-\>[68]\AgdaSymbol{→}\AgdaSpace{}%
+\>[69]\AgdaSymbol{→}\AgdaSpace{}%
 \AgdaDatatype{Prem}\AgdaSpace{}%
 \AgdaBound{p}\AgdaSpace{}%
 \AgdaBound{q}\AgdaSpace{}%
@@ -251,7 +298,7 @@
 \\
 %
 \>[3]\AgdaOperator{\AgdaInductiveConstructor{\AgdaUnderscore{}≡'\AgdaUnderscore{}}}%
-\>[11]\AgdaSymbol{:}\AgdaSpace{}%
+\>[12]\AgdaSymbol{:}\AgdaSpace{}%
 \AgdaFunction{Expr}\AgdaSpace{}%
 \AgdaBound{p}\AgdaSpace{}%
 \AgdaInductiveConstructor{const}\AgdaSpace{}%
@@ -272,7 +319,7 @@
 \\
 %
 \>[3]\AgdaInductiveConstructor{univ}%
-\>[11]\AgdaSymbol{:}\AgdaSpace{}%
+\>[12]\AgdaSymbol{:}\AgdaSpace{}%
 \AgdaFunction{Expr}\AgdaSpace{}%
 \AgdaBound{p}\AgdaSpace{}%
 \AgdaInductiveConstructor{const}\AgdaSpace{}%
@@ -288,7 +335,7 @@
 \\
 %
 \>[3]\AgdaOperator{\AgdaInductiveConstructor{\AgdaUnderscore{}⊢'\AgdaUnderscore{}}}%
-\>[11]\AgdaSymbol{:}\AgdaSpace{}%
+\>[12]\AgdaSymbol{:}\AgdaSpace{}%
 \AgdaFunction{Expr}\AgdaSpace{}%
 \AgdaBound{p}\AgdaSpace{}%
 \AgdaInductiveConstructor{const}\AgdaSpace{}%
@@ -312,6 +359,42 @@
 \\
 %
 \\[\AgdaEmptyExtraSkip]%
+\>[0]\AgdaFunction{⊗premise}\AgdaSpace{}%
+\AgdaSymbol{:}%
+\>[213I]\AgdaSymbol{(}\AgdaBound{δ}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaFunction{Scope}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{→}\<%
+\\
+\>[.][@{}l@{}]\<[213I]%
+\>[11]\AgdaDatatype{Prem}\AgdaSpace{}%
+\AgdaGeneralizable{p}\AgdaSpace{}%
+\AgdaGeneralizable{q}\AgdaSpace{}%
+\AgdaGeneralizable{γ}\AgdaSpace{}%
+\AgdaGeneralizable{p'}\AgdaSpace{}%
+\AgdaGeneralizable{q'}\AgdaSpace{}%
+\AgdaSymbol{→}\<%
+\\
+%
+\>[11]\AgdaDatatype{Prem}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{δ}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{⊗}}\AgdaSpace{}%
+\AgdaGeneralizable{p}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{δ}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{⊗}}\AgdaSpace{}%
+\AgdaGeneralizable{q}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{δ}\AgdaSpace{}%
+\AgdaOperator{\AgdaPrimitive{+}}\AgdaSpace{}%
+\AgdaGeneralizable{γ}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{δ}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{⊗}}\AgdaSpace{}%
+\AgdaGeneralizable{p'}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{δ}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{⊗}}\AgdaSpace{}%
+\AgdaGeneralizable{q'}\AgdaSymbol{)}\<%
+\end{code}
+\hide{
+\begin{code}%
 \>[0]\AgdaFunction{helper}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaSymbol{∀}\AgdaSpace{}%
@@ -410,48 +493,6 @@
 %
 \\[\AgdaEmptyExtraSkip]%
 \>[0]\AgdaFunction{⊗premise}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaSymbol{∀}\AgdaSpace{}%
-\AgdaSymbol{\{}\AgdaBound{p'}%
-\>[302I]\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaDatatype{Pattern}\AgdaSpace{}%
-\AgdaGeneralizable{γ}\AgdaSymbol{\}}\AgdaSpace{}%
-\AgdaSymbol{→}\<%
-\\
-\>[.][@{}l@{}]\<[302I]%
-\>[17]\AgdaSymbol{(}\AgdaBound{δ}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaFunction{Scope}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaSymbol{→}\<%
-\\
-%
-\>[17]\AgdaDatatype{Prem}\AgdaSpace{}%
-\AgdaGeneralizable{p}\AgdaSpace{}%
-\AgdaGeneralizable{q}\AgdaSpace{}%
-\AgdaGeneralizable{γ}\AgdaSpace{}%
-\AgdaBound{p'}\AgdaSpace{}%
-\AgdaGeneralizable{q'}\AgdaSpace{}%
-\AgdaSymbol{→}\<%
-\\
-%
-\>[17]\AgdaDatatype{Prem}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaBound{δ}\AgdaSpace{}%
-\AgdaOperator{\AgdaFunction{⊗}}\AgdaSpace{}%
-\AgdaGeneralizable{p}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaBound{δ}\AgdaSpace{}%
-\AgdaOperator{\AgdaFunction{⊗}}\AgdaSpace{}%
-\AgdaGeneralizable{q}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaBound{δ}\AgdaSpace{}%
-\AgdaOperator{\AgdaPrimitive{+}}\AgdaSpace{}%
-\AgdaGeneralizable{γ}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaBound{δ}\AgdaSpace{}%
-\AgdaOperator{\AgdaFunction{⊗}}\AgdaSpace{}%
-\AgdaBound{p'}\AgdaSymbol{)}%
-\>[56]\AgdaSymbol{(}\AgdaBound{δ}\AgdaSpace{}%
-\AgdaOperator{\AgdaFunction{⊗}}\AgdaSpace{}%
-\AgdaGeneralizable{q'}\AgdaSymbol{)}\<%
-\\
-\>[0]\AgdaFunction{⊗premise}\AgdaSpace{}%
 \AgdaSymbol{\{}\AgdaArgument{q}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
 \AgdaBound{q}\AgdaSymbol{\}}\AgdaSpace{}%
@@ -545,13 +586,23 @@
 \AgdaFunction{⊗premise}\AgdaSpace{}%
 \AgdaBound{δ}\AgdaSpace{}%
 \AgdaBound{prem}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaComment{-- We have a concept of a placeless thing, which represents any}\<%
-\\
-\>[0]\AgdaComment{-- pattern that contains no places}\<%
-\\
+\end{code}
+}
+Before we define how we might chain premise together, it is important to address
+placelessness in patterns.
+
+We define a type that is structurally equivalent to patterns except for the
+absence of places. This type is indexed by patterns where we use the index
+to match the structure of a Placeless and its Pattern and so it is only
+possible for a Placeless to represent a placeless pattern.
+
+We then define the removal of all places from a pattern by recursing
+structurally, and replacing all places with the trivial atom ` '⊤'.
+
+Finally we show that for any pattern $p$ we can create some Placeless indexed
+by $p -places$ and, as with many of our types, define opening on Placeless.
+
+\begin{code}%
 \>[0]\AgdaKeyword{data}\AgdaSpace{}%
 \AgdaOperator{\AgdaDatatype{\AgdaUnderscore{}Placeless}}\AgdaSpace{}%
 \AgdaSymbol{\{}\AgdaBound{γ}\AgdaSpace{}%
@@ -566,7 +617,7 @@
 \\
 \>[0][@{}l@{\AgdaIndent{0}}]%
 \>[2]\AgdaInductiveConstructor{`}%
-\>[7]\AgdaSymbol{:}\AgdaSpace{}%
+\>[8]\AgdaSymbol{:}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaBound{c}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaPostulate{Char}\AgdaSymbol{)}\AgdaSpace{}%
@@ -576,14 +627,8 @@
 \AgdaOperator{\AgdaDatatype{Placeless}}\<%
 \\
 %
-\>[2]\AgdaInductiveConstructor{⊥}%
-\>[7]\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaInductiveConstructor{⊥}\AgdaSpace{}%
-\AgdaOperator{\AgdaDatatype{Placeless}}\<%
-\\
-%
 \>[2]\AgdaOperator{\AgdaInductiveConstructor{\AgdaUnderscore{}∙\AgdaUnderscore{}}}%
-\>[7]\AgdaSymbol{:}\AgdaSpace{}%
+\>[8]\AgdaSymbol{:}\AgdaSpace{}%
 \AgdaSymbol{\{}\AgdaBound{l}\AgdaSpace{}%
 \AgdaBound{r}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
@@ -602,8 +647,8 @@
 \AgdaOperator{\AgdaDatatype{Placeless}}\<%
 \\
 %
-\>[2]\AgdaInductiveConstructor{bind}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
+\>[2]\AgdaInductiveConstructor{bind}%
+\>[8]\AgdaSymbol{:}\AgdaSpace{}%
 \AgdaSymbol{\{}\AgdaBound{t}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaDatatype{Pattern}\AgdaSpace{}%
@@ -619,8 +664,6 @@
 \\
 %
 \\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaComment{-- we can remove places from a pattern and replace them with ` '⊤'}\<%
-\\
 \>[0]\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}-places}}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaDatatype{Pattern}\AgdaSpace{}%
@@ -629,6 +672,19 @@
 \AgdaDatatype{Pattern}\AgdaSpace{}%
 \AgdaGeneralizable{γ}\<%
 \\
+\>[0]\AgdaComment{--...}\<%
+\\
+\>[0]\AgdaInductiveConstructor{place}\AgdaSpace{}%
+\AgdaBound{x}%
+\>[9]\AgdaOperator{\AgdaFunction{-places}}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{`}\AgdaSpace{}%
+\AgdaString{'⊤'}\<%
+\\
+\>[0]\AgdaComment{--...}\<%
+\end{code}
+\hide{
+\begin{code}%
 \>[0]\AgdaInductiveConstructor{`}\AgdaSpace{}%
 \AgdaBound{x}%
 \>[9]\AgdaOperator{\AgdaFunction{-places}}\AgdaSpace{}%
@@ -654,23 +710,9 @@
 \AgdaInductiveConstructor{bind}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaBound{t}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{-places}}\AgdaSymbol{)}\<%
-\\
-\>[0]\AgdaInductiveConstructor{place}\AgdaSpace{}%
-\AgdaBound{x}%
-\>[9]\AgdaOperator{\AgdaFunction{-places}}\AgdaSpace{}%
-\AgdaSymbol{=}\AgdaSpace{}%
-\AgdaInductiveConstructor{`}\AgdaSpace{}%
-\AgdaString{'⊤'}\<%
-\\
-\>[0]\AgdaInductiveConstructor{⊥}%
-\>[9]\AgdaOperator{\AgdaFunction{-places}}\AgdaSpace{}%
-\AgdaSymbol{=}\AgdaSpace{}%
-\AgdaInductiveConstructor{⊥}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaComment{-- hence we can make a placeless thing from any pattern }\<%
-\\
+\end{code}
+}
+\begin{code}%
 \>[0]\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}placeless}}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaBound{p}\AgdaSpace{}%
@@ -681,6 +723,27 @@
 \AgdaSymbol{(}\AgdaBound{p}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{-places}}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaOperator{\AgdaDatatype{Placeless}}\<%
+\\
+%
+\\[\AgdaEmptyExtraSkip]%
+\>[0]\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}⊗pl\AgdaUnderscore{}}}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaGeneralizable{p'}\AgdaSpace{}%
+\AgdaOperator{\AgdaDatatype{Placeless}}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{δ}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaFunction{Scope}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{δ}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{⊗}}\AgdaSpace{}%
+\AgdaGeneralizable{p'}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaDatatype{Placeless}}\<%
+\end{code}
+
+\hide{
+\begin{code}%
+\>[0]\<%
 \\
 \>[0]\AgdaInductiveConstructor{`}\AgdaSpace{}%
 \AgdaBound{x}\AgdaSpace{}%
@@ -715,35 +778,10 @@
 \AgdaInductiveConstructor{`}\AgdaSpace{}%
 \AgdaString{'⊤'}\<%
 \\
-\>[0]\AgdaInductiveConstructor{⊥}\AgdaSpace{}%
-\AgdaOperator{\AgdaFunction{placeless}}%
-\>[19]\AgdaSymbol{=}\AgdaSpace{}%
-\AgdaInductiveConstructor{⊥}\<%
-\\
 %
 \\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaComment{-- we can also 'open' placeless things trivially, just fixing up the type}\<%
-\\
-\>[0]\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}⊗pl\AgdaUnderscore{}}}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaSymbol{∀}\AgdaSpace{}%
-\AgdaSymbol{\{}\AgdaBound{p}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaDatatype{Pattern}\AgdaSpace{}%
-\AgdaGeneralizable{γ}\AgdaSymbol{\}}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaBound{p}\AgdaSpace{}%
-\AgdaOperator{\AgdaDatatype{Placeless}}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaBound{δ}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaFunction{Scope}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaBound{δ}\AgdaSpace{}%
-\AgdaOperator{\AgdaFunction{⊗}}\AgdaSpace{}%
-\AgdaBound{p}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaOperator{\AgdaDatatype{Placeless}}\<%
-\\
+%
+\\[\AgdaEmptyExtraSkip]%
 \>[0]\AgdaInductiveConstructor{`}\AgdaSpace{}%
 \AgdaBound{c}%
 \>[8]\AgdaOperator{\AgdaFunction{⊗pl}}\AgdaSpace{}%
@@ -751,12 +789,6 @@
 \AgdaSymbol{=}\AgdaSpace{}%
 \AgdaInductiveConstructor{`}\AgdaSpace{}%
 \AgdaBound{c}\<%
-\\
-\>[0]\AgdaInductiveConstructor{⊥}%
-\>[8]\AgdaOperator{\AgdaFunction{⊗pl}}\AgdaSpace{}%
-\AgdaBound{δ}\AgdaSpace{}%
-\AgdaSymbol{=}\AgdaSpace{}%
-\AgdaInductiveConstructor{⊥}\<%
 \\
 \>[0]\AgdaSymbol{(}\AgdaBound{s}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{∙}}\AgdaSpace{}%
@@ -781,55 +813,23 @@
 \AgdaSymbol{(}\AgdaBound{t}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{⊗pl}}\AgdaSpace{}%
 \AgdaBound{δ}\AgdaSymbol{)}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaKeyword{private}\<%
-\\
-\>[0][@{}l@{\AgdaIndent{0}}]%
-\>[2]\AgdaKeyword{variable}\<%
-\\
-\>[2][@{}l@{\AgdaIndent{0}}]%
-\>[4]\AgdaGeneralizable{p'}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaDatatype{Pattern}\AgdaSpace{}%
-\AgdaNumber{0}\<%
-\\
-%
-\>[4]\AgdaGeneralizable{q₁}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaDatatype{Pattern}\AgdaSpace{}%
-\AgdaNumber{0}\<%
-\\
-%
-\>[4]\AgdaGeneralizable{p₂}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaDatatype{Pattern}\AgdaSpace{}%
-\AgdaNumber{0}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaComment{-- and a chain of Premises}\<%
-\\
-\>[0]\AgdaKeyword{private}\<%
-\\
-\>[0][@{}l@{\AgdaIndent{0}}]%
-\>[2]\AgdaKeyword{variable}\<%
-\\
-\>[2][@{}l@{\AgdaIndent{0}}]%
-\>[4]\AgdaGeneralizable{q₁`}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaDatatype{Pattern}\AgdaSpace{}%
-\AgdaGeneralizable{γ}\<%
-\\
-%
-\>[4]\AgdaGeneralizable{p₂`}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaDatatype{Pattern}\AgdaSpace{}%
-\AgdaGeneralizable{γ}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
+\end{code}
+}
+
+We now use these concepts to define a chain of premise that is guaranteed to
+establish complete trust in some pattern.
+
+We may string together premises, threading what is left to trust
+after each premises into what is still to trust in the next. A premise may
+establish whatever trust it does, and it \emph{asks} the rest of the chain
+to estrablish trust in the rest. We collect everything that we learn to
+trust along the way, allowing later premise to refer to entities whose
+trust was established by earlier premises.
+
+If we wish to end a chain of premise, we must show that there is nothing left
+that requires the establishment of trust by proving that the pattern the
+previous premise has asked us to trust contains no places.
+\begin{code}%
 \>[0]\AgdaKeyword{data}\AgdaSpace{}%
 \AgdaDatatype{Prems}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaBound{p₀}\AgdaSpace{}%
@@ -850,9 +850,9 @@
 \AgdaKeyword{where}\<%
 \\
 \>[0][@{}l@{\AgdaIndent{0}}]%
-\>[2]\AgdaInductiveConstructor{ε}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaBound{q₀}\AgdaSpace{}%
+\>[2]\AgdaInductiveConstructor{ε}%
+\>[7]\AgdaSymbol{:}%
+\>[10]\AgdaSymbol{(}\AgdaBound{q₀}\AgdaSpace{}%
 \AgdaOperator{\AgdaDatatype{Placeless}}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaSymbol{→}\AgdaSpace{}%
 \AgdaDatatype{Prems}\AgdaSpace{}%
@@ -861,9 +861,9 @@
 \AgdaBound{p₀}\<%
 \\
 %
-\>[2]\AgdaOperator{\AgdaInductiveConstructor{\AgdaUnderscore{}⇉\AgdaUnderscore{}}}\AgdaSpace{}%
-\AgdaSymbol{:}%
-\>[606I]\AgdaDatatype{Prem}\AgdaSpace{}%
+\>[2]\AgdaOperator{\AgdaInductiveConstructor{\AgdaUnderscore{}⇉\AgdaUnderscore{}}}%
+\>[7]\AgdaSymbol{:}%
+\>[10]\AgdaDatatype{Prem}\AgdaSpace{}%
 \AgdaBound{p₀}\AgdaSpace{}%
 \AgdaBound{q₀}\AgdaSpace{}%
 \AgdaBound{γ}\AgdaSpace{}%
@@ -871,8 +871,8 @@
 \AgdaGeneralizable{q₁`}\AgdaSpace{}%
 \AgdaSymbol{→}\<%
 \\
-\>[.][@{}l@{}]\<[606I]%
-\>[8]\AgdaDatatype{Prems}\AgdaSpace{}%
+%
+\>[10]\AgdaDatatype{Prems}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaBound{p₀}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{∙}}\AgdaSpace{}%
 \AgdaGeneralizable{pᵍ}\AgdaSymbol{)}\AgdaSpace{}%
@@ -881,14 +881,10 @@
 \AgdaSymbol{→}\<%
 \\
 %
-\>[8]\AgdaDatatype{Prems}\AgdaSpace{}%
+\>[10]\AgdaDatatype{Prems}\AgdaSpace{}%
 \AgdaBound{p₀}\AgdaSpace{}%
 \AgdaBound{q₀}\AgdaSpace{}%
 \AgdaGeneralizable{p₂`}\<%
-\\
-\>[0]\AgdaKeyword{infixr}\AgdaSpace{}%
-\AgdaNumber{20}\AgdaSpace{}%
-\AgdaOperator{\AgdaInductiveConstructor{\AgdaUnderscore{}⇉\AgdaUnderscore{}}}\<%
 \\
 %
 \\[\AgdaEmptyExtraSkip]%
@@ -913,6 +909,12 @@
 \AgdaSymbol{(}\AgdaBound{δ}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{⊗}}\AgdaSpace{}%
 \AgdaGeneralizable{p₂}\AgdaSymbol{)}\<%
+\end{code}
+\hide{
+\begin{code}%
+\>[0]\AgdaKeyword{infixr}\AgdaSpace{}%
+\AgdaNumber{20}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{\AgdaUnderscore{}⇉\AgdaUnderscore{}}}\<%
 \\
 \>[0]\AgdaFunction{⊗premises}\AgdaSpace{}%
 \AgdaBound{δ}\AgdaSpace{}%
@@ -937,9 +939,19 @@
 \AgdaFunction{⊗premises}\AgdaSpace{}%
 \AgdaBound{δ}\AgdaSpace{}%
 \AgdaBound{prems}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
+\end{code}}
+\section{Typing Rules}
+
+Now we will define the various rules that may be used to build typing
+rules when detailing a specification.
+
+A TypeRule is used to establish the conditions under which a piece
+of syntax is determined a type. The rule applies to a subject and
+must contain a premise chain which establishes complete trust in
+this subject from no prior trusted knowledge. Attempting to match
+a type rule is just attempting to match the subject pattern.
+
+\begin{code}%
 \>[0]\AgdaKeyword{record}\AgdaSpace{}%
 \AgdaRecord{TypeRule}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
@@ -951,13 +963,13 @@
 \\
 \>[2][@{}l@{\AgdaIndent{0}}]%
 \>[4]\AgdaField{subject}%
-\>[13]\AgdaSymbol{:}\AgdaSpace{}%
+\>[14]\AgdaSymbol{:}\AgdaSpace{}%
 \AgdaDatatype{Pattern}\AgdaSpace{}%
 \AgdaNumber{0}\<%
 \\
 %
-\>[4]\AgdaField{premises}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
+\>[4]\AgdaField{premises}%
+\>[14]\AgdaSymbol{:}\AgdaSpace{}%
 \AgdaFunction{Σ[}\AgdaSpace{}%
 \AgdaBound{p'}\AgdaSpace{}%
 \AgdaFunction{∈}\AgdaSpace{}%
@@ -976,16 +988,20 @@
 %
 \\[\AgdaEmptyExtraSkip]%
 \>[0]\AgdaFunction{match-typerule}\AgdaSpace{}%
+\AgdaSymbol{:}%
+\>[635I]\AgdaSymbol{(}\AgdaBound{rule}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaBound{rule}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaRecord{TypeRule}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaFunction{Term}\AgdaSpace{}%
+\AgdaRecord{TypeRule}\AgdaSymbol{)}%
+\>[36]\AgdaSymbol{→}\<%
+\\
+\>[.][@{}l@{}]\<[635I]%
+\>[17]\AgdaFunction{Term}\AgdaSpace{}%
 \AgdaInductiveConstructor{const}\AgdaSpace{}%
-\AgdaGeneralizable{γ}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaDatatype{Maybe}\AgdaSpace{}%
+\AgdaGeneralizable{γ}%
+\>[36]\AgdaSymbol{→}\<%
+\\
+%
+\>[17]\AgdaDatatype{Maybe}\AgdaSpace{}%
 \AgdaSymbol{((}\AgdaGeneralizable{γ}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{⊗}}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaField{subject}\AgdaSpace{}%
@@ -1000,9 +1016,16 @@
 \AgdaBound{term}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaField{subject}\AgdaSpace{}%
 \AgdaBound{rule}\AgdaSymbol{)}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
+\end{code}
+
+The Universe rule work in much the same way except that the premise
+chain seeks to establish trust in a trivial placeless pattern. I.e.
+it seeks to establish no trust whatsever since the Universe rule
+applies to an input and we take inputs to be entites which we trust.
+Matching a Universe rule involves matching the input only.
+
+\hide{
+\begin{code}%
 \>[0]\AgdaKeyword{record}\AgdaSpace{}%
 \AgdaRecord{UnivRule}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
@@ -1014,14 +1037,14 @@
 \\
 \>[2][@{}l@{\AgdaIndent{0}}]%
 \>[4]\AgdaField{input}%
-\>[13]\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaDatatype{Pattern}\AgdaSpace{}%
+\>[14]\AgdaSymbol{:}%
+\>[17]\AgdaDatatype{Pattern}\AgdaSpace{}%
 \AgdaNumber{0}\<%
 \\
 %
-\>[4]\AgdaField{premises}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaFunction{Σ[}\AgdaSpace{}%
+\>[4]\AgdaField{premises}%
+\>[14]\AgdaSymbol{:}%
+\>[17]\AgdaFunction{Σ[}\AgdaSpace{}%
 \AgdaBound{p'}\AgdaSpace{}%
 \AgdaFunction{∈}\AgdaSpace{}%
 \AgdaDatatype{Pattern}\AgdaSpace{}%
@@ -1038,17 +1061,21 @@
 \\
 %
 \\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaFunction{match-univrule}\AgdaSpace{}%
+\>[0]\AgdaFunction{match-univrule}%
+\>[16]\AgdaSymbol{:}%
+\>[19]\AgdaSymbol{(}\AgdaBound{rule}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaBound{rule}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaRecord{UnivRule}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaFunction{Term}\AgdaSpace{}%
+\AgdaRecord{UnivRule}\AgdaSymbol{)}%
+\>[38]\AgdaSymbol{→}\<%
+\\
+%
+\>[19]\AgdaFunction{Term}\AgdaSpace{}%
 \AgdaInductiveConstructor{const}\AgdaSpace{}%
-\AgdaGeneralizable{γ}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaDatatype{Maybe}\AgdaSpace{}%
+\AgdaGeneralizable{γ}%
+\>[38]\AgdaSymbol{→}\<%
+\\
+%
+\>[19]\AgdaDatatype{Maybe}\AgdaSpace{}%
 \AgdaSymbol{((}\AgdaGeneralizable{γ}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{⊗}}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaField{input}\AgdaSpace{}%
@@ -1063,9 +1090,16 @@
 \AgdaBound{term}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaField{input}\AgdaSpace{}%
 \AgdaBound{rule}\AgdaSymbol{)}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
+\end{code}}
+
+The Type-Checking rule (∋) involves both an input and a subject. For
+$T ∋ t$ we take T to be a trusted input and seek to establish trust
+in t. Our premise chain reflects this by using the input as its
+trusted pattern and seeking trust in the subject. Matching occurs on
+both the input and the subject and so, if successful, returns a
+pair of environments.
+
+\begin{code}%
 \>[0]\AgdaKeyword{record}\AgdaSpace{}%
 \AgdaRecord{∋rule}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
@@ -1106,34 +1140,44 @@
 \\
 %
 \\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaFunction{match-∋rule}\AgdaSpace{}%
-\AgdaSymbol{:}%
-\>[765I]\AgdaSymbol{(}\AgdaBound{rule}\AgdaSpace{}%
+\>[0]\AgdaFunction{match-∋rule}%
+\>[13]\AgdaSymbol{:}%
+\>[16]\AgdaSymbol{(}\AgdaBound{rule}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
-\AgdaRecord{∋rule}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaFunction{Term}\AgdaSpace{}%
-\AgdaInductiveConstructor{const}\AgdaSpace{}%
-\AgdaGeneralizable{γ}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaFunction{Term}\AgdaSpace{}%
-\AgdaInductiveConstructor{const}\AgdaSpace{}%
-\AgdaGeneralizable{γ}\AgdaSpace{}%
-\AgdaSymbol{→}\<%
+\AgdaRecord{∋rule}\AgdaSymbol{)}%
+\>[32]\AgdaSymbol{→}\<%
 \\
-\>[.][@{}l@{}]\<[765I]%
-\>[14]\AgdaSymbol{(}\AgdaDatatype{Maybe}\AgdaSpace{}%
-\AgdaSymbol{(((}\AgdaGeneralizable{γ}\AgdaSpace{}%
-\AgdaOperator{\AgdaFunction{⊗}}\AgdaSpace{}%
+%
+\>[16]\AgdaFunction{Term}\AgdaSpace{}%
+\AgdaInductiveConstructor{const}\AgdaSpace{}%
+\AgdaGeneralizable{γ}%
+\>[32]\AgdaSymbol{→}\<%
+\\
+%
+\>[16]\AgdaFunction{Term}\AgdaSpace{}%
+\AgdaInductiveConstructor{const}\AgdaSpace{}%
+\AgdaGeneralizable{γ}%
+\>[32]\AgdaSymbol{→}\<%
+\\
+\>[16][@{}l@{\AgdaIndent{0}}]%
+\>[18]\AgdaSymbol{(}\AgdaDatatype{Maybe}\<%
+\\
+\>[18][@{}l@{\AgdaIndent{0}}]%
+\>[20]\AgdaSymbol{(((}\AgdaGeneralizable{γ}%
+\>[710I]\AgdaOperator{\AgdaFunction{⊗}}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaField{input}\AgdaSpace{}%
-\AgdaBound{rule}\AgdaSymbol{))}\AgdaSpace{}%
-\AgdaOperator{\AgdaDatatype{-Env}}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaOperator{\AgdaFunction{×}}\AgdaSpace{}%
-\AgdaSymbol{((}\AgdaGeneralizable{γ}\AgdaSpace{}%
+\AgdaBound{rule}\AgdaSymbol{))}%
+\>[43]\AgdaOperator{\AgdaDatatype{-Env}}\AgdaSymbol{)}\<%
+\\
+\>[.][@{}l@{}]\<[710I]%
+\>[25]\AgdaOperator{\AgdaFunction{×}}\<%
+\\
+%
+\>[20]\AgdaSymbol{((}\AgdaGeneralizable{γ}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{⊗}}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaField{subject}\AgdaSpace{}%
-\AgdaBound{rule}\AgdaSymbol{))}\AgdaSpace{}%
-\AgdaOperator{\AgdaDatatype{-Env}}\AgdaSymbol{)))}\<%
+\AgdaBound{rule}\AgdaSymbol{))}%
+\>[43]\AgdaOperator{\AgdaDatatype{-Env}}\AgdaSymbol{)))}\<%
 \\
 \>[0]\AgdaFunction{match-∋rule}\AgdaSpace{}%
 \AgdaBound{rule}\AgdaSpace{}%
@@ -1142,20 +1186,20 @@
 \\
 \>[0][@{}l@{\AgdaIndent{0}}]%
 \>[2]\AgdaSymbol{=}%
-\>[791I]\AgdaKeyword{do}\<%
+\>[719I]\AgdaKeyword{do}\<%
 \\
-\>[791I][@{}l@{\AgdaIndent{0}}]%
+\>[719I][@{}l@{\AgdaIndent{0}}]%
 \>[6]\AgdaBound{inenv}%
-\>[13]\AgdaOperator{\AgdaFunction{←}}\AgdaSpace{}%
-\AgdaFunction{match}\AgdaSpace{}%
+\>[14]\AgdaOperator{\AgdaFunction{←}}%
+\>[17]\AgdaFunction{match}\AgdaSpace{}%
 \AgdaBound{Tterm}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaField{input}\AgdaSpace{}%
 \AgdaBound{rule}\AgdaSymbol{)}\<%
 \\
 %
-\>[6]\AgdaBound{subenv}\AgdaSpace{}%
-\AgdaOperator{\AgdaFunction{←}}\AgdaSpace{}%
-\AgdaFunction{match}\AgdaSpace{}%
+\>[6]\AgdaBound{subenv}%
+\>[14]\AgdaOperator{\AgdaFunction{←}}%
+\>[17]\AgdaFunction{match}\AgdaSpace{}%
 \AgdaBound{tterm}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaField{subject}\AgdaSpace{}%
 \AgdaBound{rule}\AgdaSymbol{)}\<%
@@ -1165,9 +1209,33 @@
 \AgdaSymbol{(}\AgdaBound{inenv}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
 \AgdaBound{subenv}\AgdaSymbol{)}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
+\end{code}
+
+Our rules for elimination work slightly differently from those which operate on
+constructions above. Eliminations use some \emph{eliminator} in order to eliminate
+some \emph{target}. An elimination rule, if it matches, is used in order to try
+and \emph{supply} us with the type resulting from the elimination.
+
+In order to build the output, it is not necessary for us to hold any description
+of the target term whatsoever, it is enough that we describe what type we require
+it to be. In theoretical literature, elimination rules for constructs take a
+certain form.
+
+\begin{center}
+\begin{prooftree}
+      \hypo{target ∈ T}
+      \hypo{\ldots}
+      \infer2[elim]{target \; eliminator ∈ S}
+\end{prooftree}
+\end{center}
+
+We do not need the user to supply this information and so we take just a pattern
+that we might use to match against $T$, one that we might match against $eliminator$,
+and seek to establish trust in $eliminator$ under the assumption that we trust $T$.
+We also use an Expression to build the type of the elimination from everything in
+which the premise chain has established trust.
+
+\begin{code}%
 \>[0]\AgdaKeyword{record}\AgdaSpace{}%
 \AgdaRecord{ElimRule}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
@@ -1179,20 +1247,20 @@
 \\
 \>[2][@{}l@{\AgdaIndent{0}}]%
 \>[4]\AgdaField{targetPat}%
-\>[15]\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaDatatype{Pattern}\AgdaSpace{}%
+\>[16]\AgdaSymbol{:}%
+\>[19]\AgdaDatatype{Pattern}\AgdaSpace{}%
 \AgdaNumber{0}\<%
 \\
 %
-\>[4]\AgdaField{eliminator}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaDatatype{Pattern}\AgdaSpace{}%
+\>[4]\AgdaField{eliminator}%
+\>[16]\AgdaSymbol{:}%
+\>[19]\AgdaDatatype{Pattern}\AgdaSpace{}%
 \AgdaNumber{0}\<%
 \\
 %
 \>[4]\AgdaField{premises}%
-\>[15]\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaFunction{Σ[}\AgdaSpace{}%
+\>[16]\AgdaSymbol{:}%
+\>[19]\AgdaFunction{Σ[}\AgdaSpace{}%
 \AgdaBound{p'}\AgdaSpace{}%
 \AgdaFunction{∈}\AgdaSpace{}%
 \AgdaDatatype{Pattern}\AgdaSpace{}%
@@ -1205,8 +1273,8 @@
 \\
 %
 \>[4]\AgdaField{output}%
-\>[15]\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaFunction{Expr}\AgdaSpace{}%
+\>[16]\AgdaSymbol{:}%
+\>[19]\AgdaFunction{Expr}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaField{proj₁}\AgdaSpace{}%
 \AgdaField{premises}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaInductiveConstructor{const}\AgdaSpace{}%
@@ -1216,36 +1284,42 @@
 \\[\AgdaEmptyExtraSkip]%
 \>[0]\AgdaFunction{match-erule}\AgdaSpace{}%
 \AgdaSymbol{:}%
-\>[829I]\AgdaSymbol{(}\AgdaBound{rule}\AgdaSpace{}%
+\>[749I]\AgdaSymbol{(}\AgdaBound{rule}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
-\AgdaRecord{ElimRule}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaSymbol{→}\<%
+\AgdaRecord{ElimRule}\AgdaSymbol{)}%
+\>[34]\AgdaSymbol{→}\<%
 \\
-\>[.][@{}l@{}]\<[829I]%
+\>[.][@{}l@{}]\<[749I]%
 \>[14]\AgdaSymbol{(}\AgdaBound{T}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaFunction{Term}\AgdaSpace{}%
 \AgdaInductiveConstructor{const}\AgdaSpace{}%
-\AgdaGeneralizable{γ}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaSymbol{→}\<%
+\AgdaGeneralizable{γ}\AgdaSymbol{)}%
+\>[34]\AgdaSymbol{→}\<%
 \\
 %
 \>[14]\AgdaSymbol{(}\AgdaBound{s}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaFunction{Term}\AgdaSpace{}%
 \AgdaInductiveConstructor{const}\AgdaSpace{}%
-\AgdaGeneralizable{γ}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaSymbol{→}\<%
+\AgdaGeneralizable{γ}\AgdaSymbol{)}%
+\>[34]\AgdaSymbol{→}\<%
 \\
 %
-\>[14]\AgdaDatatype{Maybe}\AgdaSpace{}%
-\AgdaSymbol{(((}\AgdaGeneralizable{γ}\AgdaSpace{}%
-\AgdaOperator{\AgdaFunction{⊗}}\AgdaSpace{}%
+\>[14]\AgdaDatatype{Maybe}\<%
+\\
+\>[14][@{}l@{\AgdaIndent{0}}]%
+\>[16]\AgdaSymbol{(((}\AgdaGeneralizable{γ}%
+\>[760I]\AgdaOperator{\AgdaFunction{⊗}}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaField{ElimRule.targetPat}\AgdaSpace{}%
 \AgdaBound{rule}\AgdaSymbol{))}\AgdaSpace{}%
-\AgdaOperator{\AgdaDatatype{-Env}}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaOperator{\AgdaFunction{×}}\AgdaSpace{}%
-\AgdaSymbol{((}\AgdaGeneralizable{γ}\AgdaSpace{}%
+\AgdaOperator{\AgdaDatatype{-Env}}\AgdaSymbol{)}\<%
+\\
+\>[.][@{}l@{}]\<[760I]%
+\>[21]\AgdaOperator{\AgdaFunction{×}}\<%
+\\
+%
+\>[16]\AgdaSymbol{((}\AgdaGeneralizable{γ}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{⊗}}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaField{ElimRule.eliminator}\AgdaSpace{}%
 \AgdaBound{rule}\AgdaSymbol{))}\AgdaSpace{}%
@@ -1256,9 +1330,9 @@
 \AgdaBound{T}\AgdaSpace{}%
 \AgdaBound{s}\AgdaSpace{}%
 \AgdaSymbol{=}%
-\>[858I]\AgdaKeyword{do}\<%
+\>[772I]\AgdaKeyword{do}\<%
 \\
-\>[858I][@{}l@{\AgdaIndent{0}}]%
+\>[772I][@{}l@{\AgdaIndent{0}}]%
 \>[25]\AgdaBound{T-env}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{←}}\AgdaSpace{}%
 \AgdaFunction{match}\AgdaSpace{}%
@@ -1280,15 +1354,18 @@
 \AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
 \AgdaBound{s-env}\AgdaSymbol{)}\<%
 \\
-\>[.][@{}l@{}]\<[858I]%
+\>[.][@{}l@{}]\<[772I]%
 \>[23]\AgdaKeyword{where}\<%
 \\
 \>[23][@{}l@{\AgdaIndent{0}}]%
 \>[25]\AgdaKeyword{open}\AgdaSpace{}%
 \AgdaModule{ElimRule}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
+\end{code}
+
+When we check types, it is convenient to collect all the rules together so
+that we might easily pass them around. We do so will the following type.
+
+\begin{code}%
 \>[0]\AgdaKeyword{data}\AgdaSpace{}%
 \AgdaDatatype{Rules}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
@@ -1297,19 +1374,26 @@
 \\
 \>[0][@{}l@{\AgdaIndent{0}}]%
 \>[2]\AgdaInductiveConstructor{rs}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaDatatype{List}\AgdaSpace{}%
-\AgdaRecord{TypeRule}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaDatatype{List}\AgdaSpace{}%
-\AgdaRecord{UnivRule}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaDatatype{List}\AgdaSpace{}%
-\AgdaRecord{∋rule}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaDatatype{List}\AgdaSpace{}%
-\AgdaRecord{ElimRule}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaDatatype{Rules}\<%
+\AgdaSymbol{:}%
+\>[792I]\AgdaDatatype{List}\AgdaSpace{}%
+\AgdaRecord{TypeRule}%
+\>[22]\AgdaSymbol{→}\<%
+\\
+\>[.][@{}l@{}]\<[792I]%
+\>[7]\AgdaDatatype{List}\AgdaSpace{}%
+\AgdaRecord{UnivRule}%
+\>[22]\AgdaSymbol{→}\<%
+\\
+%
+\>[7]\AgdaDatatype{List}\AgdaSpace{}%
+\AgdaRecord{∋rule}%
+\>[22]\AgdaSymbol{→}\<%
+\\
+%
+\>[7]\AgdaDatatype{List}\AgdaSpace{}%
+\AgdaRecord{ElimRule}%
+\>[22]\AgdaSymbol{→}\<%
+\\
+%
+\>[7]\AgdaDatatype{Rules}\<%
 \end{code}
-}

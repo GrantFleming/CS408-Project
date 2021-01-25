@@ -42,8 +42,8 @@
 }
 
 To ready ourselves for the act of type-checking we here define our monad for
-failure handling. We could have used the Either monad here but having descriptive
-data constructors improves the readability of the code.
+failure handling. We either succeed with a value, or fail with a string that
+hopefully describes the error in a user friendly way.
 
 \begin{code}%
 \>[0]\AgdaKeyword{data}\AgdaSpace{}%

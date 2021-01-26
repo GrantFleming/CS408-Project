@@ -26,7 +26,8 @@ open import Data.Product using (_×_; proj₁; proj₂)
 open import Thinning using (_⟨term_)
 open import Data.String using (_++_)
 \end{code}
-
+}
+\hide{
 \begin{code}
 private
   variable
@@ -42,44 +43,177 @@ private
 open TypeRule
 open UnivRule
 open ∋rule
+open ElimRule
+\end{code}
+}
 
-check : Rules → Context γ → (type : Term const γ)  → (term : Term d γ) → Failable ⊤
+We now have all of the required definitions to construct the process of
+typechecking. This process is a set of mutually recursive definitions which
+we will describe here.
 
-∋-check : Context γ               →
-          Rules                   →
-          List ∋rule              →
-          (subject : Const γ) →
-          (input : Const γ)   →
-          Failable ⊤
+Firstly, we present four functions, one for checking each of the user
+provided typing rules. We must provide the list of specific rule types
+alongside the complete structure of all rules so that we might recurse
+over this list when looking for a matching rule while keeping the entire
+collection of rules whole for the purpose of providing it to other
+functions as may be required. Each definition proceeds in the same way,
+attempting to match an appropriate rule, if a match is found, the rule is
+run. We will explore what it means to run a rule later. If no rule is
+found to match, and there are no rules left to check, these functions
+fail with a descriptive error.
 
-type-check : Context γ               →
-             Rules                   →
-             List TypeRule           →
-             (subject : Const γ) →
-             Failable ⊤
+\begin{code}
+∋-check     :  Context γ            →
+               Rules                →
+               List ∋rule           →
+               (subject : Const γ)  →
+               (input : Const γ)    →
+               Failable ⊤
+              
+type-check  :  Context γ            →
+               Rules                →
+               List TypeRule        →
+               (subject : Const γ)  →
+               Failable ⊤
+              
+univ-check  :  Context γ            →
+               Rules                →
+               List UnivRule        →
+               (input : Const γ)    →
+               Failable ⊤
 
-univ-check : Context γ              →
-             Rules                  →
-             List UnivRule          →
-             (input : Const γ)  →
-             Failable ⊤
+elim-synth : Context γ                    →
+             Rules                        →
+             List ElimRule                →
+             (synth-type : Term const γ)  →
+             (eliminator : Term const γ)  →
+             Failable (Term const γ)
+\end{code}
 
+We define a notion of equivalence of terms that we will need in order
+to embed inferrable terms into checkable terms. This process involves
+synthesizing a type for a term before ascertaining if it is equivalent
+to the type we are checking the term at. For now, this is a
+purely syntactic action. Later when we implement operational semantics
+we will involve a more sophisticated notion here.
+
+\begin{code}
+_≡v_ : Var γ → Var γ → Failable ⊤
 _≡ᵗ_ : Term d γ → Term d γ → Failable ⊤
+\end{code}
+\hide{
+\begin{code}
+eqfail : Failable ⊤
+eqfail = fail "Equality failure."
 
+
+ze   ≡v ze    = succeed tt
+su v ≡v su v' = v ≡v v'
+_    ≡v _     = eqfail
+\end{code}
+}
+\hide{
+\begin{code}
+_≡ᵗ_ {const} (` x)    (` x₁) with x == x₁
+... | false = eqfail
+... | true  = succeed tt
+_≡ᵗ_ {const} (x ∙ x₁) (x₂ ∙ x₃) = do
+                                    _ ← x  ≡ᵗ x₂
+                                    _ ← x₁ ≡ᵗ x₃
+                                    return tt
+_≡ᵗ_ {const} (bind x)  (bind x')   = x ≡ᵗ x'
+_≡ᵗ_ {const} (thunk x) (thunk x')  = x ≡ᵗ x'
+
+_≡ᵗ_ {compu} (var x) (var x')        = x ≡v x'
+_≡ᵗ_ {compu} (elim e s) (elim e' s') = do
+                                        _ ← e ≡ᵗ e'
+                                        _ ← s ≡ᵗ s'
+                                        return tt
+_≡ᵗ_ {compu} (t ∷ T) (t' ∷ T') = do
+                                   _ ← t ≡ᵗ t'
+                                   return tt
+_ ≡ᵗ _  = eqfail
+\end{code}
+}
+
+The high level functionality of our type checker is given by two functions,
+check and infer. In general, we check constructions and infer computations,
+however since we can embed inferrable terms in checkable terms we may accept
+a call to check the type of any term.
+
+When checking constructions, we only make the distinction of two cases,
+either we duck under a thunk to check the computation beneath it, or we
+call to $∋-check$ otherwise. When checking computations, we always start
+by synthesizing the type with a call to $infer$ safe in the knowledge that
+if it succeeds, we are guaranteed that what is given is a type. We then check
+equivalence between what was inferred, and the type we are checking as
+described above.
+
+When inferring computations, the type of variables are looked up in the
+context. We check to ensure that what we got from the context was indeed
+a type before returning it. Terms with type annotations have their
+type checked against their annotation, the annotation is verified as being
+a type in this process, and the annotation is returned. Eliminations are
+checked by synthesizing the type of the target before delegating to $elim-synth$
+so that it might check the elimination rules. Any term given back in this
+process is checked to be a type before $infer$ returns it.
+
+\begin{code}
+check  :  Rules                   →
+          Context γ               →
+          (type : Term const γ)   →
+          (term : Term d γ)       →
+          Failable ⊤
+          
+infer  :  Rules                  →
+          Context γ              →
+          (term : Term compu γ)  →
+          Failable (Term const γ)
+\end{code}
+
+We now introduce the ability to check a chain of premises. The result of
+matching against a given rule provides us with the necessary environments
+in which we can get concrete terms from the schematic variables and
+expressions in our premise. In our implementation checking the premise
+turns out to be mostly trivial, if verbose. Each data constructor of a Premise
+maps nicely to functionality we have already provided - such as $type-check$,
+$univ-check$ and $\_≡ᵗ\_$. We provide just the definition for the $∈$ premise
+by way of example here.
+
+Here we delegate to check, creating a concrete type to check from the
+expression $T$, and looking up the term we are checking using the schematic
+variable $ξ$, thinning it appropriately. A successful checking of a premise
+results in environments for the patterns determining what is newly
+trusted and what is left to be trusted.
+
+The checking of a whole chain of premise proceeds as one might expect.
+Each premise is checked in order. The environments for the things we trust
+accumulate while the environments for the things that remain to be trusted
+are whittled away. It is expected that these functions are called with
+the opened premise chain, they will not open the chain to the scope in
+which we are currently operating.
+
+\begin{code}
 check-premise : Context γ   →
                 Rules       →
                 p -Env      →
                 q -Env      →
                 Prem p q γ p' q'  →
                 Failable (p' -Env × q' -Env)
-check-premise {q = q} Γ rules@(rs t u ∋ e) penv qenv (type ξ θ)
-  = do
-    _ ← type-check  Γ rules t ((ξ ‼ qenv) ⟨term θ)
-    succeed (thing (ξ ‼ qenv) , (qenv -penv ξ))
+--...
 check-premise Γ rules penv qenv (T ∋' ξ [ θ ])
   = do
     _ ← check rules Γ (toTerm {γ = 0} penv T) ((ξ ‼ qenv) ⟨term θ)
     succeed ((thing (ξ ‼ qenv)) , (qenv -penv ξ))
+--...
+\end{code}
+\hide{
+\begin{code}
+check-premise {q = q} Γ rules@(rs t u ∋ e) penv qenv (type ξ θ)
+  = do
+    _ ← type-check  Γ rules t ((ξ ‼ qenv) ⟨term θ)
+    succeed (thing (ξ ‼ qenv) , (qenv -penv ξ))
+
 check-premise Γ rules penv qenv (x ≡' x')
   = do
     _ ← toTerm {γ = 0}  penv x ≡ᵗ toTerm {γ = 0} penv x'
@@ -92,37 +226,91 @@ check-premise {γ = γ} Γ rules penv qenv (x ⊢' prem)
   = do
     (p'env , q'env) ← check-premise (Γ -, toTerm {γ = 0} penv x) rules penv qenv prem
     succeed ((bind p'env) , q'env)
-
-check-premise-chain : ∀ {p : Pattern γ} {q : Pattern γ} {p' : Pattern γ} →
-                      Context γ → Rules → p -Env → q -Env → Prems p q p' → Failable (p' -Env)
+\end{code}
+}
+\begin{code}
+check-premise-chain  :  ∀  {p : Pattern γ}
+                           {q : Pattern γ}
+                           {p' : Pattern γ}  →
+                           Context γ         →
+                           Rules             →
+                           p -Env            →
+                           q -Env            →
+                           Prems p q p'      →
+                           Failable (p' -Env)
+\end{code}
+\hide{
+\begin{code}
 check-premise-chain Γ rules penv qenv (ε x)       = succeed penv
 check-premise-chain Γ rules penv qenv (prem ⇉ prems)
  = do
      (p'env , q₁env) ← check-premise Γ rules penv qenv prem
      p''env ← check-premise-chain Γ rules (penv ∙ p'env) q₁env prems
      succeed p''env
+\end{code}
+}
 
-run-∋rule : Context γ → Rules → (rule : ∋rule) → ((γ ⊗ (input rule)) -Env) → ((γ ⊗ (subject rule)) -Env) → Failable ⊤
+In direct correspondance to our initial four functions that check the
+various user defined rules, we provide four more, one for running each
+type of rule should such a matching rule be found. We make sure to address
+the appropriate conditions here, such as checking that the type in a $∋$
+rule is indeed a type.
+
+We give two examples here, that of running a $∋$ rule and one of running
+an elimination rule. The first merely tries to succeed, the second must
+return the synthesized type.
+
+There are several things worth noting here. Firstly that we do not take
+environments for the Patterns in a rule, but for their opening into
+the current scope. Similarly when we retrieve the premise chain from
+the rule, we open this to the current scope before checking. This method
+allows us to mandate that rules are defined in the empty scope but can
+be applied in any scope.
+
+We may also see here how it is that we build concrete terms from
+expressions in the rules using $toTerm$ and from patterns and
+environments using $termFrom$. The latter allows us to construct
+the $T$ in $T ∋ t$ while the former is responsible for constructing
+the output of running the elimination rule.
+
+\begin{code}
+run-∋rule  :  Context γ                    →
+              Rules                        →
+              (rule : ∋rule)               →
+              ((γ ⊗ (input rule)) -Env)    →
+              ((γ ⊗ (subject rule)) -Env)  →
+              Failable ⊤
 run-∋rule {γ} Γ rules@(rs t u ∋ e) rule ienv senv
   = do
-     _ ← type-check Γ rules t (termFrom (input rule) ienv)
-     _ ← check-premise-chain Γ rules ienv senv (⊗premises γ (proj₂ (premises rule)))
+     _ ← type-check Γ rules t
+                    (termFrom (input rule) ienv)
+     _ ← check-premise-chain Γ rules ienv senv
+                    (⊗premises γ (proj₂ (premises rule)))
      succeed tt
 
 run-erule : Context γ                       →
             Rules                           →
             (rule : ElimRule)               →
-            (γ ⊗ ElimRule.targetPat rule)  -Env →
-            (γ ⊗ ElimRule.eliminator rule) -Env →
+            (γ ⊗ targetPat rule)  -Env →
+            (γ ⊗ eliminator rule) -Env →
             Failable (Term const γ)
 run-erule {γ} Γ rules rule T-env s-env
   = do
-      p'env ← check-premise-chain Γ rules T-env s-env (⊗premises γ (proj₂ (premises rule)))
+      p'env ← check-premise-chain Γ rules T-env s-env
+                    (⊗premises γ (proj₂ (premises rule)))
       succeed (toTerm p'env (output rule))
-    where
-      open ElimRule
+\end{code}
 
--- check the precondition that the thing must be a type!
+There are similar such functions for running other rules, they all involve
+checking the premise chain and occassionally other preconditions. Post-conditions
+are not checked by these rules but are the responsibility of the caller.
+
+This process is a highly mutually recursive process by nature. Agda's termination
+checker allows us to be assured that we have not gotten ourselves into trouble
+while constructing this system of functions.
+
+\hide{
+\begin{code}
 run-univrule : Context γ → Rules → (rule : UnivRule) → ((γ ⊗ (input rule)) -Env) → Failable ⊤
 run-univrule {γ = γ} Γ rules@(rs t u ∋ e) rule env
   = do
@@ -161,50 +349,14 @@ type-check Γ rules (trule ∷ trules) ms
 ... | nothing = ∋-check Γ rules ∋rules sub inp
 ... | just (subj-env , input-envs) = run-∋rule Γ rules ∋-rule subj-env input-envs
 
-elim-synth : Context γ                       →
-             Rules                           →
-             List ElimRule                   →
-             (synth-type : Term const γ) →
-             (eliminator : Term const γ) →
-             Failable (Term const γ)
+
 elim-synth Γ rules []             T s
   = fail ("elim-synth: failed to match elimination rule for target = " ++ (print T) ++ " and eliminator = " ++ (print s))
 elim-synth Γ rules (erule ∷ erules) T s with match-erule erule T s
 ... | nothing              = elim-synth Γ rules erules T s
 ... | just (T-env , s-env) = run-erule Γ rules erule T-env s-env
 
--- equality TODO - implement operational semantics and revisit this
--- At the moment, equality is just syntactic
-eqfail : Failable ⊤
-eqfail = fail "Equality failure."
 
-_≡v_ : Var γ → Var γ → Failable ⊤
-ze   ≡v ze    = succeed tt
-su v ≡v su v' = v ≡v v'
-_    ≡v _     = eqfail
-
-_≡ᵗ_ {const} (` x)    (` x₁) with x == x₁
-... | false = eqfail
-... | true  = succeed tt
-_≡ᵗ_ {const} (x ∙ x₁) (x₂ ∙ x₃) = do
-                                   _ ← x  ≡ᵗ x₂
-                                   _ ← x₁ ≡ᵗ x₃
-                                   return tt
-_≡ᵗ_ {const} (bind x) (bind x') = x ≡ᵗ x'
-_≡ᵗ_ {const} (thunk x) (thunk x') = x ≡ᵗ x'
-
-_≡ᵗ_ {compu} (var x) (var x')        = x ≡v x'
-_≡ᵗ_ {compu} (elim e s) (elim e' s') = do
-                                        _ ← e ≡ᵗ e'
-                                        _ ← s ≡ᵗ s'
-                                        return tt
-_≡ᵗ_ {compu} (t ∷ T) (t' ∷ T') = do  -- maybe we can ignore the annotation here?
-                                        _ ← t ≡ᵗ t'
-                                        _ ← T ≡ᵗ T'
-                                        return tt
-_ ≡ᵗ _  = eqfail
-
-infer : Rules → Context γ → Term compu γ → Failable (Term const γ)
 infer rules@(rs t u ∋ ee) Γ (var x)    = do
                             -- check postcondition:
                              _ ← type-check Γ rules t (x ‼V Γ)
@@ -224,7 +376,6 @@ check {_} {const} rules Γ T (thunk x)       = check rules Γ T x
 check {_} {const} rules@(rs tr u ∋ e) Γ T t = ∋-check Γ rules ∋ t T
 check {_} {compu} rules@(rs tr u ∋ e) Γ T t = do
                             S ← infer rules Γ t
-                            _ ← type-check Γ rules tr S
                             S ≡ᵗ T
 \end{code}
 }

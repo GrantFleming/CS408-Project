@@ -237,11 +237,11 @@ _^var = weaken _⟨var_
 
 -- terms are weakenable
 
-_^term {d} t = weaken {Term d} _⟨term_ t
+_^term {d} = weaken {Term d} _⟨term_
 
 -- substitutions are Weakenable if the thing
 -- they substitute is Thinnable
 -- map!!!
-^sub ⟨T σ = map (weaken ⟨T) σ
+^sub ⟨T = map (weaken ⟨T)
 \end{code}
 }

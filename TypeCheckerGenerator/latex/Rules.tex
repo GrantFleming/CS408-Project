@@ -589,7 +589,7 @@ is also given here.
 \end{code}
 }
 Before we define how we might chain premise together, it is important to address
-placelessness in patterns.
+placelessness in patterns. \hl{MOVE TO PATTERNS THEN YA GOOSE!}
 
 We define a type that is structurally equivalent to patterns except for the
 absence of places. This type is indexed by patterns where we use the index
@@ -1360,40 +1360,4 @@ which the premise chain has established trust.
 \>[23][@{}l@{\AgdaIndent{0}}]%
 \>[25]\AgdaKeyword{open}\AgdaSpace{}%
 \AgdaModule{ElimRule}\<%
-\end{code}
-
-When we check types, it is convenient to collect all the rules together so
-that we might easily pass them around. We do so will the following type.
-
-\begin{code}%
-\>[0]\AgdaKeyword{data}\AgdaSpace{}%
-\AgdaDatatype{Rules}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaPrimitiveType{Set}\AgdaSpace{}%
-\AgdaKeyword{where}\<%
-\\
-\>[0][@{}l@{\AgdaIndent{0}}]%
-\>[2]\AgdaInductiveConstructor{rs}\AgdaSpace{}%
-\AgdaSymbol{:}%
-\>[792I]\AgdaDatatype{List}\AgdaSpace{}%
-\AgdaRecord{TypeRule}%
-\>[22]\AgdaSymbol{→}\<%
-\\
-\>[.][@{}l@{}]\<[792I]%
-\>[7]\AgdaDatatype{List}\AgdaSpace{}%
-\AgdaRecord{UnivRule}%
-\>[22]\AgdaSymbol{→}\<%
-\\
-%
-\>[7]\AgdaDatatype{List}\AgdaSpace{}%
-\AgdaRecord{∋rule}%
-\>[22]\AgdaSymbol{→}\<%
-\\
-%
-\>[7]\AgdaDatatype{List}\AgdaSpace{}%
-\AgdaRecord{ElimRule}%
-\>[22]\AgdaSymbol{→}\<%
-\\
-%
-\>[7]\AgdaDatatype{Rules}\<%
 \end{code}

@@ -9,7 +9,7 @@ module Pattern where
 
 \hide{
 \begin{code}
-open import CoreLanguage renaming (↠ to ↠↠)
+open import CoreLanguage
 open import Thinning using (_⊑_; Ø; ι; _++_; _⟨term⊗_; ++-identityʳ)
 open import Data.Char using (Char) renaming (_≟_ to _is_)
 open import Data.Nat.Properties using (_≟_)
@@ -203,3 +203,4 @@ termFrom (bind p) (bind e)    = bind (termFrom p e)
 termFrom (place θ) (thing x₁) = x₁ ⟨term⊗ θ
 \end{code}
 }
+

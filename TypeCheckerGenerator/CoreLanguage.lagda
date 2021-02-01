@@ -2,6 +2,7 @@
 
 \hide{
 \begin{code}
+{-# OPTIONS --rewriting #-}
 module CoreLanguage where
 \end{code}
 
@@ -43,6 +44,7 @@ always refer to something in scope.
 private
   variable
     γ : Scope
+    δ : Scope
 \end{code}
 }
 
@@ -118,19 +120,24 @@ this embedding.
 \hide{
 \begin{code}
 infixr 20 _∙_ 
-
 private
   variable
     d : Dir
 
+-- TO DO, explain this
+-- turn anything into a const
+↠↠ : Term d γ → Const γ
+↠↠ {const} t = t
+↠↠ {compu} t = ↠ t
+
 print : Term d γ → String
 print {const} (` x)      = fromChar x
 print {const} (s ∙ t)    = print s ++ print t
-print {const} (bind x)   = "λ" ++ print x
-print {const} (thunk x)  = "_" ++ print x ++ "_"
+print {const} (bind x)   = "(" ++ print x ++ ")"
+print {const} (thunk x)  = "(_" ++ print x ++ "_)"
 print {compu} (var x)    = "VAR"
-print {compu} (elim e s) = "elim" ++ print e ++ print s
-print {compu} (t ∷ T)    = print t ++ "∶" ++ print T
+print {compu} (elim e s) = "(elim " ++ print e ++ " " ++ print s ++ ")"
+print {compu} (t ∷ T)    = "( {" ++ print t ++ "} ∶ " ++ print T ++ ")"
 
 printrawvar : Var γ → String
 printrawvar ze     = "ze"

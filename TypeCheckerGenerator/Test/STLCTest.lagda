@@ -49,13 +49,13 @@ _ : infer rules ε (app ((lam b) ∷ (α ⇨ β)) a)
 _ = refl
 
 _ : infer rules ε (app
-         ((lam (thunk (elim (var ze) (` 'a')))) ∷ ((α ⇨ α) ⇨ α))
-         (thunk (elim (bind (thunk (var ze)) ∷ ((α ⇨ α) ⇨ (α ⇨ α))) (bind (thunk (var ze))))))
+         ((lam (thunk (elim (var ze) a))) ∷ ((α ⇨ α) ⇨ α))
+         (thunk (elim (lam (~ ze) ∷ ((α ⇨ α) ⇨ (α ⇨ α))) (lam (~ ze)))))
     ≡
     succeed α
 _ = refl
 
-_ : infer rules (ε -, (α ⇨ α) -, β) ((bind (thunk (elim (var (su (su ze))) (` 'a')))) ∷ (β ⇨ α))
+_ : infer rules (ε -, (α ⇨ α) -, β) ((lam (thunk (elim (var (su (su ze))) (` 'a')))) ∷ (β ⇨ α))
     ≡
     succeed (β ⇨ α)
 _ = refl
@@ -78,15 +78,15 @@ _ = refl
 
 _ : infer rules ε
           (elim
-            (bind (thunk
+            (lam (thunk
               (elim
                 (var ze)
                 (` 'a')))
-              ∷ ((α ⇨ α) ∙ ((` '→') ∙ (` 'α'))))
+              ∷ ((α ⇨ α) ⇨ α))
             (thunk
               (elim
-                ((bind (thunk (var ze))) ∷ ((α ⇨ α) ⇨ (α ⇨ α)))
-                ((bind (thunk (var ze)))))))
+                ((lam (~ ze)) ∷ ((α ⇨ α) ⇨ (α ⇨ α)))
+                ((lam (~ ze))))))
     ≡
     succeed α
 _ = refl

@@ -10,11 +10,15 @@ module Test.Specs.STLC where
 open import CoreLanguage
 open import Data.Nat using (suc)
 open import Pattern using (Pattern; `; place; bind; _∙_;  ⋆; _∙; ∙_; svar)
-open import Expression using (_/_; `; _∙_)
-open import Rules using (ElimRule; TypeRule; UnivRule; Rules; rs; ∋rule; ε; _placeless; type; _⇉_; _⊢'_; _∋'_[_]; `)
+open import Expression using (_/_; `; _∙_; _∷_)
+open import Rules using (ElimRule; TypeRule; UnivRule; ∋rule; ε; _placeless; type; _⇉_; _⊢'_; _∋'_[_]; `)
 open import Thinning using (Ø; _O; ι)
 open import BwdVec using (ε)
 open import Data.Product using (_,_)
+open import TypeChecker using (RuleSet; rs)
+open import Semantics renaming (β-rule to β-Rule)
+open import BwdVec
+open β-Rule
 open ElimRule
 open TypeRule
 open UnivRule
@@ -43,14 +47,13 @@ module combinators where
   infixr 20 _⇨_
   
   lam : ∀ {γ} → Term const (suc γ) → Term const γ
-  lam t = bind t
+  lam t = ` 'λ' ∙ bind t
   
   ~ : ∀ {γ} → Var γ → Term const γ
   ~ vr = thunk (var vr)
   
   app : ∀ {γ} → Compu γ → Const γ → Term compu γ
   app e s = elim e s
-
 \end{code}
 
 \begin{code}
@@ -136,14 +139,14 @@ premises ⇛-inuniv = (((U ∙ place ι) ∙ place ι)) , ((type (⋆ ∙) ι  �
 
 -- which has lambda terms as it's values
 lam : Pattern 0
-lam = bind (place ι)
+lam = ` 'λ' ∙ bind (place ι)
 
 -- we check the type of abstractions
 lam-rule : ∋rule
 subject  lam-rule = lam
 input    lam-rule = ⇛
-premises lam-rule = input lam-rule ∙ bind (place ι) , (((⋆ ∙) / ε) ⊢' (((∙ ∙ ⋆) / ε) ∋' bind ⋆ [ ι ]))
-                                                      ⇉ ε (bind (` '⊤') placeless)
+premises lam-rule = input lam-rule ∙ bind (place ι) , (((⋆ ∙) / ε) ⊢' (((∙ ∙ ⋆) / ε) ∋' ∙ bind ⋆ [ ι ]))
+                                                      ⇉ ε ((` 'λ' ∙ bind (` '⊤')) placeless)
          
 -- and we can type lam elimination
 app-rule : ElimRule
@@ -153,6 +156,15 @@ premises   app-rule = targetPat app-rule ∙ place ι ,
                       (((⋆ ∙) / ε) ∋' ⋆ [ ι ]) ⇉
                       ε ((` '⊤') placeless)
 output     app-rule = (((∙ ∙ ⋆) ∙) / ε)
+
+-- β rules
+
+app-βrule : β-Rule
+target      app-βrule  =  ` 'λ' ∙ bind (place ι)
+targetType  app-βrule  =  targetPat app-rule
+eliminator  app-βrule  =  place ι
+redTerm     app-βrule  =  ((∙ bind ⋆) ∙) / (ε -, (((∙ (∙ ⋆)) / ε) ∷ ((∙ ((⋆ ∙) ∙)) / ε)))
+redType     app-βrule  =  (∙ ((∙ ∙ ⋆) ∙)) / ε
 
 -- first lets get all our rules together:
 
@@ -170,6 +182,10 @@ univrules = U-univ  ∷ [] -- add
 elimrules : List ElimRule
 elimrules = app-rule ∷ []
 
-rules : Rules
-rules = rs typerules univrules ∋rules elimrules
+betarules : List β-Rule
+betarules = app-βrule ∷ []
+
+open import undefined
+rules : RuleSet
+rules =  rs typerules univrules ∋rules elimrules betarules
 \end{code}

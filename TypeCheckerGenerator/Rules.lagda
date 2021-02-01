@@ -94,7 +94,7 @@ helper δ (place x) ⋆        = refl
 \end{code}
 }
 Before we define how we might chain premise together, it is important to address
-placelessness in patterns.
+placelessness in patterns. \hl{MOVE TO PATTERNS THEN YA GOOSE!}
 
 We define a type that is structurally equivalent to patterns except for the
 absence of places. This type is indexed by patterns where we use the index
@@ -292,16 +292,4 @@ match-erule rule T s = do
                          just (T-env , s-env)
                        where
                          open ElimRule
-\end{code}
-
-When we check types, it is convenient to collect all the rules together so
-that we might easily pass them around. We do so will the following type.
-
-\begin{code}
-data Rules : Set where
-  rs : List TypeRule  →
-       List UnivRule  →
-       List ∋rule     →
-       List ElimRule  →
-       Rules
 \end{code}

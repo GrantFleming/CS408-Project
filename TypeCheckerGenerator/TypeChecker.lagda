@@ -20,11 +20,12 @@ open Pattern using (Pattern; _-Env; _∙_; thing; `; bind; _‼_; _-penv_; _⊗_
 open import Expression using (toTerm)
 open import Data.Unit using (⊤; tt)
 open import Data.Product using (_,_)
-open import Data.Char using (_==_)
+open import Data.Char using (_==_; show)
 open import Data.Bool using (true; false)
 open import Data.Product using (_×_; proj₁; proj₂)
 open import Thinning using (_⟨term_)
 open import Data.String using (_++_)
+open import Semantics
 \end{code}
 }
 \hide{
@@ -51,6 +52,20 @@ We now have all of the required definitions to construct the process of
 typechecking. This process is a set of mutually recursive definitions which
 we will describe here.
 
+When we check types, it is convenient to collect all the rules together so
+that we might easily pass them around. We do so will the following type.
+
+\begin{code}
+data RuleSet : Set where
+  rs : List TypeRule  →
+       List UnivRule  →
+       List ∋rule     →
+       List ElimRule  →
+       List β-rule    →
+       RuleSet
+\end{code}
+
+
 Firstly, we present four functions, one for checking each of the user
 provided typing rules. We must provide the list of specific rule types
 alongside the complete structure of all rules so that we might recurse
@@ -64,26 +79,26 @@ fail with a descriptive error.
 
 \begin{code}
 ∋-check     :  Context γ            →
-               Rules                →
+               RuleSet                →
                List ∋rule           →
                (subject : Const γ)  →
                (input : Const γ)    →
                Failable ⊤
               
 type-check  :  Context γ            →
-               Rules                →
+               RuleSet                →
                List TypeRule        →
                (subject : Const γ)  →
                Failable ⊤
               
 univ-check  :  Context γ            →
-               Rules                →
+               RuleSet                →
                List UnivRule        →
                (input : Const γ)    →
                Failable ⊤
 
 elim-synth : Context γ                    →
-             Rules                        →
+             RuleSet                        →
              List ElimRule                →
              (synth-type : Term const γ)  →
              (eliminator : Term const γ)  →
@@ -115,7 +130,7 @@ _    ≡v _     = eqfail
 \hide{
 \begin{code}
 _≡ᵗ_ {const} (` x)    (` x₁) with x == x₁
-... | false = eqfail
+... | false = fail ("Equivalence failure: " ++ show x ++ " ≠ " ++ show x₁)
 ... | true  = succeed tt
 _≡ᵗ_ {const} (x ∙ x₁) (x₂ ∙ x₃) = do
                                     _ ← x  ≡ᵗ x₂
@@ -132,7 +147,7 @@ _≡ᵗ_ {compu} (elim e s) (elim e' s') = do
 _≡ᵗ_ {compu} (t ∷ T) (t' ∷ T') = do
                                    _ ← t ≡ᵗ t'
                                    return tt
-_ ≡ᵗ _  = eqfail
+τ₁ ≡ᵗ τ₂  = fail ("Equivalence failure: " ++ print τ₁ ++ " ≠ " ++ print τ₂)
 \end{code}
 }
 
@@ -159,13 +174,13 @@ so that it might check the elimination rules. Any term given back in this
 process is checked to be a type before $infer$ returns it.
 
 \begin{code}
-check  :  Rules                   →
+check  :  RuleSet                   →
           Context γ               →
           (type : Term const γ)   →
           (term : Term d γ)       →
           Failable ⊤
           
-infer  :  Rules                  →
+infer  :  RuleSet                  →
           Context γ              →
           (term : Term compu γ)  →
           Failable (Term const γ)
@@ -195,7 +210,7 @@ which we are currently operating.
 
 \begin{code}
 check-premise : Context γ   →
-                Rules       →
+                RuleSet       →
                 p -Env      →
                 q -Env      →
                 Prem p q γ p' q'  →
@@ -209,7 +224,7 @@ check-premise Γ rules penv qenv (T ∋' ξ [ θ ])
 \end{code}
 \hide{
 \begin{code}
-check-premise {q = q} Γ rules@(rs t u ∋ e) penv qenv (type ξ θ)
+check-premise {q = q} Γ rules@(rs t u ∋ e β) penv qenv (type ξ θ)
   = do
     _ ← type-check  Γ rules t ((ξ ‼ qenv) ⟨term θ)
     succeed (thing (ξ ‼ qenv) , (qenv -penv ξ))
@@ -218,7 +233,7 @@ check-premise Γ rules penv qenv (x ≡' x')
   = do
     _ ← toTerm {γ = 0}  penv x ≡ᵗ toTerm {γ = 0} penv x'
     succeed (` , qenv)
-check-premise Γ rules@(rs t u ∋ e) penv qenv (univ x)
+check-premise Γ rules@(rs t u ∋ e β) penv qenv (univ x)
   = do
     _ ← univ-check Γ rules u (toTerm {γ = 0} penv x)
     succeed (` , qenv)
@@ -233,7 +248,7 @@ check-premise-chain  :  ∀  {p : Pattern γ}
                            {q : Pattern γ}
                            {p' : Pattern γ}  →
                            Context γ         →
-                           Rules             →
+                           RuleSet             →
                            p -Env            →
                            q -Env            →
                            Prems p q p'      →
@@ -275,12 +290,12 @@ the output of running the elimination rule.
 
 \begin{code}
 run-∋rule  :  Context γ                    →
-              Rules                        →
+              RuleSet                        →
               (rule : ∋rule)               →
               ((γ ⊗ (input rule)) -Env)    →
               ((γ ⊗ (subject rule)) -Env)  →
               Failable ⊤
-run-∋rule {γ} Γ rules@(rs t u ∋ e) rule ienv senv
+run-∋rule {γ} Γ rules@(rs t u ∋ e β) rule ienv senv
   = do
      _ ← type-check Γ rules t
                     (termFrom (input rule) ienv)
@@ -289,7 +304,7 @@ run-∋rule {γ} Γ rules@(rs t u ∋ e) rule ienv senv
      succeed tt
 
 run-erule : Context γ                       →
-            Rules                           →
+            RuleSet                           →
             (rule : ElimRule)               →
             (γ ⊗ targetPat rule)  -Env →
             (γ ⊗ eliminator rule) -Env →
@@ -311,14 +326,14 @@ while constructing this system of functions.
 
 \hide{
 \begin{code}
-run-univrule : Context γ → Rules → (rule : UnivRule) → ((γ ⊗ (input rule)) -Env) → Failable ⊤
-run-univrule {γ = γ} Γ rules@(rs t u ∋ e) rule env
+run-univrule : Context γ → RuleSet → (rule : UnivRule) → ((γ ⊗ (input rule)) -Env) → Failable ⊤
+run-univrule {γ = γ} Γ rules@(rs t u ∋ e β) rule env
   = do
      _ ← type-check Γ rules t (termFrom (input rule) env)
      _ ← check-premise-chain Γ rules env ` (⊗premises γ (proj₂ (premises rule)))
      succeed tt
 
-run-typerule : Context γ → Rules → (rule : TypeRule) → ((γ ⊗ (subject rule)) -Env) → Failable ⊤
+run-typerule : Context γ → RuleSet → (rule : TypeRule) → ((γ ⊗ (subject rule)) -Env) → Failable ⊤
 run-typerule {γ} Γ rules rule env
   = do
       _ ← check-premise-chain Γ rules ` env (⊗premises γ (proj₂ (premises rule)))
@@ -357,24 +372,24 @@ elim-synth Γ rules (erule ∷ erules) T s with match-erule erule T s
 ... | just (T-env , s-env) = run-erule Γ rules erule T-env s-env
 
 
-infer rules@(rs t u ∋ ee) Γ (var x)    = do
+infer rules@(rs t u ∋ ee β) Γ (var x)    = do
                             -- check postcondition:
                              _ ← type-check Γ rules t (x ‼V Γ)
                              succeed (x ‼V Γ)
-infer rules@(rs t u ∋ ee) Γ (elim e s) = do
+infer rules@(rs t u ∋ ee β) Γ (elim e s) = do
                              T ← infer rules Γ e
                              S ← elim-synth Γ rules ee T s
                              -- check postcondition:
                              _ ← type-check Γ rules t S
                              succeed S
-infer rules@(rs tr u ∋ e) Γ (t ∷ T)  = do
+infer rules@(rs tr u ∋ e β) Γ (t ∷ T)  = do
                    -- postcondition checks in ∋-check
                    _ ← ∋-check Γ rules ∋ t T
                    succeed T
 
-check {_} {const} rules Γ T (thunk x)       = check rules Γ T x
-check {_} {const} rules@(rs tr u ∋ e) Γ T t = ∋-check Γ rules ∋ t T
-check {_} {compu} rules@(rs tr u ∋ e) Γ T t = do
+check {_} {const} rules Γ T (thunk x)         = check rules Γ T x
+check {_} {const} rules@(rs tr u ∋ e β) Γ T t = ∋-check Γ rules ∋ t T
+check {_} {compu} rules@(rs tr u ∋ e β) Γ T t = do
                             S ← infer rules Γ t
                             S ≡ᵗ T
 \end{code}

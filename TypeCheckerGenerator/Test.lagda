@@ -9,6 +9,7 @@ module Test where
 \hide{
 \begin{code}
 open import Test.STLCTest
+open import Test.BetaTest
 \end{code}
 }
 

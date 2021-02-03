@@ -52,24 +52,24 @@ necessary information to build a term.
 \begin{code}
 Expr : Pattern δ → Dir → Scoped
 
-data con (p : Pattern δ) (γ : Scope) : Set
-data com (p : Pattern δ) (γ : Scope) : Set
+data Con (p : Pattern δ) (γ : Scope) : Set
+data Com (p : Pattern δ) (γ : Scope) : Set
 
-data con p γ where
-  `      : String → con p γ
-  _∙_    : con p γ → con p γ → con p γ
-  bind   : con p (suc γ) → con p γ
-  thunk  : com p γ → con p γ
-  _/_    : svar p γ' → γ' ⇒[ Expr p compu ] γ → con p γ
+data Con p γ where
+  `      : String → Con p γ
+  _∙_    : Con p γ → Con p γ → Con p γ
+  bind   : Con p (suc γ) → Con p γ
+  thunk  : Com p γ → Con p γ
+  _/_    : svar p γ' → γ' ⇒[ Expr p compu ] γ → Con p γ
   
-data com p γ where
-  var    : Var γ → com p γ
-  elim   : com p γ → con p γ → com p γ
-  _∷_    : con p γ → con p γ → com p γ
+data Com p γ where
+  var    : Var γ → Com p γ
+  elim   : Com p γ → Con p γ → Com p γ
+  _∷_    : Con p γ → Con p γ → Com p γ
 
 
-Expr p const γ = con p γ
-Expr p compu γ = com p γ
+Expr p const γ = Con p γ
+Expr p compu γ = Com p γ
 \end{code}
 
 As is expected by now, we define various functions allowing us to thin,
@@ -93,7 +93,7 @@ _⟨exp_ {d = const} (thunk x) θ = thunk (x ⟨exp θ)
 _⟨exp_ {d = const} (ξ / σ)   θ = ξ / (σ ⟨ θ)
   where
     -- had to inline ⟨sub for the termination checker
-    _⟨_ : Thinnable (γ' ⇒[ (λ γ → com p γ) ]_)
+    _⟨_ : Thinnable (γ' ⇒[ (λ γ → Com p γ) ]_)
     _⟨_  ε        θ' = ε
     _⟨_ (σ' -, x) θ' = (σ' ⟨ θ') -, (x ⟨exp θ')
 

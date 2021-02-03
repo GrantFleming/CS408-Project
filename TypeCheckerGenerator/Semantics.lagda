@@ -13,7 +13,7 @@ open import CoreLanguage
 open import Pattern using (Pattern; _∙_; _⊗_; _-Env; match)
 open import Context using (Context) renaming (_,_ to _-,_)
 open import Data.String using (_++_)
-open import Expression using (Expr; toTerm)
+open import Expression using (toTerm; Con)
 open import Data.Product using (_×_; _,_; Σ-syntax)
 open import Data.List using (List; []; _∷_)
 open import Data.Maybe using (Maybe; just; nothing)
@@ -43,11 +43,8 @@ a β-rule.
 \begin{code}
 record β-rule : Set where
   field
-    target      :  Pattern 0
-    targetType  :  Pattern 0
-    eliminator  :  Pattern 0
-    redTerm     :  Expr (target ∙ targetType ∙ eliminator) const 0
-    redType     :  Expr (target ∙ targetType ∙ eliminator) const 0
+    target targetType eliminator : Pattern 0
+    redTerm redType : Con (target ∙ targetType ∙ eliminator) 0
 
   open Data.Maybe using (_>>=_)
 
@@ -56,7 +53,7 @@ record β-rule : Set where
                   (γ ⊗ targetType)  ∙
                   (γ ⊗ eliminator)) -Env
 
-  β-match : (targ type elim : Term const γ) → Maybe Rule-Env
+  β-match : (targ type elim : Const γ) → Maybe Rule-Env
   β-match tar ty el = do
                         t-env  ← match tar target
                         ty-env ← match ty targetType
@@ -64,7 +61,7 @@ record β-rule : Set where
                         just (t-env ∙ ty-env ∙ e-env)
                       
 
-  β-reduce  :  Rule-Env {γ} → Term compu γ
+  β-reduce  :  Rule-Env {γ} → Compu γ
   β-reduce env
     = toTerm env redTerm ∷ toTerm env redType
 open β-rule        
@@ -78,7 +75,7 @@ open import Failable using (_>>=_)
 }
 \begin{code}
 findRule : List β-rule →
-           (tar type elim : Term const γ)  →
+           (tar type elim : Const γ)  →
            Failable ( Σ[ r ∈ β-rule ] Rule-Env r {γ} )
 findRule [] t ty e = fail ("No matching β-rule found for " ++
                            print t ++ " : " ++ print ty ++
@@ -88,8 +85,8 @@ findRule (r ∷ rs) t ty e with β-match r t ty e
 ... | just env  = succeed (r , env)
 
 reduce : List β-rule              →
-         (tar type elim : Term const γ)  →
-         Failable (Term compu γ)
+         (tar type elim : Const γ)  →
+         Failable (Compu γ)
 reduce rules ta ty el
   = do
       (rule , env) ← findRule rules ta ty el
@@ -132,14 +129,13 @@ computation in which they have no right.
 }
 \begin{code}
 normalize : List β-rule →
-            (∀ {δ} → Context δ → Term compu δ → Failable (Term const δ)) →
+            (∀ {δ} → Context δ → Compu δ → Failable (Const δ)) →
             Context γ →
             Term d γ  →
-            Term const γ
+            Const γ
 normalize rs infer = norm
   where
-
-    norm : Context γ → Term d γ → Term const γ
+    norm : Context γ → Term d γ → Const γ
     norm {d = const} Γ (bind t)   = bind (norm (Γ -, ` "unknown" ) t)
     norm {d = compu} Γ (elim t e) with norm Γ t | norm Γ e
     ... | thunk x  | e' = thunk (elim x e')

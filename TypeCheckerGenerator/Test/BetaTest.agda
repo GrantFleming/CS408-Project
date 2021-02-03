@@ -114,5 +114,12 @@ module normtests where
   _ : test5 ≡ thunk (app (var ze) a)
   _ = refl
 
+  -- should normalize even if the elimination target body was initially stuck
+  test6 : Term const 0
+  test6 = normalize betarules (infer rules) ε (app (lam (thunk (app (var ze) a)) ∷ ((α ⇨ α) ⇨ α))
+                                            (lam (~ ze)))
+
+  _ : test6 ≡ a
+  _ = refl
 
 

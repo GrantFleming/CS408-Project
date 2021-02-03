@@ -12,11 +12,12 @@ module Semantics where
 open import CoreLanguage
 open import Pattern using (Pattern; _∙_; _⊗_; _-Env; match)
 open import Context using (Context) renaming (_,_ to _-,_)
+open import Data.String using (_++_)
 open import Expression using (Expr; toTerm)
-open import Data.Product using (_×_; _,_)
+open import Data.Product using (_×_; _,_; Σ-syntax)
 open import Data.List using (List; []; _∷_)
 open import Data.Maybe using (Maybe; just; nothing)
-open import Failable hiding (_>>=_)
+open import Failable using (Failable; succeed; fail)
 \end{code}
 }
 
@@ -48,44 +49,51 @@ record β-rule : Set where
     redTerm     :  Expr (target ∙ targetType ∙ eliminator) const 0
     redType     :  Expr (target ∙ targetType ∙ eliminator) const 0
 
-  β-match  :  (targ  :  Term const γ)  →
-              (type  :  Term const γ)  →
-              (elim  :  Term const γ)  →
-              Maybe (((γ ⊗ target)      ∙ 
-                      (γ ⊗ targetType)  ∙
-                      (γ ⊗ eliminator)) -Env)
+  open Data.Maybe using (_>>=_)
+
+  Rule-Env : {γ : Scope} → Set
+  Rule-Env {γ} = ((γ ⊗ target)      ∙ 
+                  (γ ⊗ targetType)  ∙
+                  (γ ⊗ eliminator)) -Env
+
+  β-match : (targ type elim : Term const γ) → Maybe Rule-Env
   β-match tar ty el = do
                         t-env  ← match tar target
                         ty-env ← match ty targetType
                         e-env  ← match el eliminator
                         just (t-env ∙ ty-env ∙ e-env)
-                       where
-                         open Data.Maybe
                       
 
-  β-reduce  :  ((γ ⊗ target)      ∙
-                (γ ⊗ targetType)  ∙
-                (γ ⊗ eliminator)) -Env  →
-               Term compu γ
-  β-reduce (tenv ∙ tyEnv ∙ eenv)
-    = let t = toTerm (tenv ∙ tyEnv ∙ eenv) redTerm in
-      let T = toTerm (tenv ∙ tyEnv ∙ eenv) redType in
-        t ∷ T
+  β-reduce  :  Rule-Env {γ} → Term compu γ
+  β-reduce env
+    = toTerm env redTerm ∷ toTerm env redType
 open β-rule        
 \end{code}
 We then define a function that will attempt a reduction with regards
 to a list of β-rules by trying to match and apply a rule.
+\hide{
 \begin{code}
+open import Failable using (_>>=_)
+\end{code}
+}
+\begin{code}
+findRule : List β-rule →
+           (tar type elim : Term const γ)  →
+           Failable ( Σ[ r ∈ β-rule ] Rule-Env r {γ} )
+findRule [] t ty e = fail ("No matching β-rule found for " ++
+                           print t ++ " : " ++ print ty ++
+                           "eliminated by " ++ print e)
+findRule (r ∷ rs) t ty e with β-match r t ty e
+... | nothing   = findRule rs t ty e
+... | just env  = succeed (r , env)
+
 reduce : List β-rule              →
-         (tar    : Term const γ)  →
-         (tType  : Term const γ)  →
-         (elim   : Term const γ)  →
+         (tar type elim : Term const γ)  →
          Failable (Term compu γ)
-reduce [] ta ty el = fail "Failed to reduce"
-reduce (rule ∷ rules) ta ty el
-  with β-match rule ta ty el
-... | nothing  = reduce rules ta ty el
-... | just env = succeed (β-reduce rule env)
+reduce rules ta ty el
+  = do
+      (rule , env) ← findRule rules ta ty el
+      succeed (β-reduce rule env)
 \end{code}
 
 Finally we define normalization in terms of a list of β-rules but also
@@ -126,21 +134,20 @@ computation in which they have no right.
 normalize : List β-rule →
             (∀ {δ} → Context δ → Term compu δ → Failable (Term const δ)) →
             Context γ →
-            Term d γ →
+            Term d γ  →
             Term const γ
 normalize rs infer = norm
   where
+
     norm : Context γ → Term d γ → Term const γ
     norm {d = const} Γ (bind t)   = bind (norm (Γ -, ` "unknown" ) t)
     norm {d = compu} Γ (elim t e) with norm Γ t | norm Γ e
-    ... | t' | e' with infer Γ t
-    ... | fail m         = thunk (elim t e')
-    ... | succeed ty with reduce rs t' ty e'
-    ... | succeed x      = norm Γ x
-    ... | fail m with t'
-    ... | thunk x        = thunk (elim x e')
-    ... | _              = thunk (elim (t' ∷ ty) e')
-    --- ...
+    ... | thunk x  | e' = thunk (elim x e')
+    ... | t'       | e' with infer Γ t
+    ...     | fail x     = thunk (elim t e')  -- should never happen
+    ...     | succeed ty with reduce rs t' ty e'
+    ...         | fail x    = thunk (elim (t' ∷ ty) e')    
+    ...         | succeed x = norm Γ x
 \end{code}
 \hide{
 \begin{code}

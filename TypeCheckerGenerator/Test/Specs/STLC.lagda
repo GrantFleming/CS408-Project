@@ -31,23 +31,23 @@ as creating these terms directly in our internal language can be tedious.
 \begin{code}
 module combinators where
   α : ∀{γ} → Term const γ
-  α = ` 'α'
+  α = ` "α"
   
   a : ∀{γ} → Term const γ
-  a = ` 'a'
+  a = ` "a"
   
   β : ∀{γ} → Term const γ
-  β = ` 'β'
+  β = ` "β"
   
   b : ∀{γ} → Term const γ
-  b = ` 'b'
+  b = ` "b"
   
   _⇨_ : ∀{γ} → Const γ → Const γ → Term const γ
-  x ⇨ y = x ∙ ((` '→') ∙ y)
+  x ⇨ y = x ∙ ((` "→") ∙ y)
   infixr 20 _⇨_
   
   lam : ∀ {γ} → Term const (suc γ) → Term const γ
-  lam t = ` 'λ' ∙ bind t
+  lam t = ` "λ" ∙ bind t
   
   ~ : ∀ {γ} → Var γ → Term const γ
   ~ vr = thunk (var vr)
@@ -61,72 +61,72 @@ module combinators where
 
 -- we have a universe
 U : Pattern 0
-U = ` 'U'
+U = ` "U"
 
 U-type : TypeRule
 subject  U-type = U
-premises U-type = ` '⊤' , (ε (U placeless))
+premises U-type = ` "⊤" , (ε (U placeless))
 
 U-univ : UnivRule
 input    U-univ = U
-premises U-univ = input U-univ , (ε (` '⊤'))
+premises U-univ = input U-univ , (ε (` "⊤"))
 
 -- a base type α in the universe
 
 α : Pattern 0
-α = ` 'α'
+α = ` "α"
 
 α-rule : TypeRule 
 subject  α-rule = α
-premises α-rule = (` '⊤') , (ε (α placeless))
+premises α-rule = (` "⊤") , (ε (α placeless))
 
 α-inuniv : ∋rule
 subject  α-inuniv = α
 input    α-inuniv = U
-premises α-inuniv = (` 'U') , (ε (α placeless))
+premises α-inuniv = (` "U") , (ε (α placeless))
 
--- which has a value 'a'
+-- which has a value "a"
 a : Pattern 0
-a = ` 'a'
+a = ` "a"
 
 a-rule : ∋rule
 subject  a-rule = a
 input    a-rule = α
-premises a-rule = (` 'α') , (ε (a placeless))
+premises a-rule = (` "α") , (ε (a placeless))
 
 
 β : Pattern 0
-β = ` 'β'
+β = ` "β"
 
 β-rule : TypeRule 
 subject  β-rule = β
-premises β-rule = (` '⊤') , (ε (β placeless))
+premises β-rule = (` "⊤") , (ε (β placeless))
 
 β-inuniv : ∋rule
 subject  β-inuniv = β
 input    β-inuniv = U
-premises β-inuniv = (` 'U') , (ε (β placeless))
+premises β-inuniv = (` "U") , (ε (β placeless))
 
 
--- and a value 'b'
+-- and a value "b"
 b : Pattern 0
-b = ` 'b'
+b = ` "b"
 
 b-rule : ∋rule
 subject  b-rule = b
 input    b-rule = β
-premises b-rule = (` 'β') , (ε (b placeless))
+premises b-rule = (` "β") , (ε (b placeless))
 
 -- REMEMBER TO ADD RULE TO BOTTOM!!!
 
 
 -- and a function type _⇛_ in the universe
 ⇛ : Pattern 0
-⇛ = place ι ∙ ` '→' ∙ place ι
+⇛ = place ι ∙ ` "→" ∙ place ι
 
 ⇛-rule : TypeRule
 subject  ⇛-rule = ⇛
-premises ⇛-rule = ((` '⊤' ∙ place ι) ∙ place ι) , ((type (⋆ ∙) ι ⇉
+premises ⇛-rule = ((` "⊤" ∙ place ι) ∙ place ι) , ((type (⋆ ∙) ι ⇉
                                                     type (∙ ∙ ⋆) ι ⇉
                                                     ε (⇛ placeless)))
 
@@ -139,14 +139,14 @@ premises ⇛-inuniv = (((U ∙ place ι) ∙ place ι)) , ((type (⋆ ∙) ι  �
 
 -- which has lambda terms as it's values
 lam : Pattern 0
-lam = ` 'λ' ∙ bind (place ι)
+lam = ` "λ" ∙ bind (place ι)
 
 -- we check the type of abstractions
 lam-rule : ∋rule
 subject  lam-rule = lam
 input    lam-rule = ⇛
 premises lam-rule = input lam-rule ∙ bind (place ι) , (((⋆ ∙) / ε) ⊢' (((∙ ∙ ⋆) / ε) ∋' ∙ bind ⋆ [ ι ]))
-                                                      ⇉ ε ((` 'λ' ∙ bind (` '⊤')) placeless)
+                                                      ⇉ ε ((` "λ" ∙ bind (` "⊤")) placeless)
          
 -- and we can type lam elimination
 app-rule : ElimRule
@@ -154,13 +154,13 @@ targetPat  app-rule = ⇛
 eliminator app-rule = place ι
 premises   app-rule = targetPat app-rule ∙ place ι ,
                       (((⋆ ∙) / ε) ∋' ⋆ [ ι ]) ⇉
-                      ε ((` '⊤') placeless)
+                      ε ((` "⊤") placeless)
 output     app-rule = (((∙ ∙ ⋆) ∙) / ε)
 
 -- β rules
 
 app-βrule : β-Rule
-target      app-βrule  =  ` 'λ' ∙ bind (place ι)
+target      app-βrule  =  ` "λ" ∙ bind (place ι)
 targetType  app-βrule  =  targetPat app-rule
 eliminator  app-βrule  =  place ι
 redTerm     app-βrule  =  ((∙ bind ⋆) ∙) / (ε -, (((∙ (∙ ⋆)) / ε) ∷ ((∙ ((⋆ ∙) ∙)) / ε)))

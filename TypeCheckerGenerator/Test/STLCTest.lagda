@@ -55,7 +55,7 @@ _ : infer rules ε (app
     succeed α
 _ = refl
 
-_ : infer rules (ε -, (α ⇨ α) -, β) ((lam (thunk (elim (var (su (su ze))) (` 'a')))) ∷ (β ⇨ α))
+_ : infer rules (ε -, (α ⇨ α) -, β) ((lam (thunk (elim (var (su (su ze))) a))) ∷ (β ⇨ α))
     ≡
     succeed (β ⇨ α)
 _ = refl
@@ -81,7 +81,7 @@ _ : infer rules ε
             (lam (thunk
               (elim
                 (var ze)
-                (` 'a')))
+                 a))
               ∷ ((α ⇨ α) ⇨ α))
             (thunk
               (elim

@@ -11,7 +11,7 @@ module Pattern where
 \begin{code}
 open import CoreLanguage
 open import Thinning using (_⊑_; Ø; ι; _++_; _⟨term⊗_; ++-identityʳ)
-open import Data.Char using (Char) renaming (_≟_ to _is_)
+open import Data.String using (String; _==_)
 open import Data.Nat.Properties using (_≟_)
 open import Data.Maybe using (Maybe; just; nothing; _>>=_)
 open import Data.Bool using (true; false)
@@ -56,7 +56,7 @@ associated $p\mbox{-Env}$
 
 \begin{code}
 data Pattern (γ : Scope) : Set where
-  `      : Char → Pattern γ
+  `      : String → Pattern γ
   _∙_    : Pattern γ → Pattern γ → Pattern γ
   bind   : Pattern (suc γ) → Pattern γ
   place  : {δ : Scope} → δ ⊑ γ → Pattern γ
@@ -74,7 +74,7 @@ private
 }
 \begin{code}
 data _-Env {γ : Scope} : Pattern γ → Set where
-  `      : {c : Char} → (` c) -Env
+  `      : {s : String} → (` s) -Env
   _∙_    : q -Env → r -Env → (q ∙ r) -Env
   bind   : t -Env → (bind t) -Env
   thing  : {θ : δ ⊑ γ} → Term const δ → (place θ) -Env
@@ -121,9 +121,9 @@ match : Term const (δ + γ) → (p : Pattern γ) → Maybe ((δ ⊗ p) -Env)
 match  {γ = γ} t   (place {δ'} θ) with γ ≟ δ'
 ... | true because ofʸ refl = just (thing t)
 ... | false because _       = nothing
-match (` a) (` c) with a is c
-... | true because ofʸ refl = just `
-... | false because _       = nothing
+match (` a) (` c) with a == c
+... | true   =  just `
+... | false  =  nothing
 match (s ∙ t) (p ∙ q)   = do
                             x ← match s p
                             y ← match t q
@@ -133,6 +133,7 @@ match (bind t) (bind p) = do
                             just (bind x)
 
 -- TO DO, THUNK MATCHING!! evaluate it to head normal form
+-- or do we assume that hnf was attempted already?
 match _ _                   = nothing
 \end{code}
 
@@ -182,7 +183,7 @@ termFrom  : (p : Pattern γ) → (δ ⊗ p) -Env → Term const (δ + γ)
 (p ∙ q) - (ξ ∙)  = (p - ξ) ∙ q
 (p ∙ q) - (∙ ξ)  = p ∙ (q - ξ)
 bind p  - bind ξ = bind (p - ξ)
-place x - ⋆      = ` '⊤' 
+place x - ⋆      = ` "⊤"
 
 (s ∙ t) -penv (ξ ∙) = (s -penv ξ) ∙ t
 (s ∙ t) -penv (∙ ξ) = s ∙ (t -penv ξ)

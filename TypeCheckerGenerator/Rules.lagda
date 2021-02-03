@@ -16,7 +16,7 @@ open import Pattern using (Pattern; svar; bind; _∙; ∙_; place; ⋆; _∙_;
 open import Expression using (Expr; _⊗expr_)
 open import Data.Product using (_×_; _,_; proj₁; Σ-syntax)
 open import Data.List using (List)
-open import Data.Char
+open import Data.String using (String)
 open import Data.Nat using (ℕ; suc; _+_)
 open import Data.Maybe using (Maybe; just; _>>=_)
 open import Relation.Binary.PropositionalEquality using (cong; sym;
@@ -70,8 +70,8 @@ data Prem  (p : Pattern δ) (q : Pattern δ) (γ : Scope) :
            (p' : Pattern γ) → (q' : Pattern δ) → Set where
    type     : (ξ : svar q δ') → (θ : δ' ⊑ γ) → Prem p q γ (place θ) (q - ξ)
    _∋'_[_]  : (T : Expr p const γ) → (ξ : svar q δ') → (θ : δ' ⊑ γ)  → Prem p q γ (place θ) (q - ξ)
-   _≡'_     : Expr p const γ → Expr p const γ → Prem p q γ (` '⊤') q
-   univ     : Expr p const γ → Prem p q γ (` '⊤') q
+   _≡'_     : Expr p const γ → Expr p const γ → Prem p q γ (` "⊤") q
+   univ     : Expr p const γ → Prem p q γ (` "⊤") q
    _⊢'_     : Expr p const γ → Prem p q (suc γ) p` q`` → Prem p q γ (bind p`) q``
 
 ⊗premise : (δ : Scope) →
@@ -109,13 +109,13 @@ by $p -places$ and, as with many of our types, define opening on Placeless.
 
 \begin{code}
 data _Placeless {γ : Scope} : Pattern γ → Set where
-  `     : (c : Char) → ` c Placeless
+  `     : (s : String) → ` s Placeless
   _∙_   : {l r : Pattern γ} → (l Placeless) → (r Placeless) → (l ∙ r) Placeless
   bind  : {t : Pattern (suc γ)} → (t Placeless) → (bind t) Placeless
 
 _-places : Pattern γ → Pattern γ
 --...
-place x  -places = ` '⊤'
+place x  -places = ` "⊤"
 --...
 \end{code}
 \hide{
@@ -137,7 +137,7 @@ _⊗pl_ : p' Placeless → (δ : Scope) → (δ ⊗ p') Placeless
 ` x placeless      = ` x
 (s ∙ t) placeless  = (s placeless) ∙ (t placeless)
 bind p placeless   = bind (p placeless)
-place x placeless  = ` '⊤'
+place x placeless  = ` "⊤"
 
 
 ` c     ⊗pl δ = ` c
@@ -189,7 +189,7 @@ a type rule is just attempting to match the subject pattern.
 record TypeRule : Set where
   field
     subject   : Pattern 0
-    premises  : Σ[ p' ∈ Pattern 0 ] Prems (` '⊤') subject p'
+    premises  : Σ[ p' ∈ Pattern 0 ] Prems (` "⊤") subject p'
 open TypeRule
 
 match-typerule : (rule : TypeRule)  →
@@ -209,7 +209,7 @@ Matching a Universe rule involves matching the input only.
 record UnivRule : Set where
   field
     input     :  Pattern 0
-    premises  :  Σ[ p' ∈ Pattern 0 ] Prems input (` '⊤') p'
+    premises  :  Σ[ p' ∈ Pattern 0 ] Prems input (` "⊤") p'
 open UnivRule
 
 match-univrule  :  (rule : UnivRule)  →

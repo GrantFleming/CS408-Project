@@ -20,7 +20,7 @@ open Pattern using (Pattern; _-Env; _∙_; thing; `; bind; _‼_; _-penv_; _⊗_
 open import Expression using (toTerm)
 open import Data.Unit using (⊤; tt)
 open import Data.Product using (_,_)
-open import Data.Char using (_==_; show)
+open import Data.String using (_==_)
 open import Data.Bool using (true; false)
 open import Data.Product using (_×_; proj₁; proj₂)
 open import Thinning using (_⟨term_)
@@ -130,7 +130,7 @@ _    ≡v _     = eqfail
 \hide{
 \begin{code}
 _≡ᵗ_ {const} (` x)    (` x₁) with x == x₁
-... | false = fail ("Equivalence failure: " ++ show x ++ " ≠ " ++ show x₁)
+... | false = fail ("Equivalence failure: " ++ x ++ " ≠ " ++ x₁)
 ... | true  = succeed tt
 _≡ᵗ_ {const} (x ∙ x₁) (x₂ ∙ x₃) = do
                                     _ ← x  ≡ᵗ x₂

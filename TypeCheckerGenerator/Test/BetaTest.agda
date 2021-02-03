@@ -22,7 +22,7 @@ module βredtests where
   test1 : Failable (Term compu 0)
   test1 = reduce betarules (lam (~ ze)) (α ⇨ α) a
   
-  _ : test1 ≡ succeed (` 'a' ∷ ` 'α')
+  _ : test1 ≡ succeed (a ∷ α)
   _ = refl
   
   -- function as input
@@ -79,7 +79,7 @@ module normtests where
   test1 : Term const 0
   test1 = normalize betarules (infer rules) ε (thunk (app (lam (~ ze) ∷ (α ⇨ α)) a))
 
-  _ : test1 ≡ ` 'a'
+  _ : test1 ≡ a
   _ = refl
 
   -- should reduce multiple nested eliminations

@@ -131,8 +131,7 @@ normalize : List β-rule →
 normalize rs infer = norm
   where
     norm : Context γ → Term d γ → Term const γ
-    -- to do: change '⊤' to "unknown" ...
-    norm {d = const} Γ (bind t)   = bind (norm (Γ -, ` '⊤' ) t)
+    norm {d = const} Γ (bind t)   = bind (norm (Γ -, ` "unknown" ) t)
     norm {d = compu} Γ (elim t e) with norm Γ t | norm Γ e
     ... | t' | e' with infer Γ t
     ... | fail m         = thunk (elim t e')

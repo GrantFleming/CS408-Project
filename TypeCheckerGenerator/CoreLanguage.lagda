@@ -8,8 +8,8 @@ module CoreLanguage where
 
 \begin{code}
 open import Data.Nat using (ℕ; suc; zero)
-open import Data.Char using (Char)
-open import Data.String
+open import Data.String using (String; _++_)
+open import Function using (id)
 \end{code}
 
 \hide{
@@ -80,7 +80,7 @@ data Compu (γ : Scope) : Set
 
 \begin{code}
 data Const γ where
-  `      : Char → Const γ
+  `      : String → Const γ
   _∙_    : Const γ → Const γ → Const γ
   bind   : Const (suc γ) → Const γ
   thunk  : Compu γ → Const γ
@@ -93,8 +93,8 @@ data Compu γ where
 data Dir : Set where const compu : Dir
 
 Term : Dir → Scoped
-Term const γ  = Const γ
-Term compu γ  = Compu γ
+Term const  = Const
+Term compu  = Compu
 \end{code}
 
 This syntax gives us the means to represent atoms of original syntax
@@ -109,29 +109,32 @@ Note that blindly embedding synthesizable terms with 'thunk' is
 not always the best course of action \hl{why?}, in the case of an
 annotated term, we already have a suitable construction under the
 annotation. For convenience we provide a function to perform
-this embedding.
+this embedding and hence a function to take \emph{any} term to
+a construction.
 
+\hide{
+\begin{code}
+private
+  variable
+    d : Dir
+\end{code}
+}
 \begin{code}
 ↠ : Compu γ → Const γ
 ↠ (t ∷ T) = t
 ↠  x      = thunk x
+
+↠↠ : Term d γ → Const γ
+↠↠ {const} = id
+↠↠ {compu} = ↠
 \end{code}
 
 \hide{
 \begin{code}
 infixr 20 _∙_ 
-private
-  variable
-    d : Dir
-
--- TO DO, explain this
--- turn anything into a const
-↠↠ : Term d γ → Const γ
-↠↠ {const} t = t
-↠↠ {compu} t = ↠ t
 
 print : Term d γ → String
-print {const} (` x)      = fromChar x
+print {const} (` x)      = x
 print {const} (s ∙ t)    = print s ++ print t
 print {const} (bind x)   = "(" ++ print x ++ ")"
 print {const} (thunk x)  = "(_" ++ print x ++ "_)"
@@ -144,7 +147,7 @@ printrawvar ze     = "ze"
 printrawvar (su v) = "su " ++ printrawvar v
 
 printraw : Term d γ → String
-printraw {const} (` x)       = "(` '" ++ fromChar x ++ "')"
+printraw {const} (` x)       = "(` '" ++ x ++ "')"
 printraw {const} (s ∙ t)     = "(" ++ printraw s ++ " ∙ "  ++ printraw t ++ ")"
 printraw {const} (bind x)    = "(bind " ++ printraw x ++ ")"
 printraw {const} (thunk x)   = "(thunk " ++ printraw x ++ ")"

@@ -16,7 +16,7 @@ open import Thinning hiding (_++_)
 open import Substitution
 open import TermSubstitution
 open import Composition
-open import Data.Char using (Char)
+open import Data.String using (String)
 open import Data.Nat using (zero; suc; _+_)
 open import BwdVec
 \end{code}
@@ -56,7 +56,7 @@ data con (p : Pattern δ) (γ : Scope) : Set
 data com (p : Pattern δ) (γ : Scope) : Set
 
 data con p γ where
-  `      : Char → con p γ
+  `      : String → con p γ
   _∙_    : con p γ → con p γ → con p γ
   bind   : con p (suc γ) → con p γ
   thunk  : com p γ → con p γ

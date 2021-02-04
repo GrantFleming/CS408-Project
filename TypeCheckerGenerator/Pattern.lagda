@@ -19,6 +19,7 @@ open import Relation.Nullary using (does; _because_; proof; ofʸ)
 open import Relation.Binary.PropositionalEquality using (refl;  _≡_; cong; cong₂)
 open import Data.Nat using (zero; suc; _+_)
 open import Opening using (Openable)
+open import Function using (_∘_)
 \end{code}
 }
 
@@ -29,6 +30,7 @@ private
     δ : Scope
     γ : Scope
     γ' : Scope
+    d  : Dir
 \end{code}
 }
 
@@ -77,14 +79,16 @@ data _-Env {γ : Scope} : Pattern γ → Set where
   `      : {s : String} → (` s) -Env
   _∙_    : q -Env → r -Env → (q ∙ r) -Env
   bind   : t -Env → (bind t) -Env
-  thing  : {θ : δ ⊑ γ} → Term const δ → (place θ) -Env
+  thing  : {θ : δ ⊑ γ} → Const δ → (place θ) -Env
 \end{code}
 
 We define the opening of a pattern by recursing structurally and opening
 the thinnings of the places in the matter described in section \ref{sec:Opening}.
+We also provide means to map a function on terms over an environment.
 
 \begin{code}
 _⊗_ : Openable Pattern
+map : ∀ {δ'} → (∀ {δ} → Const δ → Const (δ' + δ)) → p -Env → (δ' ⊗ p) -Env
 \end{code}
 
 \hide{
@@ -94,6 +98,11 @@ _⊗_ : Openable Pattern
 γ ⊗ (s ∙ t)  = (γ ⊗ s) ∙ (γ ⊗ t)
 γ ⊗ (bind t) = bind (γ ⊗ t)
 γ ⊗ place θ  = place (ι {γ} ++ θ)
+
+map f `         = `
+map f (s ∙ t)   = map f s ∙ map f t
+map f (bind t)  = bind (map f t)
+map f (thing x) = thing (f x)
 
 -- opening a pattern by 0 is just the pattern
 open import Thinning using (ε; _O; _I)
@@ -117,7 +126,7 @@ scope, to a pattern in a potentially narrower scope and if it succeeds it
 returns an environment for the \emph{opened} pattern.
 
 \begin{code}
-match : Term const (δ + γ) → (p : Pattern γ) → Maybe ((δ ⊗ p) -Env)
+match : Const (δ + γ) → (p : Pattern γ) → Maybe ((δ ⊗ p) -Env)
 match  {γ = γ} t   (place {δ'} θ) with γ ≟ δ'
 ... | true because ofʸ refl = just (thing t)
 ... | false because _       = nothing
@@ -155,7 +164,7 @@ data svar : Pattern γ → Scope → Set where
   bind  : svar q δ → svar (bind q) δ
 
 
-_‼_ : svar p δ → (γ' ⊗ p) -Env → Term const (γ' + δ)
+_‼_ : svar p δ → (γ' ⊗ p) -Env → Const (γ' + δ)
 ⋆       ‼ thing x  = x
 (v ∙)   ‼ (p ∙ q)  = v ‼ p
 (∙ v)   ‼ (p ∙ q)  = v ‼ q
@@ -176,7 +185,9 @@ _-_       : (p : Pattern γ) → svar p δ → Pattern γ
 _-penv_   : p -Env → (ξ : svar p δ) → (p - ξ) -Env
 _⊗svar_   : (γ : Scope) → svar p δ → svar (γ ⊗ p) (γ + δ)
 _⊗var_    : Openable Var
-termFrom  : (p : Pattern γ) → (δ ⊗ p) -Env → Term const (δ + γ)
+_⊗term_   : Openable (Term d)
+_⊗penv_   : (γ : Scope) → p -Env → (γ ⊗ p) -Env
+termFrom  : (p : Pattern γ) → (δ ⊗ p) -Env → Const (δ + γ)
 \end{code}
 \hide{
 \begin{code}
@@ -197,6 +208,16 @@ thing x -penv ⋆     = `
 
 γ ⊗var ze = ze
 γ ⊗var su v = su (γ ⊗var v)
+
+_⊗term_ {const} γ (` x) = ` x
+_⊗term_ {const} γ (s ∙ t) = (γ ⊗term s) ∙ (γ ⊗term t)
+_⊗term_ {const} γ (bind t) = bind (γ ⊗term t)
+_⊗term_ {const} γ (thunk x) = thunk (γ ⊗term x)
+_⊗term_ {compu} γ (var x) = var (γ ⊗var x)
+_⊗term_ {compu} γ (elim t e) = elim (γ ⊗term t) (γ ⊗term e)
+_⊗term_ {compu} γ (t ∷ T) = (γ ⊗term t) ∷ (γ ⊗term T)
+
+_⊗penv_ γ  = map (γ ⊗term_)
 
 termFrom (` x) `              = ` x
 termFrom (p ∙ p₁) (e ∙ e₁)    = termFrom p e ∙ termFrom p₁ e₁

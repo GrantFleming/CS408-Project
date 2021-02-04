@@ -161,8 +161,6 @@ v ⟨var⊗  ε    = v
 v ⟨var⊗ (θ O) = su (v ⟨var⊗ θ)
 v ⟨var⊗ (θ I) = v ⟨var⊗ θ
 
-open import Relation.Binary.PropositionalEquality using (_≡_; refl)
-
 _⟨term_ {const} (` x)      θ  = ` x
 _⟨term_ {const} (s ∙ t)    θ  = (s ⟨term θ) ∙ (t ⟨term θ)
 _⟨term_ {const} (bind t)   θ  = bind (t ⟨term (θ I))

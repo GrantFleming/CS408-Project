@@ -17,12 +17,14 @@ open import BwdVec using (ε)
 open import Data.Product using (_,_)
 open import TypeChecker using (RuleSet; rs)
 open import Semantics renaming (β-rule to β-Rule)
+open import EtaRule using (η-Rule)
 open import BwdVec
 open β-Rule
 open ElimRule
 open TypeRule
 open UnivRule
 open ∋rule
+open η-Rule
 \end{code}
 
 We begin by introducing some combinators to construct our language terms
@@ -166,6 +168,12 @@ eliminator  app-βrule  =  place ι
 redTerm     app-βrule  =  ((∙ bind ⋆) ∙) / (ε -, (((∙ (∙ ⋆)) / ε) ∷ ((∙ ((⋆ ∙) ∙)) / ε)))
 redType     app-βrule  =  (∙ ((∙ ∙ ⋆) ∙)) / ε
 
+-- η rules
+
+lam-ηrule : η-Rule
+checkRule lam-ηrule = lam-rule
+eliminators lam-ηrule = ` ∙ (bind (Pattern.thing (thunk (var ze))))
+
 -- first lets get all our rules together:
 
 open import Data.List using (List; []; _∷_)
@@ -184,6 +192,9 @@ elimrules = app-rule ∷ []
 
 betarules : List β-Rule
 betarules = app-βrule ∷ []
+
+etarules : List η-Rule
+etarules = lam-ηrule ∷ []
 
 open import undefined
 rules : RuleSet

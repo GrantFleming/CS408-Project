@@ -122,4 +122,3 @@ module normtests where
   _ : test6 ≡ a
   _ = refl
 
-

@@ -110,7 +110,8 @@ not always the best course of action \hl{why?}, in the case of an
 annotated term, we already have a suitable construction under the
 annotation. For convenience we provide a function to perform
 this embedding and hence a function to take \emph{any} term to
-a construction.
+a construction and another to take any term to a computation so
+long as we know it's type.
 
 \hide{
 \begin{code}
@@ -127,6 +128,11 @@ private
 ↠↠ : Term d γ → Const γ
 ↠↠ {const} = id
 ↠↠ {compu} = ↠
+
+↞↞ : Term d γ → Const γ → Compu γ
+↞↞ {const} (thunk x) T  = x
+↞↞ {const}  t        T  = t ∷ T
+↞↞ {compu}  t        _  = t
 \end{code}
 
 \hide{

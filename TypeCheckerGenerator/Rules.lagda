@@ -12,15 +12,15 @@ module Rules where
 open import CoreLanguage
 open import Thinning using (_⊑_; ι; _++_)
 open import Pattern using (Pattern; svar; bind; _∙; ∙_; place; ⋆; _∙_;
-                           `; _-Env; match; _-_; _⊗_; _⊗svar_)
-open import Expression using (Expr; _⊗expr_)
-open import Data.Product using (_×_; _,_; proj₁; Σ-syntax)
+                           thing; `; _-Env; match; _-_; _⊗_; _⊗svar_)
+open import Expression using (Expr; _⊗expr_; toTerm; `)
+open import Data.Product using (_×_; _,_; proj₁; proj₂; Σ-syntax)
 open import Data.List using (List)
 open import Data.String using (String)
-open import Data.Nat using (ℕ; suc; _+_)
+open import Data.Nat using (ℕ; suc; zero; _+_)
 open import Data.Maybe using (Maybe; just; _>>=_)
 open import Relation.Binary.PropositionalEquality using (cong; sym;
-                                                         _≡_; refl)
+                                                         _≡_; refl; subst; _≢_)
 \end{code}
 }
 
@@ -31,6 +31,8 @@ private
     δ   : Scope
     δ'  : Scope
     γ   : Scope
+    γ'  : Scope
+    l   : Scope
     p   : Pattern δ
     p'  : Pattern γ
     pᵍ  : Pattern γ
@@ -38,9 +40,11 @@ private
     q`` : Pattern δ
     q   : Pattern δ
     q'  : Pattern δ
+    q`  : Pattern δ
     p₂  : Pattern γ
     q₁` : Pattern γ
     p₂` : Pattern γ
+    qᵍ  : Pattern γ
 \end{code}
 }
 
@@ -80,14 +84,14 @@ data Prem  (p : Pattern δ) (q : Pattern δ) (γ : Scope) :
 \end{code}
 \hide{
 \begin{code}
-helper : ∀ {δ'} (δ : Scope) → (q : Pattern γ) → (ξ : svar q δ') → (δ ⊗ q) - (δ ⊗svar ξ) ≡ δ ⊗ (q - ξ)
-helper δ (s ∙ t)  (ξ ∙)     = cong (λ x → Pattern._∙_ x (δ ⊗ t)) (helper δ s ξ) 
-helper δ (s ∙ t) (∙ ξ)      = cong (Pattern._∙_ (δ ⊗ s)) (helper δ t ξ)
-helper δ (bind q) (bind ξ)  = cong bind (helper δ q ξ)
-helper δ (place x) ⋆        = refl
+⊗eqiv : ∀ {δ'} (δ : Scope) → (q : Pattern γ) → (ξ : svar q δ') → (δ ⊗ q) - (δ ⊗svar ξ) ≡ δ ⊗ (q - ξ)
+⊗eqiv δ (s ∙ t)  (ξ ∙)     = cong (λ x → Pattern._∙_ x (δ ⊗ t)) (⊗eqiv δ s ξ) 
+⊗eqiv δ (s ∙ t) (∙ ξ)      = cong (Pattern._∙_ (δ ⊗ s)) (⊗eqiv δ t ξ)
+⊗eqiv δ (bind q) (bind ξ)  = cong bind (⊗eqiv δ q ξ)
+⊗eqiv δ (place x) ⋆        = refl
 
-⊗premise {q = q} δ (type ξ θ)     rewrite sym (helper δ q ξ) = type (δ ⊗svar ξ) (ι ++ θ)
-⊗premise {q = q} δ (T ∋' ξ [ θ ]) rewrite sym (helper δ q ξ) = (δ ⊗expr T) ∋' δ ⊗svar ξ [ ι ++ θ ]
+⊗premise {q = q} δ (type ξ θ)     rewrite sym (⊗eqiv δ q ξ) = type (δ ⊗svar ξ) (ι ++ θ)
+⊗premise {q = q} δ (T ∋' ξ [ θ ]) rewrite sym (⊗eqiv δ q ξ) = (δ ⊗expr T) ∋' δ ⊗svar ξ [ ι ++ θ ]
 ⊗premise δ (x ≡' x₁)      = (δ ⊗expr x) ≡' (δ ⊗expr x₁)
 ⊗premise δ (univ x)       = univ (δ ⊗expr x)
 ⊗premise δ (_⊢'_ {p` = p`} x prem) = (δ ⊗expr x) ⊢' ⊗premise δ prem
@@ -190,12 +194,11 @@ record TypeRule : Set where
   field
     subject   : Pattern 0
     premises  : Σ[ p' ∈ Pattern 0 ] Prems (` "⊤") subject p'
-open TypeRule
 
 match-typerule : (rule : TypeRule)  →
                  Term const γ       →
-                 Maybe ((γ ⊗ (subject rule)) -Env)
-match-typerule rule term = match term (subject rule)
+                 Maybe ((γ ⊗ (TypeRule.subject rule)) -Env)
+match-typerule rule term = match term (TypeRule.subject rule)
 \end{code}
 
 The Universe rule work in much the same way except that the premise
@@ -210,12 +213,11 @@ record UnivRule : Set where
   field
     input     :  Pattern 0
     premises  :  Σ[ p' ∈ Pattern 0 ] Prems input (` "⊤") p'
-open UnivRule
 
 match-univrule  :  (rule : UnivRule)  →
                    Term const γ       →
-                   Maybe ((γ ⊗ (input rule)) -Env)
-match-univrule rule term = match term (input rule)
+                   Maybe ((γ ⊗ (UnivRule.input rule)) -Env)
+match-univrule rule term = match term (UnivRule.input rule)
 \end{code}}
 
 The Type-Checking rule (∋) involves both an input and a subject. For
@@ -226,6 +228,60 @@ both the input and the subject and so, if successful, returns a
 pair of environments.
 
 \begin{code}
+open import Data.Bool using (Bool; true; false)
+open import Data.Empty
+open import Relation.Nullary using (¬_; Dec; yes; no; _because_; ofʸ; ofⁿ)
+open import Thinning using (_O)
+open import Data.Nat using (_≟_)
+open import Pattern using (_‼_; _-penv_)
+open import Data.Sum using (_⊎_; inj₁; inj₂)
+open import Function using (_∘_)
+
+_is_ : (v : svar p γ) → (ξ : svar p γ) → Dec (v ≡ ξ)
+⋆ is ⋆ = yes refl
+(v ∙) is (ξ ∙) with v is ξ
+... | yes p = yes (cong _∙ p)
+... | no ¬p = no λ { refl → ¬p refl}
+(v ∙) is (∙ ξ) = no λ ()
+(∙ v) is (ξ ∙) = no λ ()
+(∙ v) is (∙ ξ) with v is ξ
+... | yes p = yes (cong ∙_ p)
+... | no ¬p = no (λ { refl → ¬p refl })
+bind v is bind ξ with v is ξ
+... | yes p = yes (cong bind p)
+... | no ¬p = no (λ { refl → ¬p refl})
+
+-svar : (v : svar p γ) → (ξ : svar p δ) →
+          γ ≢ δ ⊎ Σ[ eq ∈ γ ≡ δ ] subst (svar p) eq v ≢ ξ
+          → svar (p - ξ) γ
+-svar ⋆ ⋆ (inj₁ x) = ⊥-elim (x refl)
+-svar ⋆ ⋆ (inj₂ (refl , neq)) = ⊥-elim (neq refl)
+-svar (v ∙) (ξ ∙) (inj₁ x) = (-svar v ξ (inj₁ x)) ∙
+-svar (v ∙) (ξ ∙) (inj₂ (refl , neq)) = (-svar v ξ (inj₂ (refl , neq ∘ (cong _∙)))) ∙
+-svar (v ∙)    (∙ ξ)    eqs = v ∙
+-svar (∙ v)    (ξ ∙)    eqs = ∙ v
+-svar (∙ v) (∙ ξ) (inj₁ x) = ∙ -svar v ξ (inj₁ x)
+-svar (∙ v) (∙ ξ) (inj₂ (refl , neq)) = ∙ -svar v ξ (inj₂ (refl , neq ∘ cong (∙_)))
+-svar (bind v) (bind ξ) (inj₁ x) = bind (-svar v ξ (inj₁ x))
+-svar (bind v) (bind ξ) (inj₂ (refl , neq)) = bind (-svar v ξ (inj₂ (refl , neq ∘ cong bind)))
+
+binds : ∀ {γ} → (n : ℕ) → Pattern (n + γ) → Pattern γ
+binds zero p = p
+binds (suc n) p = bind (binds n p)
+
+bindsT : ∀ {γ} → (n : ℕ) → Const (n + γ) → Const γ
+bindsT zero t = t
+bindsT (suc n) t = bind (bindsT n t)
+
+-- why can't the last -Env work out γ by itself
+bindsenv : ∀ {n}{p : Pattern (n + γ)} → p -Env →  _-Env {γ = γ} (binds n p)
+bindsenv {n = zero} env  = env
+bindsenv {n = suc n} env = bind (bindsenv {n = n} env)
+
+proof : ∀ {n γ : Scope}{p : Pattern (suc (n + γ))} → binds {γ} n (bind p) ≡ bind (binds n p)
+proof {n = zero}  = refl
+proof {n = suc n} = cong bind proof
+
 record ∋rule : Set where
   field
     subject  : Pattern 0
@@ -234,17 +290,48 @@ record ∋rule : Set where
 open ∋rule
 
 match-∋rule  :  (rule : ∋rule)  →
-                Term const γ    →
-                Term const γ    →
-                  (Maybe
-                    (((γ ⊗ (input rule))   -Env)
-                         ×
-                    ((γ ⊗ (subject rule))  -Env)))
-match-∋rule rule Tterm tterm
+                (type term : Term const γ) →
+                (Maybe
+                  (((γ ⊗ (input rule))   -Env)
+                       ×
+                   ((γ ⊗ (subject rule))  -Env)))
+match-∋rule rule ty tm
   = do
-      inenv   ←  match Tterm (input rule)
-      subenv  ←  match tterm (subject rule)
-      just (inenv , subenv)
+      tyenv   ←  match ty (input rule)
+      tmenv  ←  match tm (subject rule)
+      just (tyenv , tmenv)
+
+typeOf : (r : ∋rule) → svar (γ ⊗ subject r) δ → (γ ⊗ input r) -Env → ((γ ⊗ (subject r))  -Env) → Const γ
+typeOf {γ = γ'} r v ienv senv = helper v ienv senv (⊗premises γ' (proj₂ (premises r)))
+  where
+    lem : ∀ {n}{δ'}{p q q' p'' : Pattern δ}{p' : Pattern (n + δ)} →
+          svar q δ' → p -Env → q -Env → Prem p q (n + δ) p' q'  → Prems (p ∙ (binds n p')) q' p'' → Const δ
+          
+    helper : ∀ {δ'}{p q p' : Pattern δ} → svar q δ' → p -Env → q -Env → Prems p q p' → Const δ
+
+    lem {δ' = δ''} v env qenv (type {δ' = δ'} ξ θ) prems with δ'' ≟ δ'
+    ... | no ¬p     = helper (-svar v ξ (inj₁ ¬p)) (env ∙ bindsenv (thing (ξ ‼ qenv))) (qenv -penv ξ) prems 
+    ... | yes refl  with v is ξ
+    ... | no ¬p = helper (-svar v ξ (inj₂ (refl , ¬p))) (env ∙ bindsenv (thing (ξ ‼ qenv))) (qenv -penv ξ) prems
+    ... | yes p = ` "Type"
+    lem {n = n} {δ' = δ''} v env qenv (_∋'_[_] {δ' = δ'} T ξ θ) prems with δ'' ≟ δ'
+    ... | no ¬p = helper (-svar v ξ (inj₁ ¬p)) (env ∙ bindsenv (thing (ξ ‼ qenv))) (qenv -penv ξ) prems
+    ... | yes refl with v is ξ
+    ... | no ¬p = helper (-svar v ξ (inj₂ (refl , ¬p))) (env ∙ bindsenv (thing (ξ ‼ qenv))) (qenv -penv ξ) prems
+    ... | yes p = bindsT n (toTerm env T)
+    lem v env qenv (x ≡' x₁) prems  = helper v (env ∙ bindsenv `) qenv prems
+    lem v env qenv (univ x) prems   = helper v (env ∙ bindsenv `) qenv prems
+    lem {δ = δ} {n = n} {p = p} {q' = q'} {p'' = p''} v env qenv (_⊢'_ {p` = p`} x prem) prems
+      rewrite proof {n = n} {γ = δ} {p = p`}
+      = lem v env qenv prem prems
+    helper v env qenv (ε x) = ⊥-elim (lm v x)
+      where
+        lm : svar p γ → p Placeless → ⊥
+        lm ⋆ ()
+        lm (v ∙) (l ∙ _) = lm v l
+        lm (∙ v) (_ ∙ r) = lm v r
+        lm (bind v) (bind t) = lm v t
+    helper v env qenv (p ⇉ prems) = lem v env qenv p prems
 \end{code}
 
 Our rules for elimination work slightly differently from those which operate on
@@ -292,4 +379,5 @@ match-erule rule T s = do
                          just (T-env , s-env)
                        where
                          open ElimRule
+
 \end{code}

@@ -111,6 +111,7 @@ open import Thinning using (ε; _O; _I)
 ⊗-identityʳ {p = p ∙ p₁}  = cong₂ _∙_ ⊗-identityʳ ⊗-identityʳ
 ⊗-identityʳ {p = bind p}  = cong bind ⊗-identityʳ
 ⊗-identityʳ {p = place θ} rewrite ++-identityʳ θ = refl
+{-# REWRITE ⊗-identityʳ #-}
 \end{code}
 }
 

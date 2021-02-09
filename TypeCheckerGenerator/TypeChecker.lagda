@@ -7,16 +7,13 @@ module TypeChecker where
 \end{code}
 
 \begin{code}
-open import Pattern using (⊗-identityʳ)
-{-# REWRITE ⊗-identityʳ #-} 
-
 open import CoreLanguage
 open import Failable
 open import Data.Maybe using (just; nothing)
 open import Context using (Context; _‼V_) renaming (_,_ to _-,_)
 open import Data.List using (List; []; _∷_)
 open import Rules
-open Pattern using (Pattern; _-Env; _∙_; thing; `; bind; _‼_; _-penv_; _⊗_; termFrom)
+open import Pattern using (Pattern; _-Env; _∙_; thing; `; bind; _‼_; _-penv_; _⊗_; termFrom)
 open import Expression using (toTerm)
 open import Data.Unit using (⊤; tt)
 open import Data.Product using (_,_)

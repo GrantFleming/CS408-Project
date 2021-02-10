@@ -13,8 +13,6 @@
 }
 \hide{
 \begin{code}%
-\>[0]\AgdaComment{--open import Pattern using (Pattern)}\<%
-\\
 \>[0]\AgdaKeyword{open}\AgdaSpace{}%
 \AgdaKeyword{import}\AgdaSpace{}%
 \AgdaModule{CoreLanguage}\<%
@@ -23,27 +21,20 @@
 \AgdaKeyword{import}\AgdaSpace{}%
 \AgdaModule{Rules}\AgdaSpace{}%
 \AgdaKeyword{using}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaRecord{∋rule}\AgdaSymbol{;}\AgdaSpace{}%
-\AgdaFunction{match-∋rule}\AgdaSymbol{)}\<%
+\AgdaSymbol{(}\AgdaRecord{∋rule}\AgdaSymbol{)}\<%
 \\
 \>[0]\AgdaKeyword{open}\AgdaSpace{}%
 \AgdaKeyword{import}\AgdaSpace{}%
 \AgdaModule{Pattern}\AgdaSpace{}%
 \AgdaKeyword{using}%
-\>[15I]\AgdaSymbol{(}\AgdaDatatype{Pattern}\AgdaSymbol{;}\AgdaSpace{}%
+\>[14I]\AgdaSymbol{(}\AgdaDatatype{Pattern}\AgdaSymbol{;}\AgdaSpace{}%
 \AgdaOperator{\AgdaDatatype{\AgdaUnderscore{}-Env}}\AgdaSymbol{;}\AgdaSpace{}%
 \AgdaFunction{termFrom}\AgdaSymbol{;}\AgdaSpace{}%
-\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}⊗\AgdaUnderscore{}}}\AgdaSymbol{;}\AgdaSpace{}%
-\AgdaInductiveConstructor{`}\AgdaSymbol{;}\AgdaSpace{}%
-\AgdaOperator{\AgdaInductiveConstructor{\AgdaUnderscore{}∙\AgdaUnderscore{}}}\AgdaSymbol{;}\AgdaSpace{}%
-\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}⊗penv\AgdaUnderscore{}}}\AgdaSymbol{;}\AgdaSpace{}%
-\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}⊗term\AgdaUnderscore{}}}\AgdaSymbol{;}\<%
+\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}⊗\AgdaUnderscore{}}}\AgdaSymbol{;}\<%
 \\
-\>[15I][@{}l@{\AgdaIndent{0}}]%
-\>[27]\AgdaInductiveConstructor{bind}\AgdaSymbol{;}\AgdaSpace{}%
-\AgdaInductiveConstructor{place}\AgdaSymbol{;}\AgdaSpace{}%
+\>[14I][@{}l@{\AgdaIndent{0}}]%
+\>[27]\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}⊗term\AgdaUnderscore{}}}\AgdaSymbol{;}\AgdaSpace{}%
 \AgdaFunction{match}\AgdaSymbol{;}\AgdaSpace{}%
-\AgdaInductiveConstructor{thing}\AgdaSymbol{;}\AgdaSpace{}%
 \AgdaFunction{map}\AgdaSymbol{)}\<%
 \\
 \>[0]\AgdaKeyword{open}\AgdaSpace{}%
@@ -51,8 +42,6 @@
 \AgdaModule{Thinning}\AgdaSpace{}%
 \AgdaKeyword{using}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}⟨term\AgdaUnderscore{}}}\AgdaSymbol{;}\AgdaSpace{}%
-\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}\textasciicircum{}term}}\AgdaSymbol{;}\AgdaSpace{}%
-\AgdaOperator{\AgdaDatatype{\AgdaUnderscore{}⊑\AgdaUnderscore{}}}\AgdaSymbol{;}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{\AgdaUnderscore{}◃\AgdaUnderscore{}}}\AgdaSymbol{)}\<%
 \\
 \>[0]\AgdaKeyword{open}\AgdaSpace{}%
@@ -65,13 +54,8 @@
 \AgdaKeyword{import}\AgdaSpace{}%
 \AgdaModule{Data.Product}\AgdaSpace{}%
 \AgdaKeyword{using}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaField{proj₂}\AgdaSymbol{)}\<%
-\\
-\>[0]\AgdaKeyword{open}\AgdaSpace{}%
-\AgdaKeyword{import}\AgdaSpace{}%
-\AgdaModule{Relation.Binary.PropositionalEquality}\AgdaSpace{}%
-\AgdaKeyword{using}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaOperator{\AgdaDatatype{\AgdaUnderscore{}≡\AgdaUnderscore{}}}\AgdaSymbol{)}\<%
+\AgdaSymbol{(}\AgdaFunction{Σ-syntax}\AgdaSymbol{;}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{\AgdaUnderscore{},\AgdaUnderscore{}}}\AgdaSymbol{)}\<%
 \\
 \>[0]\AgdaKeyword{open}\AgdaSpace{}%
 \AgdaKeyword{import}\AgdaSpace{}%
@@ -79,8 +63,16 @@
 \AgdaKeyword{using}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}∘\AgdaUnderscore{}}}\AgdaSymbol{)}\<%
 \\
-\>[0]\AgdaKeyword{import}\AgdaSpace{}%
-\AgdaModule{Data.Maybe}\<%
+\>[0]\AgdaKeyword{open}\AgdaSpace{}%
+\AgdaKeyword{import}\AgdaSpace{}%
+\AgdaModule{Data.Maybe}\AgdaSpace{}%
+\AgdaKeyword{using}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{just}\AgdaSymbol{;}\AgdaSpace{}%
+\AgdaInductiveConstructor{nothing}\AgdaSymbol{)}\<%
+\\
+\>[0]\AgdaKeyword{open}\AgdaSpace{}%
+\AgdaKeyword{import}\AgdaSpace{}%
+\AgdaModule{Failable}\<%
 \\
 \>[0]\AgdaKeyword{open}\AgdaSpace{}%
 \AgdaKeyword{import}\AgdaSpace{}%
@@ -94,16 +86,6 @@
 \AgdaModule{Data.String}\AgdaSpace{}%
 \AgdaKeyword{using}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}++\AgdaUnderscore{}}}\AgdaSymbol{)}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaComment{-- remove me:}\<%
-\\
-\>[0]\AgdaKeyword{open}\AgdaSpace{}%
-\AgdaKeyword{import}\AgdaSpace{}%
-\AgdaModule{Data.Nat}\AgdaSpace{}%
-\AgdaKeyword{using}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaOperator{\AgdaPrimitive{\AgdaUnderscore{}+\AgdaUnderscore{}}}\AgdaSymbol{)}\<%
 \end{code}
 }
 \hide{
@@ -122,13 +104,23 @@
 \>[4]\AgdaGeneralizable{γ}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaFunction{Scope}\<%
+\\
+%
+\>[4]\AgdaGeneralizable{d}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaDatatype{Dir}\<%
+\\
+%
+\>[4]\AgdaGeneralizable{p}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaDatatype{Pattern}\AgdaSpace{}%
+\AgdaGeneralizable{γ}\<%
 \end{code}
 }
 
 Later we will show how we might fully normalize a term using a technique
 known as normalization by evaluation. In order to do this, we will find
-that we require the ability to perform $η$-expansion on our language
-constructions.
+that we require the ability to perform $η$-expansion.
 
 In a future draft of this work, we may include a way that we can
 synthesize such rules from other information that is given. However,
@@ -138,9 +130,9 @@ the expansion according to such a rule.
 In our η-rule, we store only the eliminator for each place in the pattern,
 then to generate the eta expanded form, we map the elimination of the target
 over this environment of eliminators to get the full eliminations that
-go in each place in the pattern. This is very straightforward as a concept
-but we have to fix-up out types a little in order to satisfy the
-well-scopedness.
+are destined for each place in the pattern. This is very straightforward
+as a concept but we have to fix-up out types a little in order to convince
+Agda of the well-scopedness.
 
 \begin{code}%
 \>[0]\AgdaKeyword{record}\AgdaSpace{}%
@@ -154,38 +146,24 @@ well-scopedness.
 \AgdaModule{∋rule}\<%
 \\
 %
-\>[2]\AgdaKeyword{open}\AgdaSpace{}%
-\AgdaModule{Data.Maybe}\AgdaSpace{}%
-\AgdaKeyword{using}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaDatatype{Maybe}\AgdaSymbol{;}\AgdaSpace{}%
-\AgdaInductiveConstructor{just}\AgdaSymbol{;}\AgdaSpace{}%
-\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}>>=\AgdaUnderscore{}}}\AgdaSymbol{)}\<%
-\\
-%
 \\[\AgdaEmptyExtraSkip]%
 %
 \>[2]\AgdaKeyword{field}\<%
 \\
 \>[2][@{}l@{\AgdaIndent{0}}]%
 \>[4]\AgdaField{checkRule}%
-\>[16]\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaRecord{∋rule}\<%
+\>[17]\AgdaSymbol{:}%
+\>[20]\AgdaRecord{∋rule}\<%
 \\
 %
-\>[4]\AgdaField{eliminators}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaField{subject}\AgdaSpace{}%
+\>[4]\AgdaField{eliminators}%
+\>[17]\AgdaSymbol{:}%
+\>[20]\AgdaField{subject}\AgdaSpace{}%
 \AgdaField{checkRule}\AgdaSpace{}%
 \AgdaOperator{\AgdaDatatype{-Env}}\<%
 \\
 %
 \\[\AgdaEmptyExtraSkip]%
-%
-\>[2]\AgdaComment{-- perhaps in we don't actually need the environment returned the}\<%
-\\
-%
-\>[2]\AgdaComment{-- way we use this, but it is left for now just incase}\<%
-\\
 %
 \>[2]\AgdaFunction{η-match}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
@@ -194,7 +172,7 @@ well-scopedness.
 \AgdaDatatype{Const}\AgdaSpace{}%
 \AgdaGeneralizable{γ}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaSymbol{→}\AgdaSpace{}%
-\AgdaDatatype{Maybe}\AgdaSpace{}%
+\AgdaDatatype{Failable}\AgdaSpace{}%
 \AgdaSymbol{((}\AgdaGeneralizable{γ}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{⊗}}\AgdaSpace{}%
 \AgdaField{input}\AgdaSpace{}%
@@ -204,11 +182,28 @@ well-scopedness.
 %
 \>[2]\AgdaFunction{η-match}\AgdaSpace{}%
 \AgdaBound{ty}\AgdaSpace{}%
-\AgdaSymbol{=}\AgdaSpace{}%
-\AgdaFunction{match}\AgdaSpace{}%
+\AgdaKeyword{with}%
+\>[19]\AgdaFunction{match}\AgdaSpace{}%
 \AgdaBound{ty}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaField{input}\AgdaSpace{}%
 \AgdaField{checkRule}\AgdaSymbol{)}\<%
+\\
+%
+\>[2]\AgdaSymbol{...}\AgdaSpace{}%
+\AgdaSymbol{|}\AgdaSpace{}%
+\AgdaInductiveConstructor{nothing}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{fail}\AgdaSpace{}%
+\AgdaString{"No match."}\<%
+\\
+%
+\>[2]\AgdaSymbol{...}\AgdaSpace{}%
+\AgdaSymbol{|}\AgdaSpace{}%
+\AgdaInductiveConstructor{just}\AgdaSpace{}%
+\AgdaBound{i}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{succeed}\AgdaSpace{}%
+\AgdaBound{i}\<%
 \\
 %
 \\[\AgdaEmptyExtraSkip]%
@@ -235,17 +230,17 @@ well-scopedness.
 \\
 \>[2][@{}l@{\AgdaIndent{0}}]%
 \>[4]\AgdaSymbol{=}%
-\>[116I]\AgdaFunction{map}\<%
+\>[113I]\AgdaFunction{map}\<%
 \\
-\>[116I][@{}l@{\AgdaIndent{0}}]%
+\>[113I][@{}l@{\AgdaIndent{0}}]%
 \>[8]\AgdaSymbol{(λ}\AgdaSpace{}%
 \AgdaSymbol{\{}\AgdaBound{δ}\AgdaSymbol{\}}\AgdaSpace{}%
 \AgdaBound{const}\AgdaSpace{}%
 \AgdaSymbol{→}\AgdaSpace{}%
 \AgdaInductiveConstructor{thunk}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{elim}\AgdaSpace{}%
-\AgdaSymbol{((}\AgdaBound{target}\AgdaSpace{}%
-\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaSymbol{((}\AgdaFunction{↞↞}\AgdaSpace{}%
+\AgdaBound{target}\AgdaSpace{}%
 \AgdaBound{type}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{⟨term}}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaBound{γ}\AgdaSpace{}%
@@ -264,7 +259,7 @@ well-scopedness.
 \>[2]\AgdaFunction{η-expand}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaBound{type}\AgdaSpace{}%
-\AgdaBound{term}\AgdaSpace{}%
+\AgdaBound{target}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaDatatype{Const}\AgdaSpace{}%
 \AgdaGeneralizable{γ}\AgdaSymbol{)}\AgdaSpace{}%
@@ -274,70 +269,50 @@ well-scopedness.
 \\
 %
 \>[2]\AgdaFunction{η-expand}\AgdaSpace{}%
+\AgdaBound{ty}\AgdaSpace{}%
+\AgdaBound{tm}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaFunction{termFrom}\AgdaSpace{}%
+\AgdaFunction{termFrom}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaField{subject}\AgdaSpace{}%
 \AgdaField{checkRule}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaOperator{\AgdaFunction{∘\AgdaUnderscore{}}}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaOperator{\AgdaFunction{∘}}\AgdaSpace{}%
-\AgdaFunction{eliminations}\<%
-\\
+\AgdaSymbol{(}\AgdaFunction{eliminations}\AgdaSpace{}%
+\AgdaBound{ty}\AgdaSpace{}%
+\AgdaBound{tm}\AgdaSymbol{)}\<%
+\end{code}
+\hide{
+\begin{code}%
 \>[0]\AgdaKeyword{open}\AgdaSpace{}%
 \AgdaModule{η-Rule}\<%
-\end{code}
-
-We can now provide a function to expand a term given a list of η rules, so
-long as we are able to provide the terms type.
-
-\hide{
-\begin{code}%
-\>[0]\AgdaKeyword{open}\AgdaSpace{}%
-\AgdaKeyword{import}\AgdaSpace{}%
-\AgdaModule{Failable}\<%
 \\
-\>[0]\AgdaKeyword{open}\AgdaSpace{}%
-\AgdaKeyword{import}\AgdaSpace{}%
-\AgdaModule{Data.Maybe}\AgdaSpace{}%
-\AgdaKeyword{using}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaInductiveConstructor{just}\AgdaSymbol{;}\AgdaSpace{}%
-\AgdaInductiveConstructor{nothing}\AgdaSymbol{)}\<%
-\end{code}
-}
-\begin{code}%
-\>[0]\AgdaFunction{expand}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaDatatype{List}\AgdaSpace{}%
-\AgdaRecord{η-Rule}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaBound{tm}\AgdaSpace{}%
-\AgdaBound{ty}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaDatatype{Const}\AgdaSpace{}%
-\AgdaGeneralizable{γ}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaDatatype{Failable}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaDatatype{Const}\AgdaSpace{}%
-\AgdaGeneralizable{γ}\AgdaSymbol{)}\<%
-\end{code}
-\hide{
-\begin{code}%
 \>[0]\AgdaFunction{findRule}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaDatatype{List}\AgdaSpace{}%
+\AgdaSymbol{:}%
+\>[149I]\AgdaDatatype{List}\AgdaSpace{}%
 \AgdaRecord{η-Rule}\AgdaSpace{}%
 \AgdaSymbol{→}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaBound{ty}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaDatatype{Const}\AgdaSpace{}%
 \AgdaGeneralizable{γ}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaDatatype{Failable}\AgdaSpace{}%
-\AgdaRecord{η-Rule}\<%
+\AgdaSymbol{→}\<%
+\\
+\>[.][@{}l@{}]\<[149I]%
+\>[11]\AgdaDatatype{Failable}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaFunction{Σ[}\AgdaSpace{}%
+\AgdaBound{r}\AgdaSpace{}%
+\AgdaFunction{∈}\AgdaSpace{}%
+\AgdaRecord{η-Rule}\AgdaSpace{}%
+\AgdaFunction{]}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaGeneralizable{γ}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{⊗}}\AgdaSpace{}%
+\AgdaField{∋rule.input}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaField{checkRule}\AgdaSpace{}%
+\AgdaBound{r}\AgdaSymbol{))}\AgdaSpace{}%
+\AgdaOperator{\AgdaDatatype{-Env}}\AgdaSymbol{)}\<%
 \\
 \>[0]\AgdaFunction{findRule}\AgdaSpace{}%
 \AgdaInductiveConstructor{[]}\AgdaSpace{}%
-\AgdaBound{ty}\AgdaSpace{}%
-\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaBound{ty}%
+\>[16]\AgdaSymbol{=}\AgdaSpace{}%
 \AgdaInductiveConstructor{fail}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaString{"no η-rule match for: "}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{++}}\AgdaSpace{}%
@@ -356,7 +331,8 @@ long as we are able to provide the terms type.
 \\
 \>[0]\AgdaSymbol{...}\AgdaSpace{}%
 \AgdaSymbol{|}\AgdaSpace{}%
-\AgdaInductiveConstructor{nothing}\AgdaSpace{}%
+\AgdaInductiveConstructor{fail}\AgdaSpace{}%
+\AgdaBound{x}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
 \AgdaFunction{findRule}\AgdaSpace{}%
 \AgdaBound{rs}\AgdaSpace{}%
@@ -364,35 +340,12 @@ long as we are able to provide the terms type.
 \\
 \>[0]\AgdaSymbol{...}\AgdaSpace{}%
 \AgdaSymbol{|}\AgdaSpace{}%
-\AgdaInductiveConstructor{just}\AgdaSpace{}%
-\AgdaBound{x}\AgdaSpace{}%
+\AgdaInductiveConstructor{succeed}\AgdaSpace{}%
+\AgdaBound{i}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
 \AgdaInductiveConstructor{succeed}\AgdaSpace{}%
-\AgdaBound{r}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
-%
-\\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaFunction{expand}\AgdaSpace{}%
-\AgdaBound{rs}\AgdaSpace{}%
-\AgdaBound{tm}\AgdaSpace{}%
-\AgdaBound{ty}\AgdaSpace{}%
-\AgdaSymbol{=}%
-\>[212I]\AgdaKeyword{do}\<%
-\\
-\>[212I][@{}l@{\AgdaIndent{0}}]%
-\>[20]\AgdaBound{r}\AgdaSpace{}%
-\AgdaOperator{\AgdaFunction{←}}\AgdaSpace{}%
-\AgdaFunction{findRule}\AgdaSpace{}%
-\AgdaBound{rs}\AgdaSpace{}%
-\AgdaBound{ty}\<%
-\\
-%
-\>[20]\AgdaInductiveConstructor{succeed}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaFunction{η-expand}\AgdaSpace{}%
-\AgdaBound{r}\AgdaSpace{}%
-\AgdaBound{ty}\AgdaSpace{}%
-\AgdaBound{tm}\AgdaSymbol{)}\<%
+\AgdaSymbol{(}\AgdaBound{r}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaBound{i}\AgdaSymbol{)}\<%
 \end{code}
 }

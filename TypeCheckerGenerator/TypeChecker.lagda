@@ -23,6 +23,7 @@ open import Data.Product using (_×_; proj₁; proj₂)
 open import Thinning using (_⟨term_)
 open import Data.String using (_++_)
 open import Semantics
+open import EtaRule using (η-Rule)
 \end{code}
 }
 \hide{
@@ -59,6 +60,7 @@ data RuleSet : Set where
        List ∋rule     →
        List ElimRule  →
        List β-rule    →
+       List η-Rule    →
        RuleSet
 \end{code}
 
@@ -105,9 +107,9 @@ elim-synth : Context γ                    →
 We define a notion of equivalence of terms that we will need in order
 to embed inferrable terms into checkable terms. This process involves
 synthesizing a type for a term before ascertaining if it is equivalent
-to the type we are checking the term at. For now, this is a
-purely syntactic action. Later when we implement operational semantics
-we will involve a more sophisticated notion here.
+to the type we are checking the term at. This is a purely syntactic action.
+If terms are to have their normal forms compared then they must be
+normalized before checking their equivalence here.
 
 \begin{code}
 _≡v_ : Var γ → Var γ → Failable ⊤
@@ -221,16 +223,18 @@ check-premise Γ rules penv qenv (T ∋' ξ [ θ ])
 \end{code}
 \hide{
 \begin{code}
-check-premise {q = q} Γ rules@(rs t u ∋ e β) penv qenv (type ξ θ)
+check-premise {q = q} Γ rules@(rs t u ∋ e β η) penv qenv (type ξ θ)
   = do
     _ ← type-check  Γ rules t ((ξ ‼ qenv) ⟨term θ)
     succeed (thing (ξ ‼ qenv) , (qenv -penv ξ))
 
-check-premise Γ rules penv qenv (x ≡' x')
+check-premise Γ rules@(rs t u ∋ e β η) penv qenv (x ≡' x')
   = do
-    _ ← toTerm {γ = 0}  penv x ≡ᵗ toTerm {γ = 0} penv x'
+    _ ← normalize η β (infer rules) Γ (` "unknown") (toTerm penv x)
+      ≡ᵗ
+      normalize η β (infer rules) Γ (` "unknown") (toTerm penv x')
     succeed (` , qenv)
-check-premise Γ rules@(rs t u ∋ e β) penv qenv (univ x)
+check-premise Γ rules@(rs t u ∋ e β η) penv qenv (univ x)
   = do
     _ ← univ-check Γ rules u (toTerm {γ = 0} penv x)
     succeed (` , qenv)
@@ -292,7 +296,7 @@ run-∋rule  :  Context γ                    →
               ((γ ⊗ (input rule)) -Env)    →
               ((γ ⊗ (subject rule)) -Env)  →
               Failable ⊤
-run-∋rule {γ} Γ rules@(rs t u ∋ e β) rule ienv senv
+run-∋rule {γ} Γ rules@(rs t u ∋ e β η) rule ienv senv
   = do
      _ ← type-check Γ rules t
                     (termFrom (input rule) ienv)
@@ -324,7 +328,7 @@ while constructing this system of functions.
 \hide{
 \begin{code}
 run-univrule : Context γ → RuleSet → (rule : UnivRule) → ((γ ⊗ (input rule)) -Env) → Failable ⊤
-run-univrule {γ = γ} Γ rules@(rs t u ∋ e β) rule env
+run-univrule {γ = γ} Γ rules@(rs t u ∋ e β η) rule env
   = do
      _ ← type-check Γ rules t (termFrom (input rule) env)
      _ ← check-premise-chain Γ rules env ` (⊗premises γ (proj₂ (premises rule)))
@@ -369,25 +373,27 @@ elim-synth Γ rules (erule ∷ erules) T s with match-erule erule T s
 ... | just (T-env , s-env) = run-erule Γ rules erule T-env s-env
 
 
-infer rules@(rs t u ∋ ee β) Γ (var x)    = do
+infer rules@(rs t u ∋ ee β η) Γ (var x)    = do
                             -- check postcondition:
                              _ ← type-check Γ rules t (x ‼V Γ)
                              succeed (x ‼V Γ)
-infer rules@(rs t u ∋ ee β) Γ (elim e s) = do
+infer rules@(rs t u ∋ ee β η) Γ (elim e s) = do
                              T ← infer rules Γ e
                              S ← elim-synth Γ rules ee T s
                              -- check postcondition:
                              _ ← type-check Γ rules t S
                              succeed S
-infer rules@(rs tr u ∋ e β) Γ (t ∷ T)  = do
+infer rules@(rs tr u ∋ e β η) Γ (t ∷ T)  = do
                    -- postcondition checks in ∋-check
                    _ ← ∋-check Γ rules ∋ t T
                    succeed T
 
 check {_} {const} rules Γ T (thunk x)         = check rules Γ T x
-check {_} {const} rules@(rs tr u ∋ e β) Γ T t = ∋-check Γ rules ∋ t T
-check {_} {compu} rules@(rs tr u ∋ e β) Γ T t = do
+check {_} {const} rules@(rs tr u ∋ e β η) Γ T t = ∋-check Γ rules ∋ t T
+check {_} {compu} rules@(rs tr u ∋ e β η) Γ T t = do
                             S ← infer rules Γ t
-                            S ≡ᵗ T
+                            normalize η β (infer rules) Γ (` "Type") S
+                              ≡ᵗ
+                              normalize η β (infer rules) Γ (` "Type") T
 \end{code}
 }

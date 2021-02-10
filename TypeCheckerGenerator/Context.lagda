@@ -42,16 +42,16 @@ may no longer be equal.
 
 \begin{code}
 Context : Scope → Set
-Context γ = γ ⇒[ Term const ] γ
+Context γ = γ ⇒[ Const ] γ
 
-_⟨Γ_  : Thinnable (δ ⇒[ Term const ]_)
-_^Γ   : Weakenable (δ ⇒[ Term const ]_)
+_⟨Γ_  : Thinnable (δ ⇒[ Const ]_)
+_^Γ   : Weakenable (δ ⇒[ Const ]_)
 \end{code}
 
 \hide{
 \begin{code}
-_‼V_ : Var γ → (Context γ) → Term const γ
-v ‼V Γ = lookup (Term const) Γ v
+_‼V_ : Var γ → (Context γ) → Const γ
+v ‼V Γ = lookup (Const) Γ v
 
 Γ ⟨Γ θ = ⟨sub _⟨term_ Γ θ
 _^Γ = weaken _⟨Γ_
@@ -60,8 +60,8 @@ _^Γ = weaken _⟨Γ_
 
 We provide a special function to extend contexts which appends a new
 element to the context (making it no longer a context as $suc γ \neq γ$ in
-$(suc γ) ⇒[ \mbox{Term const} ] γ$) before weakening the whole substitution
-yielding the context $(suc γ) \mbox{⇒[Term const]} (suc γ)$. The extra effort
+$(suc γ) ⇒[ \mbox{Const} ] γ$) before weakening the whole substitution
+yielding the context $(suc γ) \mbox{⇒[Const]} (suc γ)$. The extra effort
 exerted here keeps our contexts in the previously explained pre-thinned state.
 
 If we only ever use $ε$ and $\_ , \_$ to construct our contexts, we can be assured
@@ -69,7 +69,7 @@ that they will always be valid and pre-thinned. No such assurances can
 be made if the raw vector appending data constructor $\_ -,\_$ is used.
 
 \begin{code}
-_,_ : Context γ → Term const γ → Context (suc γ)
+_,_ : Context γ → Const γ → Context (suc γ)
 Γ , t = (Γ -, t) ^Γ
 \end{code}
 
@@ -78,7 +78,7 @@ so that the substitution might be mapped across all elements in the
 context conveniently, but again we are careful to note that applying
 this action to a context may not yield a context as explained previously.
 \begin{code}
-_/Γ_ : δ ⇒[ Term const ] γ → γ ⇒ γ' → δ ⇒[ Term const ] γ'
+_/Γ_ : δ ⇒[ Const ] γ → γ ⇒ γ' → δ ⇒[ Const ] γ'
 \end{code}
 \hide{
 \begin{code}

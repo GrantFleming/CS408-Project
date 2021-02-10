@@ -10,6 +10,7 @@ module Test where
 \begin{code}
 open import Test.STLCTest
 open import Test.BetaTest
+open import Test.EtaTest
 \end{code}
 }
 

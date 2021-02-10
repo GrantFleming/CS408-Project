@@ -10,14 +10,14 @@ module Pattern where
 \hide{
 \begin{code}
 open import CoreLanguage
-open import Thinning using (_⊑_; Ø; ι; _++_; _⟨term⊗_; ++-identityʳ)
+open import Thinning using (_⊑_; Ø; ι; _++_; _⟨term⊗_; ++-identityʳ; Weakenable)
 open import Data.String using (String; _==_)
 open import Data.Nat.Properties using (_≟_)
 open import Data.Maybe using (Maybe; just; nothing; _>>=_)
-open import Data.Bool using (true; false)
+open import Data.Bool using (Bool; true; false)
 open import Relation.Nullary using (does; _because_; proof; ofʸ)
 open import Relation.Binary.PropositionalEquality using (refl;  _≡_; cong; cong₂)
-open import Data.Nat using (zero; suc; _+_)
+open import Data.Nat using (ℕ; zero; suc; _+_)
 open import Opening using (Openable)
 open import Function using (_∘_)
 \end{code}
@@ -224,6 +224,88 @@ termFrom (` x) `              = ` x
 termFrom (p ∙ p₁) (e ∙ e₁)    = termFrom p e ∙ termFrom p₁ e₁
 termFrom (bind p) (bind e)    = bind (termFrom p e)
 termFrom (place θ) (thing x₁) = x₁ ⟨term⊗ θ
+
+_^pat : Weakenable Pattern
+` x ^pat = ` x
+(s ∙ t) ^pat = (s ^pat) ∙ (t ^pat)
+bind t ^pat = bind (t ^pat)
+place θ ^pat = place (θ O)
+
+_^svar : svar p γ → svar (p ^pat) γ
+⋆ ^svar = ⋆
+(v ∙) ^svar = (v ^svar) ∙
+(∙ v) ^svar = ∙ (v ^svar)
+bind v ^svar = bind (v ^svar)
+
+private
+  variable
+    b : Bool
+    δ' : Scope
+    p' : Pattern δ'
+
+data svar-builder : Pattern γ → Pattern δ → Set where
+  X     : svar-builder p p
+  _∙    : svar-builder p p' → svar-builder (p ∙ q) p'
+  ∙_    : svar-builder q p' → svar-builder (p ∙ q) p'
+  bind  : svar-builder p p' → svar-builder (bind p) p'
+
+⇚ : ∀{p : Pattern γ}{s t : Pattern δ'} → 
+    svar-builder p (s ∙ t) → 
+    svar-builder p s
+⇚ X          =  X ∙
+⇚ (v ∙)      =  (⇚ v) ∙
+⇚ (∙ v)      =  ∙ (⇚ v)
+⇚ (bind  v)  =  bind (⇚ v )
+
+⇛ : ∀{p : Pattern γ}{s t : Pattern δ'} → 
+    svar-builder p (s ∙ t) → 
+    svar-builder p t 
+⇛ X          =  ∙ X
+⇛ (v ∙)      =  (⇛ v) ∙
+⇛ (∙ v)      =  ∙ (⇛ v)
+⇛ (bind  v)  =  bind (⇛ v)
+
+↳ : ∀{p : Pattern γ}{t : Pattern (suc δ')} → 
+    svar-builder p (bind t) → 
+    svar-builder p t
+↳ X          =  bind X
+↳ (v ∙)      =  (↳ v) ∙
+↳ (∙ v)      =  ∙ (↳ v)
+↳ (bind  v)  =  bind (↳ v)
+
+build : ∀{p : Pattern γ} {θ : δ ⊑ γ'} → 
+       svar-builder p (place θ) → 
+       svar p δ
+build X         = ⋆
+build (v ∙)     = (build v) ∙
+build (∙ v)     = ∙ (build v)
+build (bind v)  = bind (build v)
+
+bind-count-bl : svar-builder p q → ℕ
+bind-count-bl X = 0
+bind-count-bl (v ∙) = bind-count-bl v
+bind-count-bl (∙ v) = bind-count-bl v
+bind-count-bl (bind v) = suc (bind-count-bl v)
+
+lem1 : ∀{s t : Pattern γ}{v : svar-builder p (s ∙ t)} → bind-count-bl (⇚ v) ≡ bind-count-bl v
+lem1 {v = X} = refl
+lem1 {v = v ∙} = lem1 {v = v}
+lem1 {v = ∙ v} = lem1 {v = v}
+lem1 {v = bind v} = cong suc (lem1 {v = v})
+
+lem2 : ∀{s t : Pattern γ}{v : svar-builder p (s ∙ t)} → bind-count-bl (⇛ v) ≡ bind-count-bl v
+lem2 {v = X} = refl
+lem2 {v = v ∙} = lem2 {v = v}
+lem2 {v = ∙ v} = lem2 {v = v}
+lem2 {v = bind v} = cong suc (lem2 {v = v})
+
+lem3 : ∀{t : Pattern (suc γ)}{v : svar-builder p (bind t)} → bind-count-bl (↳ v) ≡ suc (bind-count-bl v)
+lem3 {v = X} = refl
+lem3 {v = v ∙} = lem3 {v = v}
+lem3 {v = ∙ v} = lem3 {v = v}
+lem3 {v = bind v} = cong suc (lem3 {v = v})
+
+{-# REWRITE lem1 lem2 lem3 #-}
 \end{code}
 }
 

@@ -149,7 +149,24 @@ subject  lam-rule = lam
 input    lam-rule = ⇛
 premises lam-rule = input lam-rule ∙ bind (place ι) , (((⋆ ∙) / ε) ⊢' (((∙ ∙ ⋆) / ε) ∋' ∙ bind ⋆ [ ι ]))
                                                       ⇉ ε ((` "λ" ∙ bind (` "⊤")) placeless)
-         
+
+{-
+open import Rules using (match-∋rule; typeOf)
+open combinators using (_⇨_)
+open import Data.Maybe
+open import Data.Product
+open import Pattern using (_-Env)
+open import Data.Nat using (_+_)
+
+tryathing : Maybe ((∋rule.input lam-rule -Env) × (∋rule.subject lam-rule -Env))
+tryathing = match-∋rule lam-rule (` "α" ⇨ ` "β") (` "λ" ∙ bind (` "b"))
+
+test : Maybe (Σ[ m ∈ Scope ] Const (m + 0))
+test = do
+         (i , s) ← tryathing
+         just (typeOf lam-rule (∙ bind ⋆) i s)
+-}
+
 -- and we can type lam elimination
 app-rule : ElimRule
 targetPat  app-rule = ⇛
@@ -198,5 +215,5 @@ etarules = lam-ηrule ∷ []
 
 open import undefined
 rules : RuleSet
-rules =  rs typerules univrules ∋rules elimrules betarules
+rules =  rs typerules univrules ∋rules elimrules betarules etarules
 \end{code}

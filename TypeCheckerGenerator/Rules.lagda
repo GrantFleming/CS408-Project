@@ -225,15 +225,24 @@ $T ∋ t$ we take T to be a trusted input and seek to establish trust
 in t. Our premise chain reflects this by using the input as its
 trusted pattern and seeking trust in the subject. Matching occurs on
 both the input and the subject and so, if successful, returns a
-pair of environments.
-
+pair of environments. We may also use this rule to reverse engineer
+the type of any place in the original patterns, taking advantage that
+out premise chain can only establish trust in a place by ultimately making
+a statement either about its type, or about it being a type. This function
+turned out to be non-trivial, and many proofs were required to convice
+Agda to accept the implementation. An alternative might have been to
+construct a pattern environment where each place corresponded to the
+type of the corresponding part of the pattern. We could have even gone
+so far as to generalise what may be stored at places in patterns and
+teased out some applicative structure. \hl{move to discussion?}
+\hide{
 \begin{code}
 open import Data.Bool using (Bool; true; false)
 open import Data.Empty
 open import Relation.Nullary using (¬_; Dec; yes; no; _because_; ofʸ; ofⁿ)
 open import Thinning using (_O)
 open import Data.Nat using (_≟_)
-open import Pattern using (_‼_; _-penv_)
+open import Pattern using (_‼_; _-penv_; svar-builder; X; _∙; ∙_; bind; bind-count-bl; build)
 open import Data.Sum using (_⊎_; inj₁; inj₂)
 open import Function using (_∘_)
 
@@ -282,6 +291,33 @@ proof : ∀ {n γ : Scope}{p : Pattern (suc (n + γ))} → binds {γ} n (bind p)
 proof {n = zero}  = refl
 proof {n = suc n} = cong bind proof
 
+bind-count : svar p δ → ℕ
+bind-count ⋆ = 0
+bind-count (v ∙) = bind-count v
+bind-count (∙ v) = bind-count v
+bind-count (bind v) = suc (bind-count v)
+
+lem5 : ∀{θ : δ' ⊑ γ'}{v : svar-builder p (place θ)} → bind-count-bl v ≡ bind-count (build v)
+lem5 {v = X} = refl
+lem5 {v = v ∙} = lem5 {v = v}
+lem5 {v = ∙ v} = lem5 {v = v}
+lem5 {v = bind v} = cong suc (lem5 {v = v})
+{-# REWRITE lem5 #-}
+
+proof' : ∀(v : svar p γ)(ξ : svar p δ)(pr) → bind-count v ≡ bind-count (-svar v ξ pr)
+proof' (⋆     )  (⋆     )  (inj₁ x) = ⊥-elim (x refl)
+proof' (⋆     )  (⋆     )  (inj₂ (refl , neq)) = ⊥-elim (neq refl)
+proof' (v ∙   )  (ξ ∙   )  (inj₁ x) = proof' v ξ (inj₁ x)
+proof' (v ∙) (ξ ∙) (inj₂ (refl , snd)) = proof' v ξ (inj₂ (refl , λ x → snd (cong _∙ x)))
+proof' (v ∙   )  (∙ ξ   )  pr      = refl
+proof' (∙ v   )  (ξ ∙   )  pr  = refl
+proof' (∙ v) (∙ ξ) (inj₁ x) = proof' v ξ (inj₁ x)
+proof' (∙ v) (∙ ξ) (inj₂ (refl , snd)) = proof' v ξ (inj₂ (_ , λ x → snd (cong ∙_ x)))
+proof' (bind v) (bind ξ) (inj₁ x) = cong suc (proof' v ξ (inj₁ x))
+proof' (bind v) (bind ξ) (inj₂ (refl , snd)) = cong suc (proof' v ξ (inj₂ (refl , (λ x → snd (cong bind x)))))
+\end{code}
+}
+\begin{code}
 record ∋rule : Set where
   field
     subject  : Pattern 0
@@ -301,24 +337,32 @@ match-∋rule rule ty tm
       tmenv  ←  match tm (subject rule)
       just (tyenv , tmenv)
 
-typeOf : (r : ∋rule) → svar (γ ⊗ subject r) δ → (γ ⊗ input r) -Env → ((γ ⊗ (subject r))  -Env) → Const γ
-typeOf {γ = γ'} r v ienv senv = helper v ienv senv (⊗premises γ' (proj₂ (premises r)))
+typeOf : (r : ∋rule)                   →
+         (s : svar (γ ⊗ subject r) δ)  →
+         (γ ⊗ input r) -Env            →
+         ((γ ⊗ (subject r))  -Env)     →
+         Const ((bind-count s) + γ)
+\end{code}
+\hide{
+\begin{code}
+typeOf {γ = γ'} r v ienv senv =  helper v ienv senv (⊗premises γ' (proj₂ (premises r)))
   where
     lem : ∀ {n}{δ'}{p q q' p'' : Pattern δ}{p' : Pattern (n + δ)} →
-          svar q δ' → p -Env → q -Env → Prem p q (n + δ) p' q'  → Prems (p ∙ (binds n p')) q' p'' → Const δ
+          (s : svar q δ') → p -Env → q -Env → Prem p q (n + δ) p' q'  → Prems (p ∙ (binds n p')) q' p'' → Const ((bind-count s) + δ)
           
-    helper : ∀ {δ'}{p q p' : Pattern δ} → svar q δ' → p -Env → q -Env → Prems p q p' → Const δ
+    helper : ∀ {δ'}{p q p' : Pattern δ} → (s : svar q δ') → p -Env → q -Env → Prems p q p' → Const ((bind-count s) + δ)
 
     lem {δ' = δ''} v env qenv (type {δ' = δ'} ξ θ) prems with δ'' ≟ δ'
-    ... | no ¬p     = helper (-svar v ξ (inj₁ ¬p)) (env ∙ bindsenv (thing (ξ ‼ qenv))) (qenv -penv ξ) prems 
+    ... | no ¬p rewrite proof' v ξ (inj₁ ¬p) = helper (-svar v ξ (inj₁ ¬p)) (env ∙ bindsenv (thing (ξ ‼ qenv))) (qenv -penv ξ) prems 
     ... | yes refl  with v is ξ
-    ... | no ¬p = helper (-svar v ξ (inj₂ (refl , ¬p))) (env ∙ bindsenv (thing (ξ ‼ qenv))) (qenv -penv ξ) prems
+    ... | no ¬p rewrite proof' v ξ (inj₂ (refl , ¬p)) = helper (-svar v ξ (inj₂ (refl , ¬p))) (env ∙ bindsenv (thing (ξ ‼ qenv))) (qenv -penv ξ) prems
     ... | yes p = ` "Type"
-    lem {n = n} {δ' = δ''} v env qenv (_∋'_[_] {δ' = δ'} T ξ θ) prems with δ'' ≟ δ'
-    ... | no ¬p = helper (-svar v ξ (inj₁ ¬p)) (env ∙ bindsenv (thing (ξ ‼ qenv))) (qenv -penv ξ) prems
-    ... | yes refl with v is ξ
-    ... | no ¬p = helper (-svar v ξ (inj₂ (refl , ¬p))) (env ∙ bindsenv (thing (ξ ‼ qenv))) (qenv -penv ξ) prems
-    ... | yes p = bindsT n (toTerm env T)
+    lem {n = n} {δ' = δ''} {p' = place ϕ} v env qenv prem@(_∋'_[_] {δ' = δ'} T ξ θ) prems with δ'' ≟ δ'
+    ... | no ¬p rewrite proof' v ξ (inj₁ ¬p) = helper (-svar v ξ (inj₁ ¬p)) (env ∙ bindsenv (thing (ξ ‼ qenv))) (qenv -penv ξ) prems
+    ... | yes refl with v is ξ | n ≟ (bind-count ξ)
+    ... | no ¬p | _ rewrite proof' v ξ (inj₂ (refl , ¬p)) = helper (-svar v ξ (inj₂ (refl , ¬p))) (env ∙ bindsenv (thing (ξ ‼ qenv))) (qenv -penv ξ) prems
+    ... | yes refl | no _  = ` "unknown"
+    ... | yes refl | yes refl = toTerm env T
     lem v env qenv (x ≡' x₁) prems  = helper v (env ∙ bindsenv `) qenv prems
     lem v env qenv (univ x) prems   = helper v (env ∙ bindsenv `) qenv prems
     lem {δ = δ} {n = n} {p = p} {q' = q'} {p'' = p''} v env qenv (_⊢'_ {p` = p`} x prem) prems
@@ -333,6 +377,7 @@ typeOf {γ = γ'} r v ienv senv = helper v ienv senv (⊗premises γ' (proj₂ (
         lm (bind v) (bind t) = lm v t
     helper v env qenv (p ⇉ prems) = lem v env qenv p prems
 \end{code}
+}
 
 Our rules for elimination work slightly differently from those which operate on
 constructions above. Eliminations use some \emph{eliminator} in order to eliminate

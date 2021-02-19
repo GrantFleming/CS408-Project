@@ -1,1 +1,291 @@
 \chapter{A Language for Describing Type Systems}
+
+\section{What needs be described}
+
+We provide means to describe a class of languages where all types
+exist in a single universe. Although we could allow the user to
+provide some name for the universe, we opt not to for simplicity.
+
+In order to build a type checker for the language, the user must have
+means to provide the following information:
+
+\begin{itemize}
+  \item types
+  \item language constructs for each type, defining the 'shape' of
+    all values of the associate type in weak head normal form
+  \item A type-checking rule for each new language construct
+  \item Appropriate eliminations for each new language construct
+  \item Type synthesis rules for each elimination
+\end{itemize}
+
+We do not require that they supply $\eta$-expansion rules as we can
+construct theses so long as we place the proper requirements on what
+constitutes an "appropriate eliminators" above.
+
+\section{Determining appropriate eliminations}
+\label{appr-elim}
+
+When deciphering typing rules in type-theory literature, we
+implicitely distinguish between variables of the language we are
+describing, and meta-level variables in the language we are using to
+describe the typing rules. For instance, in the simply-typed lambda
+calculus, the rule for typing abstractions has the following as its
+conclusion:
+$$
+\begin{prooftree}
+      \hypo{...}
+      \infer1[]{\Gamma \vdash (\lambda x_\sigma \cdot e) : \sigma
+        \to \tau}
+\end{prooftree}
+$$
+Here, $x$ is not a variable in the language, but a meta-level variable
+we choose to range over variables in the languages, specifically over
+those which appear at the sites responsible for \emph{binding}
+variables - a meta-variable-variable. Likewise, $e$ stands for an
+arbitrary term in the language we are describing - a
+meta-term-variable.
+
+We enforce that for each meta-term-variable, there exists exactly one
+elimination that we may use to access this part of the original
+construction. This may involve simply "lifting" this part of the
+pattern out and presenting it on it's own as one might imagine when
+eliminating a product type or, as is the case for abstractions here, it
+may involve performing some substitution over a variable bound
+previously in the construction before presenting the subterm.
+
+A consequence of this is that we do not allow eliminations that
+present multiple subterms, or configurations thereof. As an example,
+consider that we could not define values of some type ternery product
+with an eliminator that presents the first two elements as a binary
+product, a pair. If we wished to produce this behaviour, out choices
+here force us to eliminate the ternery product twice, with two
+different eliminators to get the first and second elements of the
+product which we may subsequently combine with some pair constructor
+provided we have defined some ability that may allow us to do this.
+
+These restrictions allow us to enforce certain desirable properties
+regarding our type system. For instance, we can now work out how one
+might $\eta$-expand a construction without the user having to describe
+this behaviour explicitly. This results from us being guaranteed to
+know how to eliminate the term so as we might access each sub-term
+according to the pattern. Then we might build the $\eta$-expanded form
+by using the same pattern, but replacing each subterm with the
+elimination that yields it, as in the following examples on
+abstractions and pairs:
+
+\begin{align*}
+  \lambda x.e &\rightsquigarrow_\eta \lambda y .(\lambda x.e \; y) \\
+  (e,e') &\rightsquigarrow_\eta (\mbox{fst} (e,e') \;,\; \mbox{snd} (e,e'))
+\end{alight*}
+
+Since we will later use $\eta$-expansion when we implement
+normalization by evaluation, the resulting invariant of being able to
+$\eta$-expand all user provided constructions is useful to us.
+
+\section{The high level structure of descriptions}
+
+\begin{itemize}
+    \item One or more type descriptions where each is:
+      \begin{itemize}
+      \item type pattern
+      \item premises for type rule
+      \item Zero or more construction descriptions that provide the
+        terms of this type. Each construction description is:
+        \begin{itemize}
+        \item construction pattern
+        \item premises for type checking
+        \item The correct number of elimination descriptions* for the
+          construction where each is:
+          \begin{itemize}
+          \item eliminator pattern
+          \item elimination syntax
+          \item premises for type synthesis            
+          \end{itemize}
+        \end{itemize}
+      \end{itemize}
+\end{itemize}
+* - according to \ref{appr-elim}
+
+\section{Representing Patterns}
+
+We require meta-level variables to represent arbitrary subterms in a
+pattern. We adopt the convention that meta-level variables are always
+upper case and so when we speak of identifiers in this section, we are
+referring to strings of uppercase alpha-numeric characters. Newly bound
+variables are denoted by an identifier postfixed with a period,
+meta-level term variables are simply an identifier. All meta-level
+variables must be separated from the rest of the pattern by
+whitespace. All other characters are assumed to be literals and are
+parsed as atoms except for parenthesis. We may, for example, describe
+a pattern representing lambda terms as follows:
+
+$$
+\mbox{\textbackslash}\;  X. \; ->\; BODY}
+$$
+
+Where "\textbackslash" and "-$>$" are interpreted as the literal string
+of characters, "X." is interpreted as a newly bound variable and
+"BODY" represents an arbitrary sub-term. The scope of the newly bound
+variable is assumed to extend rightward across the remainder of the
+term, if this is not desirable then we may manipulate the structure of
+the tree with parenthesis as one might expect, limiting the scope as
+in the following example where "X" is not in scope in "ANOTHERSUBTERM".
+
+$$
+\mbox{\textbackslash}\;  (X. \; ->\; BODY) \; and \; ANOTHERSUBTERM}
+$$
+
+\section{Representing Expressions}
+  
+An expression introduces a way for users to build terms from
+patterns that we decide are in-scope, the internal representation
+always combines such patterns into a single pattern. When we later
+define the structure of the DSL in more detail, we will make it clear
+what patterns are in-scope where an expression is requested.
+
+In defining an expression, we may define atoms of the expression, the
+string literals, in the same way that we did for patterns. We may
+place multiple elements side by side separated by whitespace (again in
+the same way that we did for our patterns) and use the same encoding
+for variables, newly bound variables are encoded with an identifier
+postfixed with a period. We may refer to bound variables by giving the
+appropriate identifier \emph{prefixed} with a period. Since we require
+no meta-level sub-expression variables, we assume that any identifier
+standing alone and un-postfixed is intended to refer to a meta-level
+term variable of some pattern that is in-scope. Furthermore we may store
+along-side this meta-term-variable, some substitution of the variables
+that might occur in this term. Thus when we later instantiate the
+pattern to an actual piece of syntax we might build an actual concrete
+term from the instructions encoded as our expression. Hence these term
+variables are always encoded in an expression with a substitution
+where the variable and substitution are separated with a "/".
+
+We must also devise a syntax to describe substitutions themselves,
+we do so by simply giving substitutions as a list surrounded by square
+brackets, each substitution separated by a comma, and each
+substitution denoted by a reference to a bound variable (in the period
+prefixed manner previously described) followed by "=" and the
+expression that is to be substituted for this variable in the term.
+All patterns in-scope for the parent expression are in-scope for this
+child expression. The empty substitution is denoted simply "[]".
+
+Expressions can be used not only to build constructions, but to
+express computations too. computations are embedded by surrounding
+them with curly braces. They may consist of references to in-scope
+variables which are denoted by the appropriate identifier
+\emph{prefixed} with a period. They may also be an expression
+representing a term and another representing its type separated by a
+colon or a computation followed by some whitespace and a construction
+to encode the elimination of the computation.
+
+We give some example of expressions below giving the in-scope patterns
+to the left of the "$\Rightarrow$" separated by commas and the
+expression to the right of it. The patterns are only given in this
+manner to give context for the benefit of the reader, the
+$\Rightarrow$ notation is not part of our DSL.
+
+\begin{align*}
+  \mbox{\textbackslash}\; X. \; -> M \; , \; E \;
+  &\Rightarrow \qquad M/[.X =
+    E] \\
+  \mbox{\textbackslash}\; X. \; -> M \;
+  &\Rightarrow \qquad \mbox{\textbackslash}\; Y. \; -> M/[.X = .Y] \\
+  \mbox{\textbackslash}\; X. \; -> M \;
+  &\Rightarrow \qquad \mbox{\textbackslash}\; X. \; -> M/[.X = .X] \\  
+\end{align*}
+
+It is important to note the subtleties in scope when construction
+expressions. In the last example, the "X." in the expression does not
+shadow the "X." in the pattern, they exist in different scopes. In
+this example, the substitution is not an identity substitution as it
+might appear to be. Bound variables to the left of "=" are scoped to
+the in-scope patterns, whereas on the right hand side, variables are
+scoped to those bound in the expression. Furthermore we are not able
+to give any expression on the right side of the "=" in the
+substitution, we may only give a computation: either a variable, an
+elimination or a type-annotated construction.
+
+\section{Representing premise}
+
+There are five kinds of premise representable in the DSL. Premise are
+listed together one after another, chained, in order to give the
+conditions under which we may make some judgement.
+
+We will first detail each type of premise before discussing what it
+means to chain the premise together and how we determin the scope of a
+premise. We will also later detail what is considered in-scope when
+defining an expression, and so we gloss over this when detaililng the
+premises here.
+
+The type premise is written by stating the word "type" followed by
+the identifier corresponding to some meta level term variable in
+scope.
+
+$$
+type \;\; SOMETERM
+$$
+
+The type check premise is written as some expression, followed by "<-"
+and some identifier corresponding to a meta level term variable in
+scope.
+
+$$
+someexpression \;\;<-\;\; SOMETERM
+$$
+
+The equivalence premise is written as an expression followed by "="
+and another expression.
+
+$$
+someexpression \;\;=\;\; anotherexpression
+$$
+
+The context extension premise is written as some binder identifier,
+followed by "=" and an expression followed by "$|-$" and another
+premise. I.e. it allows to to present an arbitrary premise in the
+extended context.
+
+$$
+.X = someexpression \;\;|-\;\; SOME/[] \;\;<-\;\; OTHERPREMISE
+$$
+
+The context extension premise is somewhat different in that its use is
+mandated if we wish to present a premise talking about some meta-level
+term variable that exists under a binder in the original pattern.
+
+A chain of premises are always considered in the context of some
+pattern, the subject. A chain of premises also begins with some
+trusted pattern, the nature of this pattern depends on were we are
+using the chain of premise and will be detailed later. The purpose of
+a chain of premise is to obtain trust in the subject by describing how
+to obtain trust in each of the meta-level term variables. There are
+two ways that we can discharge such a variable as trusted: we can
+state the type of the term variable with a type check premise, or we
+can state that the term variable is a type with the type premise.
+
+What is considered in-scope for the rightmost term variable in the
+type premise and type check premise is all term variables in the
+subject, provided they have not been discharged already earlier in the
+chain. What term-variables are considered in-scope when constructing
+expressions are those which are in-scope given the purpose for which
+we are constructing the premise chain (this will be detailed later)
+and every term variable in which we have established trust earlier in
+the chain. In other words, all the term variables that appear as right
+hand sides of type premise or type checking premise that appear
+previously in the chain.
+
+The initial scopes of a premise chain, that is the patterns where we
+may reference meta term variables without establishing any trust,
+differ depending on the purpose for which we are building the chain.
+
+If the chain is given for the type rule, then there is nothing in
+scope to begin with. If it is given for a type checking rule for some
+construction, then the pattern describing the type is in scope when
+constructing expressions in the chain. Finally, if the chain is given
+for an elimination rule, then the pattern describing the type of the
+target is in-scope when constructing expressions in the chain.
+
+\section{The DSL}
+
+
+\section{As a CFG}

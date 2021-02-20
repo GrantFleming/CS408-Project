@@ -1,0 +1,18 @@
+type: alpha
+  value: a
+
+type: beta
+  value: b
+
+type: A -> (A. B)
+  if:
+    type A
+    type B 
+  eliminator: E
+    if:
+      A <- E
+    elimination-type: B/[.A = E]   
+  value: \ X. -> M
+    if:
+      .X = A |- B/[.A = .X] <- M
+    reduction: M/[.X = E]

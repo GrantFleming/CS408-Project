@@ -10,77 +10,41 @@ In order to build a type checker for the language, the user must have
 means to provide the following information:
 
 \begin{itemize}
-  \item types
-  \item language constructs for each type, defining the 'shape' of
+  \item Types
+  \item Language constructs for each type, defining the 'shape' of
     all values of the associate type in weak head normal form
   \item A type-checking rule for each new language construct
-  \item Appropriate eliminations for each new language construct
+  \item Eliminators
   \item Type synthesis rules for each elimination
+  \item Beta reduction for each elimination
+  \item Optional eta-expansion for each type
 \end{itemize}
-
-We do not require that they supply $\eta$-expansion rules as we can
-construct theses so long as we place the proper requirements on what
-constitutes an "appropriate eliminators" above.
 
 \section{Determining appropriate eliminations}
 \label{appr-elim}
 
-When deciphering typing rules in type-theory literature, we
-implicitely distinguish between variables of the language we are
-describing, and meta-level variables in the language we are using to
-describe the typing rules. For instance, in the simply-typed lambda
-calculus, the rule for typing abstractions has the following as its
-conclusion:
-$$
-\begin{prooftree}
-      \hypo{...}
-      \infer1[]{\Gamma \vdash (\lambda x_\sigma \cdot e) : \sigma
-        \to \tau}
-\end{prooftree}
-$$
-Here, $x$ is not a variable in the language, but a meta-level variable
-we choose to range over variables in the languages, specifically over
-those which appear at the sites responsible for \emph{binding}
-variables - a meta-variable-variable. Likewise, $e$ stands for an
-arbitrary term in the language we are describing - a
-meta-term-variable.
+It may seem tempting to enforce certain eliminations. We might have
+thought to treat type-parameterised types as assigning a type to each
+subterm in a value. For every function, function types assign a type to
+the newly bound variable and one to the body, for every pair, product
+types assign a type to each element. With this in might we could have
+enforced that exactly one eliminator exists for each such
+sub-type/sub-term that allows access to this part of the term. This
+train of thought seems sensible and initially appears to hold up to
+scruitiny.
 
-We enforce that for each meta-term-variable, there exists exactly one
-elimination that we may use to access this part of the original
-construction. This may involve simply "lifting" this part of the
-pattern out and presenting it on it's own as one might imagine when
-eliminating a product type or, as is the case for abstractions here, it
-may involve performing some substitution over a variable bound
-previously in the construction before presenting the subterm.
+Following this train of thought further we might consider how we could
+deduce $\eta$-expandability from such well-behaved types and
+eliminations , however, when we consider sum types then this idea
+falters. If we wishted to eta-expand a sum type, how would we know
+which constructor to use without peeking at the structure of the
+original term? There does not appear to be a way that be might choose
+a constructor/eliminator pair that would work to eta-expand an
+arbitrary term of the sum type.
 
-A consequence of this is that we do not allow eliminations that
-present multiple subterms, or configurations thereof. As an example,
-consider that we could not define values of some type ternery product
-with an eliminator that presents the first two elements as a binary
-product, a pair. If we wished to produce this behaviour, out choices
-here force us to eliminate the ternery product twice, with two
-different eliminators to get the first and second elements of the
-product which we may subsequently combine with some pair constructor
-provided we have defined some ability that may allow us to do this.
-
-These restrictions allow us to enforce certain desirable properties
-regarding our type system. For instance, we can now work out how one
-might $\eta$-expand a construction without the user having to describe
-this behaviour explicitly. This results from us being guaranteed to
-know how to eliminate the term so as we might access each sub-term
-according to the pattern. Then we might build the $\eta$-expanded form
-by using the same pattern, but replacing each subterm with the
-elimination that yields it, as in the following examples on
-abstractions and pairs:
-
-\begin{align*}
-  \lambda x.e &\rightsquigarrow_\eta \lambda y .(\lambda x.e \; y) \\
-  (e,e') &\rightsquigarrow_\eta (\mbox{fst} (e,e') \;,\; \mbox{snd} (e,e'))
-\end{alight*}
-
-Since we will later use $\eta$-expansion when we implement
-normalization by evaluation, the resulting invariant of being able to
-$\eta$-expand all user provided constructions is useful to us.
+As a result, we do not place such restrictions on which eliminators
+must exist, and we put the onus on the user to supply enough
+information for us to generate the eta-rules where necessary.
 
 \section{The high level structure of descriptions}
 
@@ -89,22 +53,23 @@ $\eta$-expand all user provided constructions is useful to us.
       \begin{itemize}
       \item type pattern
       \item premises for type rule
+      \item Zero or more elimination descriptions where each is:
+        \begin{itemize}
+        \item eliminator pattern
+        \item premises for type synthesis
+        \item elimination type            
+        \end{itemize}        
       \item Zero or more construction descriptions that provide the
         terms of this type. Each construction description is:
         \begin{itemize}
         \item construction pattern
         \item premises for type checking
-        \item The correct number of elimination descriptions* for the
-          construction where each is:
-          \begin{itemize}
-          \item eliminator pattern
-          \item elimination syntax
-          \item premises for type synthesis            
-          \end{itemize}
+        \item the $\beta$-reduced term for every elimination described
         \end{itemize}
+      \item Zero or one $\eta$-expansion rules
       \end{itemize}
+     
 \end{itemize}
-* - according to \ref{appr-elim}
 
 \section{Representing Patterns}
 
@@ -167,7 +132,8 @@ substitution denoted by a reference to a bound variable (in the period
 prefixed manner previously described) followed by "=" and the
 expression that is to be substituted for this variable in the term.
 All patterns in-scope for the parent expression are in-scope for this
-child expression. The empty substitution is denoted simply "[]".
+child expression. The empty substitution is ommitted entirely and so
+it should be written simply "VAR" when one might have written "VAR/[]".
 
 Expressions can be used not only to build constructions, but to
 express computations too. computations are embedded by surrounding
@@ -200,7 +166,8 @@ shadow the "X." in the pattern, they exist in different scopes. In
 this example, the substitution is not an identity substitution as it
 might appear to be. Bound variables to the left of "=" are scoped to
 the in-scope patterns, whereas on the right hand side, variables are
-scoped to those bound in the expression. Furthermore we are not able
+scoped to those bound in the expression, or as we will see later, a
+variable name in a context extension. Furthermore we are not able
 to give any expression on the right side of the "=" in the
 substitution, we may only give a computation: either a variable, an
 elimination or a type-annotated construction.
@@ -285,7 +252,47 @@ constructing expressions in the chain. Finally, if the chain is given
 for an elimination rule, then the pattern describing the type of the
 target is in-scope when constructing expressions in the chain.
 
+\section{$\eta$-expansion rules}
+
+In order for us to perform $\eta$-expansion, there are two pieces of
+information that we must have.
+
+Firstly, we must know the top-level data constructor of a newly
+$\eta$-expanded term. This is the very reason that we cannot
+$\eta$-expand sum types as described previously. 
+
+Secondly, for each argument to the data constructor, we must know the
+eliminator which we might use such that when we eliminate the original
+term with the eliminator, we get the term that is supplied as the
+argument.
+
+We can therefore give enough information to facilitate
+$\eta$-expansion by choosing a pattern representing some value, and
+giving an environment for the pattern, where an environment is
+structurally identical except that it has a term everywhere the
+original pattern had a term variable.
+
+For instance, given the produce type $A \; x \; B$ with eliminators
+$fst$ and $snd$ which describes values $X , Y$ then we might give $fst
+, snd$ to inform the construction of an $\eta$-expansion rule. Similarly,
+for a function type $A \; -> \; B$ with eliminator $E$ which describes
+values $\setminus X. \; -> \; M$ then we might give $\setminus Y. \;
+-> \; Y$ to inform the construction of an $\eta$-expansion rule.
+
+\hl{should we further restrict types to single values in an
+  eta-expanded situation?}
+
 \section{The DSL}
 
+As previously explained, the top level definition in our DSL
+associates a patterns with a type. Every part of the definition
+afterward is indented by 2 spaces.
+
+If premises are required (that is to say, if the pattern contains meta
+level term variables) then we add an "if:" clause, and then we list
+the premises, indented again, on a new line, with each premise on a
+line of its own.
+
+We then provide
 
 \section{As a CFG}

@@ -11,58 +11,10 @@ type: A -> B
   eliminator: E
     if:
       A <- E
-    elimination-type: B    
+    elimination-type: B/[]
   value: \ X. -> M
     if:
       .X = A |- B <- M
-      reduction: M/[.X = E]
+    reduction: M/[, E/[]]
   eta: \ Y. -> Y
-
-type: A x B
-  if:
-    type A
-    type B
-  eliminator: fst
-    elimination-type: A
-  eliminator: snd
-    elimination-type: B    
-  value: X , Y
-    if:
-      A <- X
-      B <- Y
-    reduction: X
-    reduction: Y
-  eta: fst , snd
-
-type: A or B
-  if:
-    type A
-    type B
-  eliminator: < (V. L) , (V. R) , C >
-    if:
-      .V = A |- C <- L
-      .V = B |- C <- R
-    elimination-type: C    
-  value: left X
-    if:
-      A <- X
-    reduction: L/[.V = X]      
-  value: right Y
-    if:
-      B <- Y
-    reduction: R/[.V = Y]
-
-type: nat
-  eliminator: rec-nat < BASE , (N. X. STEP) , C >
-    if:
-      C <- BASE
-      .N = nat |- .X = C |- C <- STEP
-    elimination-type: C
-  value: ze
-    reduction: BASE
-  value: suc REST
-    if:
-      Nat <- REST
-    reduction: STEP/[.N = REST , .X = REST (rec-nat < BASE , (N. X. STEP) , C >)]
-
-      
+  

@@ -61,7 +61,7 @@ module PatternParser where
   open parsermonad
   
   forbidden-atom-chars : List Char
-  forbidden-atom-chars = '(' ∷ ')' ∷ '{' ∷ '}' ∷ '.' ∷ ':' ∷ ',' ∷ []
+  forbidden-atom-chars = '(' ∷ ')' ∷ '{' ∷ '}' ∷ '[' ∷ ']' ∷ '.' ∷ ':' ∷ ',' ∷ []
   
   atomchar : Char → Bool
   atomchar c = isLower c ∨ ( not (isAlpha c) ∧ not (isSpace c) ∧ not (any (c ==_) forbidden-atom-chars))
@@ -183,8 +183,9 @@ module ExpressionParser where
 
     einst : ConstParser
     einst p γ vmap svmap = do
-                             (δ , ξ) ← esvar p svmap                             
-                             σ ← eσ δ γ p vmap svmap
+                             (δ , ξ) ← esvar p svmap
+                             literal '/'
+                             σ ← (squarebracketed ∘′ ws-tolerant) (eσ δ γ p vmap svmap)
                              return (ξ / σ)
                              
     evar : CompuParser
@@ -195,7 +196,6 @@ module ExpressionParser where
     
     erad : CompuParser
     erad p γ vmap svmap = do
-                            --return (` "lol" ∷ ` "LOL") 
                             t ← econst p γ vmap svmap
                             ws-tolerant (literal ':')
                             T ← econst p γ vmap svmap

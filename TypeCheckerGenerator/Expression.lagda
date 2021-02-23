@@ -118,6 +118,9 @@ _⊗sub_ {p = p} {γ = γ} δ' ε
   = ⟨sub {T = Expr (δ' ⊗ p) compu} _⟨exp_ (idexpr {δ'}) (δ' ◃ γ)
 δ' ⊗sub (σ -, x) = (δ' ⊗sub σ) -, (δ' ⊗expr x)
 
+_⟨esub_ : Thinnable (γ ⇒[ Expr p d ]_)
+_⟨esub_ = ⟨sub _⟨exp_ 
+
 _⊗expr_ {d = const} γ (` x)       = ` x
 _⊗expr_ {d = const} γ (s ∙ t)     = (γ ⊗expr s) ∙ (γ ⊗expr t)
 _⊗expr_ {d = const} γ (bind x)    = bind (γ ⊗expr x)

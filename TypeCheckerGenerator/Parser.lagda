@@ -201,6 +201,14 @@ module Parsers where
                   a ← ws-tolerant p
                   literal ')'
                   return a
+     where open parsermonad
+
+  curlybracketed : Parser A → Parser A
+  curlybracketed p = do
+                  literal '{'
+                  a ← ws-tolerant p
+                  literal '}'
+                  return a
     where open parsermonad
 open Parsers
 \end{code}

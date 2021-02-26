@@ -14,11 +14,13 @@ open import CoreLanguage
 open import Data.Nat using (ℕ; zero; suc; _+_; _∸_)
 open import Data.Bool using (Bool)
 open import Data.Empty renaming (⊥ to bot)
-open import Data.Unit renaming (⊤ to top)
+open import Data.Unit using () renaming (⊤ to top)
 open import Data.Nat.Properties using (+-identityʳ; +-suc)
 open import Relation.Binary.PropositionalEquality using (refl; _≡_; cong)
 open import BwdVec hiding (_++_)
 open import Substitution
+open import Relation.Binary.Definitions using (DecidableEquality)
+open import Relation.Nullary using (yes; no)
 \end{code}
 }
 
@@ -96,6 +98,21 @@ _++_ {δ} {γ} {suc δ'} {suc γ'} θ (ϕ I)
 γ ▹ suc δ  rewrite +-suc γ δ = (γ ▹ δ) I
 \end{code}
 }
+
+We can decide equality of thinnings:
+
+\begin{code}
+_≟_ : DecidableEquality (δ ⊑ γ)
+ε     ≟  ε    = yes refl
+(x O) ≟ (y O) with x ≟ y
+... | yes refl = yes refl
+... | no p     = no (λ { refl → p refl})
+(x O) ≟ (y I) = no (λ {()})
+(x I) ≟ (y O) = no (λ {()})
+(x I) ≟ (y I) with x ≟ y
+... | yes refl = yes refl
+... | no p     = no (λ { refl → p refl})
+\end{code}
 
 \hide{
 \begin{code}

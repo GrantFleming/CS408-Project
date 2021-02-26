@@ -150,6 +150,12 @@ module ExpressionParser where
   econst : ConstParser
   ecompu : CompuParser
 
+  schvar : (p : Pattern γ) → SVarMap p → Parser (SVar p)
+  schvar p svmap = do
+                     name ← identifier
+                     ifp literal '.' then fail
+                                     else maybe′ return fail (lookup name svmap)
+
   private
     eatom : ConstParser
     eatom _ _ _ _ = ` <$> nonempty (stringof atomchar) 
@@ -166,12 +172,6 @@ module ExpressionParser where
     ethunk p γ vmap svmap = do
                         comp ← curlybracketed (ecompu p γ vmap svmap)
                         return (thunk comp)
-    
-    esvar : (p : Pattern γ) → SVarMap p → Parser (SVar p)
-    esvar p svmap = do
-                        name ← identifier
-                        ifp literal '.' then fail
-                                        else maybe′ return fail (lookup name svmap)
 
     eσ : (δ γ : Scope) → (p : Pattern δ') → VarMap γ → SVarMap p → Parser (δ ⇒[ Expr p compu ] γ)
     eσ zero γ p vmap svmap    = return ε
@@ -183,7 +183,7 @@ module ExpressionParser where
 
     einst : ConstParser
     einst p γ vmap svmap = do
-                             (δ , ξ) ← esvar p svmap
+                             (δ , ξ) ← schvar p svmap
                              literal '/'
                              σ ← (squarebracketed ∘′ ws-tolerant) (eσ δ γ p vmap svmap)
                              return (ξ / σ)
@@ -225,3 +225,110 @@ module ExpressionParser where
 open ExpressionParser
 \end{code}
 
+With our ability to parse patterns and expressions, we can now parse
+premise and premise chains. In general, to parse a premise we must know
+everything that is trusted and what we still have to trust.
+
+
+\begin{code}
+
+module PremiseParser where
+
+  open import Rules using (Prem; _∋'_[_]; _≡'_; univ; _⊢'_; type)
+  open import Data.List using (map)
+  open parsermonad
+
+  PremiseParser : Set
+  PremiseParser = ∀ {δ}{γ} →
+                  (p q : Pattern δ) →
+                  (SVarMap p) → (SVarMap q) →
+                  Parser (Σ[ (p' , q') ∈ (Pattern γ × Pattern δ) ]
+                          SVarMap q' × Prem p q γ p' q')
+  
+  prem : PremiseParser
+
+  typeprem : PremiseParser
+  typeprem {γ = γ} p q pmap qmap
+    = do
+        string "type"
+        whitespace
+        (δ' , ξ) ← schvar q qmap
+        return (((place {!!}) , (q - ξ)) , ({!!} , type ξ {!!}))
+
+  ∋prem : PremiseParser
+  ∋prem {γ = γ} p q pmap qmap
+    = do
+        T ← econst p γ empty pmap
+        ws-tolerant (string "<-")
+        (δ' , ξ) ← schvar q qmap
+        return ((place {!!} , (q - ξ)) , ({!!} , (T ∋' ξ [ {!!} ])))
+
+  ≡prem : PremiseParser
+  ≡prem {γ = γ} p q pmap qmap
+    = do
+        S ← econst p γ empty pmap
+        ws-tolerant (literal '=')
+        T ← econst p γ empty pmap
+        return (((` "⊤") , q) , (qmap , (S ≡' T)))
+
+  univprem : PremiseParser
+  univprem {γ = γ} p q pmap qmap
+    = do
+        string "univ"
+        whitespace
+        U ← econst p γ empty pmap
+        return (((` "⊤") , q) , (qmap , univ U))
+
+  {-# TERMINATING #-}
+  ⊢prem : PremiseParser
+  ⊢prem {γ = γ} p q pmap qmap
+    = do
+        S ← safe (econst p γ empty pmap)
+        ws-tolerant (string "|-")
+        ((p' , q'), (q'm , P)) ← prem {γ = suc γ} p q pmap qmap
+        return ((bind p' , q') , (q'm , (S ⊢' P)))
+
+  prem p q pmap qmap
+    = anyof (Data.List.map (λ pp → pp p q pmap qmap )
+            (typeprem ∷ ∋prem ∷ ≡prem ∷ univprem ∷ ⊢prem ∷ []))
+open PremiseParser            
+\end{code}
+
+Premise chains:
+
+\begin{code}
+
+module PremisechainParser where
+
+  open import Rules using (Prems; ε; _⇉_; _Placeless; _-places; _placeless)
+  open import Pattern using (_≟_)
+  open import Relation.Nullary using (yes; no)
+  open import Relation.Binary.PropositionalEquality using (refl; subst)
+  open parsermonad
+
+  PremisechainParser = 
+                     (p q : Pattern 0) →
+                     (SVarMap p) → (SVarMap q) →
+                     Parser (Σ[ p' ∈ Pattern 0 ]
+                             Prems p q p')
+
+  εchain : PremisechainParser           
+  εchain p q pmap qmap
+    = do
+        yes eq ← return ((q -places) ≟ q)
+          where no p → fail
+        return (p , (ε (subst (λ x → x Placeless) eq (q placeless))))
+
+  chain : PremisechainParser
+
+  {-# TERMINATING #-}
+  nonε-chain : PremisechainParser
+  nonε-chain p q pmap qmap
+    = do
+        ((p' , q') , (q'm , prm)) ← prem {γ = 0} p q pmap qmap
+        ws-tolerant newline
+        (p' , rest) ← chain (p ∙ p') q'  (map (λ {(s , v) → (s , v ∙)}) pmap) q'm
+        return (p' , (prm ⇉ rest))
+
+  chain p q pmap qmap = either (nonε-chain p q pmap qmap) or (εchain p q pmap qmap)
+\end{code}

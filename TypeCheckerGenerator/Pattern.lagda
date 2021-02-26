@@ -10,13 +10,14 @@ module Pattern where
 \hide{
 \begin{code}
 open import CoreLanguage
-open import Thinning using (_⊑_; Ø; ι; _++_; _⟨term⊗_; ++-identityʳ; Weakenable)
-open import Data.String using (String; _==_)
-open import Data.Nat.Properties using (_≟_)
+open import Thinning using (_⊑_; Ø; ι; _++_; _⟨term⊗_; ++-identityʳ; Weakenable) renaming (_≟_ to _≟θ_)
+open import Data.String using (String; _==_) renaming (_≟_ to _≟s_)
+open import Data.Nat.Properties renaming (_≟_ to _≟n_)
 open import Data.Maybe using (Maybe; just; nothing; _>>=_)
 open import Data.Bool using (Bool; true; false)
-open import Relation.Nullary using (does; _because_; proof; ofʸ)
+open import Relation.Nullary using (does; _because_; proof; ofʸ; yes; no)
 open import Relation.Binary.PropositionalEquality using (refl;  _≡_; cong; cong₂)
+open import Relation.Binary.Definitions using (DecidableEquality)
 open import Data.Nat using (ℕ; zero; suc; _+_)
 open import Opening using (Openable)
 open import Function using (_∘_)
@@ -112,6 +113,38 @@ open import Thinning using (ε; _O; _I)
 ⊗-identityʳ {p = bind p}  = cong bind ⊗-identityʳ
 ⊗-identityʳ {p = place θ} rewrite ++-identityʳ θ = refl
 {-# REWRITE ⊗-identityʳ #-}
+
+-- and decide if patterns are equal
+_≟_ : DecidableEquality (Pattern γ)
+` x       ≟ ` y with x ≟s y
+... | yes refl = yes refl
+... | no p     = no (λ { refl → p refl})
+(x ∙ x₁)  ≟ (y ∙ y₁) with x ≟ y | x₁ ≟ y₁
+... | no p  | no  p' = no (λ { refl → p refl})
+... | no p  | yes p' = no (λ { refl → p refl})
+... | yes p | no  p' = no (λ { refl → p' refl})
+... | yes p | yes p' = yes (cong₂ _∙_ p p')
+bind x    ≟ bind y with x ≟ y
+... | yes refl = yes refl
+... | no  p = no (λ { refl → p refl})
+place {δ = δ} x   ≟ place {δ = δ'} y with δ ≟n δ'
+... | no p     = no λ { refl → p refl  }
+... | yes refl with x ≟θ y
+... | yes refl = yes refl
+... | no p = no (λ { refl → p refl})
+
+` x ≟ (y ∙ y₁)       = no (λ {()})
+` x ≟ bind y         = no (λ {()})
+` x ≟ place x₁       = no (λ {()})
+(x ∙ x₁) ≟ ` x₂      = no (λ {()})
+(x ∙ x₁) ≟ bind y    = no (λ {()})
+(x ∙ x₁) ≟ place x₂  = no (λ {()})
+bind x ≟ ` x₁        = no (λ {()})
+bind x ≟ (y ∙ y₁)    = no (λ {()})
+bind x ≟ place x₁    = no (λ {()})
+place x ≟ ` x₁       = no (λ {()})
+place x ≟ (y ∙ y₁)   = no (λ {()})
+place x ≟ bind y     = no (λ {()})
 \end{code}
 }
 
@@ -128,7 +161,7 @@ returns an environment for the \emph{opened} pattern.
 
 \begin{code}
 match : Const (δ + γ) → (p : Pattern γ) → Maybe ((δ ⊗ p) -Env)
-match  {γ = γ} t   (place {δ'} θ) with γ ≟ δ'
+match  {γ = γ} t   (place {δ'} θ) with γ ≟n δ'
 ... | true because ofʸ refl = just (thing t)
 ... | false because _       = nothing
 match (` a) (` c) with a == c

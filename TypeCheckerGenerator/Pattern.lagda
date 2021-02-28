@@ -230,6 +230,18 @@ termFrom  : (p : Pattern γ) → (δ ⊗ p) -Env → Const (δ + γ)
 bind p  - bind ξ = bind (p - ξ)
 place x - ⋆      = ` "⊤"
 
+_-svar_ : svar p δ → (ξ : svar p γ) → Maybe (svar (p - ξ) δ)
+⋆    -svar  ⋆        = nothing
+(v ∙) -svar (ξ ∙)    = v -svar ξ >>= λ n → just (n ∙)
+(∙ v) -svar (∙ ξ)    = v -svar ξ >>= λ n → just (∙ n)
+bind v -svar bind ξ  = v -svar ξ >>= λ n → just (bind n)
+(v ∙) -svar (∙ ξ)    = just (v ∙)
+(∙ v) -svar (ξ ∙)    = just (∙ v)
+
+←_ : svar (p ∙ q) δ → svar (p ∙ q ∙ r) δ
+← (v ∙) = v ∙
+← (∙ v) = ∙ (v ∙)
+
 (s ∙ t) -penv (ξ ∙) = (s -penv ξ) ∙ t
 (s ∙ t) -penv (∙ ξ) = s ∙ (t -penv ξ)
 bind e -penv bind ξ = bind (e -penv ξ)

@@ -180,10 +180,9 @@ output     app-rule = (((∙ ∙ ⋆) ∙) / ε)
 
 app-βrule : β-Rule
 target      app-βrule  =  ` "λ" ∙ bind (place ι)
-targetType  app-βrule  =  targetPat app-rule
-eliminator  app-βrule  =  place ι
+erule       app-βrule  =  app-rule
 redTerm     app-βrule  =  ((∙ bind ⋆) ∙) / (ε -, (((∙ (∙ ⋆)) / ε) ∷ ((∙ ((⋆ ∙) ∙)) / ε)))
-redType     app-βrule  =  (∙ ((∙ ∙ ⋆) ∙)) / ε
+
 
 -- η rules
 

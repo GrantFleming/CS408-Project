@@ -9,16 +9,17 @@ module SpecParser where
 \hide{
 \begin{code}
 open import CoreLanguage
-open import Pattern hiding (map)
+open import Pattern hiding (map; _≟_)
 open import Thinning using (ι)
 open import Category.Monad using (RawMonad)
-open import Data.List hiding (lookup; map; fromMaybe)
+open import Data.List hiding (lookup; map; fromMaybe; foldr; all)
 open import Data.Product using (_×_; Σ-syntax; _,_; Σ)
 open import Data.Sum using (inj₁; inj₂)
-open import Data.Char hiding (_≟_)
+open import Data.Char hiding (_≟_; show)
 open import Data.String using (String)
+open import Data.Maybe using () renaming (maybe′ to maybe)
 open import Data.String.Properties using (<-strictTotalOrder-≈)
-open import Data.Nat using (suc; ∣_-_∣)
+open import Data.Nat using (suc; ∣_-_∣; _<″_; _≤″?_)
 open import Data.Bool using (Bool; _∧_; _∨_; not; if_then_else_)
 open import Function using (_∘′_)
 open import Thinning using (_⊑_)
@@ -37,6 +38,7 @@ private
     δ : Scope
     γ : Scope
     γ' : Scope
+    p : Pattern δ
 \end{code}
 }
 
@@ -51,6 +53,9 @@ SVar p = Σ[ δ ∈ Scope ] svar p δ
 
 SVarMap : Pattern γ → Set
 SVarMap p = Map (SVar p)
+
+_-svmap_ : SVarMap p → (ξ : svar p γ) → SVarMap (p - ξ)
+map -svmap ξ  = foldr (λ k (δ , v) t → maybe (λ v → insert k (δ , v) t) t (v -svar ξ)) empty map
 
 PatternParser : Scope → Set
 PatternParser γ = Parser (Σ[ p ∈ Pattern γ ] SVarMap p)
@@ -127,7 +132,7 @@ user does not have to deal with the svars externally.
 -}
 
 module ExpressionParser where
-  open import Expression
+  open import Expression hiding (map)
   open import Data.Maybe using (maybe′)
   open import Data.Nat using (zero; _≟_)
   open import Relation.Nullary using (yes; no)
@@ -142,7 +147,6 @@ module ExpressionParser where
   private
     variable
       δ' : Scope
-      p : Pattern δ
 
   ConstParser = ∀ {δ} → (p : Pattern δ) → (γ : Scope) → VarMap γ → SVarMap p → Parser (Expr p const γ)
   CompuParser = ∀ {δ} → (p : Pattern δ) → (γ : Scope) → VarMap γ → SVarMap p → Parser (Expr p compu γ)
@@ -150,11 +154,11 @@ module ExpressionParser where
   econst : ConstParser
   ecompu : CompuParser
 
-  schvar : (p : Pattern γ) → SVarMap p → Parser (SVar p)
+  schvar : (p : Pattern γ) → SVarMap p → Parser (SVar p × String)
   schvar p svmap = do
                      name ← identifier
                      ifp literal '.' then fail
-                                     else maybe′ return fail (lookup name svmap)
+                                     else maybe′ (return ∘′ (_, name)) fail (lookup name svmap)
 
   private
     eatom : ConstParser
@@ -173,6 +177,7 @@ module ExpressionParser where
                         comp ← curlybracketed (ecompu p γ vmap svmap)
                         return (thunk comp)
 
+    open import Data.Maybe using (just)
     eσ : (δ γ : Scope) → (p : Pattern δ') → VarMap γ → SVarMap p → Parser (δ ⇒[ Expr p compu ] γ)
     eσ zero γ p vmap svmap    = return ε
     eσ (suc δ) γ p vmap svmap = do
@@ -180,13 +185,17 @@ module ExpressionParser where
                                   ws-tolerant (literal ',')
                                   this ← ecompu p γ vmap svmap
                                   return (rest -, this)
-
+    open import Data.Nat.Show using (show)
+    open import Data.String using (_++_)
     einst : ConstParser
     einst p γ vmap svmap = do
-                             (δ , ξ) ← schvar p svmap
-                             literal '/'
-                             σ ← (squarebracketed ∘′ ws-tolerant) (eσ δ γ p vmap svmap)
-                             return (ξ / σ)
+                             ((δ , ξ) , name) ← schvar p svmap
+                             yes refl ← return (δ ≟ 0)
+                               where no _ → do
+                                              literal '/'
+                                              σ ← squarebracketed (eσ δ γ p vmap svmap)
+                                              return (ξ / σ)
+                             return (ξ / ε)
                              
     evar : CompuParser
     evar p γ vmap svmap = do
@@ -235,7 +244,12 @@ everything that is trusted and what we still have to trust.
 module PremiseParser where
 
   open import Rules using (Prem; _∋'_[_]; _≡'_; univ; _⊢'_; type)
-  open import Data.List using (map)
+  open import Data.Nat using () renaming(_≟_ to _≟n_)
+  open import Pattern using (_-svar_)
+  open import Data.Maybe using () renaming (maybe′ to maybe)
+  open import Relation.Nullary using (yes; no)
+  open import Relation.Binary.PropositionalEquality using (refl)
+  import Data.Tree.AVL using (foldr)  
   open parsermonad
 
   PremiseParser : Set
@@ -243,8 +257,8 @@ module PremiseParser where
                   (p q : Pattern δ) →
                   (SVarMap p) → (SVarMap q) →
                   Parser (Σ[ (p' , q') ∈ (Pattern γ × Pattern δ) ]
-                          SVarMap q' × Prem p q γ p' q')
-  
+                          SVarMap p' × SVarMap q' × Prem p q γ p' q')
+
   prem : PremiseParser
 
   typeprem : PremiseParser
@@ -252,24 +266,28 @@ module PremiseParser where
     = do
         string "type"
         whitespace
-        (δ' , ξ) ← schvar q qmap
-        return (((place {!!}) , (q - ξ)) , ({!!} , type ξ {!!}))
+        ((δ' , ξ) , name) ← schvar q qmap
+        yes refl ← return (δ' ≟n γ)
+          where no _ → fail
+        return (((place ι) , (q - ξ)) , (singleton name (δ' , ⋆) , qmap -svmap ξ , type ξ ι))
 
   ∋prem : PremiseParser
   ∋prem {γ = γ} p q pmap qmap
     = do
-        T ← econst p γ empty pmap
+        T ← bracketed (econst p γ empty pmap)
         ws-tolerant (string "<-")
-        (δ' , ξ) ← schvar q qmap
-        return ((place {!!} , (q - ξ)) , ({!!} , (T ∋' ξ [ {!!} ])))
+        ((δ' , ξ) , name) ← schvar q qmap
+        yes refl ← return (δ' ≟n γ)
+          where no _ → fail
+        return ((place ι , (q - ξ)) , (singleton name (δ' , ⋆) , qmap -svmap ξ , (T ∋' ξ [ ι ])))
 
   ≡prem : PremiseParser
   ≡prem {γ = γ} p q pmap qmap
     = do
-        S ← econst p γ empty pmap
+        S ← bracketed (econst p γ empty pmap)
         ws-tolerant (literal '=')
         T ← econst p γ empty pmap
-        return (((` "⊤") , q) , (qmap , (S ≡' T)))
+        return (((` "⊤") , q) , (empty , qmap , (S ≡' T)))
 
   univprem : PremiseParser
   univprem {γ = γ} p q pmap qmap
@@ -277,17 +295,17 @@ module PremiseParser where
         string "univ"
         whitespace
         U ← econst p γ empty pmap
-        return (((` "⊤") , q) , (qmap , univ U))
+        return (((` "⊤") , q) , (empty , qmap , univ U))
 
   {-# TERMINATING #-}
   ⊢prem : PremiseParser
   ⊢prem {γ = γ} p q pmap qmap
     = do
-        S ← safe (econst p γ empty pmap)
+        S ← (safe ∘′ bracketed) (econst p γ empty pmap)
         ws-tolerant (string "|-")
-        ((p' , q'), (q'm , P)) ← prem {γ = suc γ} p q pmap qmap
-        return ((bind p' , q') , (q'm , (S ⊢' P)))
-
+        ((p' , q'), (p'm , q'm , P)) ← prem {γ = suc γ} p q pmap qmap
+        return ((bind p' , q') , (map (λ {(δ , v) → (δ , bind v)} ) p'm , q'm , (S ⊢' P)))
+  open import Expression using (`)
   prem p q pmap qmap
     = anyof (Data.List.map (λ pp → pp p q pmap qmap )
             (typeprem ∷ ∋prem ∷ ≡prem ∷ univprem ∷ ⊢prem ∷ []))
@@ -310,25 +328,183 @@ module PremisechainParser where
                      (p q : Pattern 0) →
                      (SVarMap p) → (SVarMap q) →
                      Parser (Σ[ p' ∈ Pattern 0 ]
-                             Prems p q p')
-
-  εchain : PremisechainParser           
-  εchain p q pmap qmap
-    = do
-        yes eq ← return ((q -places) ≟ q)
-          where no p → fail
-        return (p , (ε (subst (λ x → x Placeless) eq (q placeless))))
-
+                             SVarMap p' × Prems p q p')
+                             
   chain : PremisechainParser
+  
+  private
+    εchain : PremisechainParser           
+    εchain p q pmap qmap
+      = do
+          yes eq ← return ((q -places) ≟ q)
+            where no p → fail
+          return (p , (pmap , ε (subst (λ x → x Placeless) eq (q placeless))))
+    
+    {-# TERMINATING #-}
+    nonε-chain : PremisechainParser
+    nonε-chain p q pmap qmap
+      = do
+          ((p' , q') , (p'm , q'm , prm)) ← prem {γ = 0} p q pmap qmap
+          ws+nl
+          (p' , p'm , rest) ← chain (p ∙ p') q'  (map (λ {(s , v) → (s , v ∙)}) pmap) q'm
+          return (p' , p'm , (prm ⇉ rest))
+    
+  chain p q pmap qmap = either (nonε-chain p q pmap qmap)
+                            or (εchain p q pmap qmap)
 
-  {-# TERMINATING #-}
-  nonε-chain : PremisechainParser
-  nonε-chain p q pmap qmap
-    = do
-        ((p' , q') , (q'm , prm)) ← prem {γ = 0} p q pmap qmap
-        ws-tolerant newline
-        (p' , rest) ← chain (p ∙ p') q'  (map (λ {(s , v) → (s , v ∙)}) pmap) q'm
-        return (p' , (prm ⇉ rest))
-
-  chain p q pmap qmap = either (nonε-chain p q pmap qmap) or (εchain p q pmap qmap)
+  pchain : PremisechainParser
+  pchain p q pmap qmap = either
+                           (do
+                              string "if:"
+                              ws+nl
+                              chain p q pmap qmap)
+                         or
+                           (εchain p q pmap qmap)
+                         
+open PremisechainParser  
 \end{code}
+
+We can now parse the whole specification file, the result of which is an entire set of rules.
+
+\begin{code}
+
+module SpecfileParser where
+
+  open import TypeChecker using (RuleSet; rs)
+  open import Rules using (∋rule; ElimRule)
+  open import Expression using (Con; `) renaming (map to emap)
+  open import Semantics using (β-rule)
+  open import Pattern using (←_)
+  open import Data.Product using (proj₁)
+  open parsermonad
+
+  tester : ElimRule
+  ElimRule.targetPat tester = ` ""
+  ElimRule.eliminator tester = ` ""
+  ElimRule.premises tester = (` "") , (Rules.ε ((` "") Rules.placeless))
+  ElimRule.output tester = ` ""
+
+  β : (t : Pattern 0) → (er : ElimRule) → SVarMap (t ∙ ElimRule.targetPat er ∙ ElimRule.eliminator er) → Parser β-rule
+  β t er svmap = do
+            string "reduction:"
+            whitespace 
+            redTerm ← econst (t ∙ targetPat er ∙ eliminator er) 0 empty svmap
+            return (record
+                    { target = t
+                    ; erule = er
+                    ; redTerm = redTerm
+                    })
+           where open ElimRule
+
+  thingy' : Set
+  thingy' = Σ[ e ∈ ElimRule ] (SVarMap (ElimRule.targetPat e)× SVarMap (ElimRule.eliminator e))
+
+  thingy : Set
+  thingy = List thingy'
+
+  [β] : (t : Pattern 0) → SVarMap t → thingy → Parser (List β-rule)
+  [β] _ _ [] = return []
+  [β] t svt ((er , svty , sve) ∷ xs)
+    = do
+        r ← β t er ((union
+                      (map (λ {(δ , v) → (δ , (v ∙))}) svt)
+                      (union
+                        (map (λ (δ , v) → (δ , (∙ (v ∙)))) svty)
+                        (map (λ {(δ , v) → (δ , (∙ (∙ v)))}) sve))))
+        ws+nl
+        rls ← [β] t svt xs
+        return (r ∷ rls)
+
+  ∋ : (ty tm : Pattern 0) → SVarMap ty → SVarMap tm → Parser ∋rule
+  ∋ ty tm tyvars tmvars = do
+                 (p' , p'm , pc) ← pchain ty tm tyvars tmvars
+                 return (record { subject = tm ; input = ty ; premises = (p' , pc) })
+
+
+  value : (tty : Pattern 0) → SVarMap tty → thingy → Parser (∋rule × List (β-rule))
+  value tty ttymap els = do
+                    string "value:"                    
+                    (c , m) ← ws-tolerant closed-pattern
+                    ws+nl
+                    ∋r ← ∋ tty c ttymap m
+                    ws+nl
+                    βrls ← [β] c m els                                        
+                    return (∋r , βrls)
+
+  values : (tty : Pattern 0) → SVarMap tty → thingy → Parser (List ∋rule × List (β-rule))
+  values tty ttymap els = do
+                            rst ← wsnl-tolerant (value tty ttymap els)
+                                      *[ (λ {(∋r , newβrs) (∋rs , βrs) → (∋r ∷ ∋rs) , newβrs ++ βrs})
+                                      , ([] , []) ]
+                            return rst
+
+  eliminator : (tty : Pattern 0) → SVarMap tty → Parser thingy'
+  eliminator tty ttymap = do
+                            string "eliminator:"
+                            (e , m) ← ws-tolerant closed-pattern
+                            ws+nl
+                            (p' , p'm , pc) ← pchain tty e ttymap m
+                            ws+nl
+                            string "elimination-type:"
+                            et ← ws-tolerant (econst p' 0 empty p'm)
+                            return ((record
+                                       { targetPat = tty ; eliminator = e ; premises = p' , pc ; output = et }) , (ttymap , m))
+
+
+  eliminators : (tty : Pattern 0) → SVarMap tty → Parser (thingy)
+  eliminators tty ttymap = do
+                             rst ← wsnl-tolerant (eliminator tty ttymap) *[ _∷_ , [] ]
+                             return rst
+
+  open import Data.Unit using (⊤; tt)
+  eta : Parser ⊤
+  eta = do
+          string "eta:"
+          ws-tolerant closed-pattern
+          return tt
+
+  type : Parser RuleSet
+  type = do
+           string "type:"
+           (ty , ty-map) ← ws-tolerant closed-pattern
+           ws+nl
+           (p' , p'm , pc) ← pchain (` "⊤") ty empty ty-map
+           tr ← return (record { subject = ty ; premises = (p' , pc) } ∷ [])
+           ws+nl
+           elim-rules ← eliminators ty ty-map
+           ws+nl
+           (∋rs , βrs) ← values ty ty-map elim-rules
+           ws+nl
+           optional eta
+           return (rs tr [] ∋rs (Data.List.map proj₁ elim-rules) βrs [])
+
+  parse-spec : Parser RuleSet
+  parse-spec = (wsnl-tolerant type) ⁺[ (λ {(rs a  b  c  d  e  f)
+                                     (rs a' b' c' d' e' f') →
+                                     rs (a ++ a') (b ++ b') (c ++ c') (d ++ d') (e ++ e') (f ++ f')}) , rs [] [] [] [] [] [] ]
+open SpecfileParser
+\end{code}
+
+Ok now lets actuall get it to try and work:
+
+\begin{code}
+module Test where
+  open import IO
+  open import TypeChecker using (RuleSet)
+  open import Data.Maybe using (Maybe; just; nothing) renaming (maybe′ to maybe)
+  open import Failable hiding (_>>=_; return) renaming (fail to ffail)
+  open import Rules using (∋rule)
+  open import Semantics using (β-rule)
+  open import Pattern using (_∙; ∙_; ⋆)
+
+  spec : String
+  spec = "type: A -> B\nif:\ntype A\ntype B\neliminator: E\nif:\n(A) <- E\nelimination-type: B\nvalue: lam X. -> M\nif: (A) |- (B) <- M
+    reduction: M/[, E:A]
+  eta: \ Y. -> Y"
+
+  test : Maybe (RuleSet × String)
+  test = type spec
+open Test
+test' = test
+\end{code}
+

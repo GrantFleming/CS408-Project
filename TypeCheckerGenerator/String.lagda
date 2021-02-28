@@ -25,6 +25,15 @@ trimℓ← (c ∷ chars) with isSpace' c
 trim← : String → String
 trim← = fromList ∘′ trimℓ← ∘′ toList
 
+trimℓ←' : List Char → List Char
+trimℓ←' [] = []
+trimℓ←' (c ∷ chars) with isSpace c
+... | false = c ∷ chars
+... | true  = trimℓ←' chars
+
+trim←' : String → String
+trim←' = fromList ∘′ trimℓ←' ∘′ toList
+
 toDigit : Char → ℕ
 toDigit c with toℕ c
 ... | num = if (47 <ᵇ num) ∧ (num <ᵇ 58)

@@ -19,15 +19,19 @@ open β-rule
 
 module βredtests where
 
+  open import TypeChecker using (check-premise-chain)
+  open import BwdVec using (ε)
+  PC = check-premise-chain {0} rules ε
+
   test1 : Failable (Compu 0)
-  test1 = reduce betarules (lam (~ ze)) (α ⇨ α) a
+  test1 = reduce betarules PC (lam (~ ze)) (α ⇨ α) a
   
   _ : test1 ≡ succeed (a ∷ α)
   _ = refl
   
   -- function as input
   test2 : Failable (Compu 0)
-  test2 = reduce betarules (lam (~ ze)) ((α ⇨ α) ⇨ (α ⇨ α)) (lam (~ ze))
+  test2 = reduce betarules PC (lam (~ ze)) ((α ⇨ α) ⇨ (α ⇨ α)) (lam (~ ze))
   
   _ : test2 ≡ succeed (lam (~ ze) ∷ (α ⇨ α))
   _ = refl
@@ -46,7 +50,7 @@ module βredtests where
   reducable-term = elim (elim (func ∷ ftype) arg1) (thunk (var ze))
   
   test3 : Failable (Compu 0)
-  test3 = reduce betarules func ftype arg1
+  test3 = reduce betarules PC func ftype arg1
   
   _ : test3 ≡ succeed (lam (thunk (app (arg1 ∷ (α ⇨ α)) (~ ze))) ∷ (α ⇨ α))
   _ = refl
@@ -57,8 +61,10 @@ module βredtests where
 
 module normbyeval where
 
-  open import TypeChecker using (infer)
+  open import TypeChecker using (infer; check-premise-chain)
+  open import Data.Product using (_,_)
   open import BwdVec
+  PC = λ scp → check-premise-chain {γ = scp} rules 
 
   -- take in a function, an argument and apply them
   func : Const γ
@@ -77,7 +83,7 @@ module normbyeval where
   -- should perform a single reduction
 
   test1 : Const 0
-  test1 = normalize etarules betarules (infer rules) ε α (thunk (app (lam (~ ze) ∷ (α ⇨ α)) a))
+  test1 = normalize etarules betarules ((infer rules) , PC) ε α (thunk (app (lam (~ ze) ∷ (α ⇨ α)) a))
 
   _ : test1 ≡ a
   _ = refl
@@ -85,7 +91,7 @@ module normbyeval where
   -- should reduce multiple nested eliminations
 
   test2 : Const 1
-  test2 = normalize etarules betarules (infer rules) (ε -, α) α reducable-term
+  test2 = normalize etarules betarules ((infer rules) , PC) (ε -, α) α reducable-term
   
   _ : test2 ≡ thunk (var ze)
   _ = refl
@@ -93,7 +99,7 @@ module normbyeval where
   -- should eta-long variable
 
   test3 : Const 1
-  test3 = normalize etarules betarules (infer rules) (ε -, (α ⇨ α)) (α ⇨ α) (var ze)
+  test3 = normalize etarules betarules ((infer rules) , PC) (ε -, (α ⇨ α)) (α ⇨ α) (var ze)
 
   _ : test3 ≡ lam (thunk (app (var (su ze)) (~ ze)))
   _ = refl
@@ -101,7 +107,7 @@ module normbyeval where
   -- should eta-long stuck eliminations with function type
 
   test4 : Const 1
-  test4 = normalize etarules betarules (infer rules) (ε -, (α ⇨ (α ⇨ α))) (α ⇨ α) (app (var ze) a)
+  test4 = normalize etarules betarules ((infer rules) , PC) (ε -, (α ⇨ (α ⇨ α))) (α ⇨ α) (app (var ze) a)
 
   _ : test4 ≡ lam (thunk (app (app (var (su ze)) a) (~ ze)))
   _ = refl
@@ -109,7 +115,7 @@ module normbyeval where
     -- should normalize under a binder
 
   test5 : Const 0
-  test5 = normalize etarules betarules (infer rules) ε α (lam (thunk (app (lam (~ ze) ∷ (α ⇨ α)) a)))
+  test5 = normalize etarules betarules ((infer rules) , PC) ε α (lam (thunk (app (lam (~ ze) ∷ (α ⇨ α)) a)))
 
   _ : test5 ≡ lam a
   _ = refl
@@ -117,7 +123,7 @@ module normbyeval where
   -- should normalize the eliminator, even if the target is neutral
 
   test6 : Const 1
-  test6 = normalize etarules betarules (infer rules) (ε -, (α ⇨ α)) α (app (var ze) (thunk (app (lam (~ ze) ∷ (α ⇨ α)) a)))
+  test6 = normalize etarules betarules ((infer rules) , PC) (ε -, (α ⇨ α)) α (app (var ze) (thunk (app (lam (~ ze) ∷ (α ⇨ α)) a)))
 
   _ : test6 ≡ thunk (app (var ze) a)
   _ = refl
@@ -125,14 +131,14 @@ module normbyeval where
   -- should normalize the target even if it results in a neutral term
 
   test7 : Const 1
-  test7 = normalize etarules betarules (infer rules) (ε -, α) α (app (app (lam (~ (su ze)) ∷ (α ⇨ α)) a) a)
+  test7 = normalize etarules betarules ((infer rules) , PC) (ε -, α) α (app (app (lam (~ (su ze)) ∷ (α ⇨ α)) a) a)
 
   _ : test7 ≡ thunk (app (var ze) a)
   _ = refl
 
   -- should normalize even if the elimination target body was initially stuck
   test8 : Const 0
-  test8 = normalize etarules betarules (infer rules) ε α (app (lam (thunk (app (var ze) a)) ∷ ((α ⇨ α) ⇨ α))
+  test8 = normalize etarules betarules ((infer rules) , PC) ε α (app (lam (thunk (app (var ze) a)) ∷ ((α ⇨ α) ⇨ α))
                                             (lam (~ ze)))
 
   _ : test8 ≡ a
@@ -140,7 +146,7 @@ module normbyeval where
 
   -- should eta-expand multiple times
   test9 : Const 1
-  test9 = normalize etarules betarules (infer rules) (ε -, (α ⇨ α ⇨ α)) (α ⇨ α ⇨ α) (var ze)
+  test9 = normalize etarules betarules ((infer rules) , PC) (ε -, (α ⇨ α ⇨ α)) (α ⇨ α ⇨ α) (var ze)
 
   _ : test9 ≡ lam (lam (thunk (app (app (var (su (su ze))) (~ (su ze))) (~ ze))))
   _ = refl

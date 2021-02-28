@@ -18,7 +18,7 @@ open import TermSubstitution
 open import Composition
 open import Data.String using (String)
 open import Data.Nat using (zero; suc; _+_)
-open import BwdVec
+open import BwdVec hiding (map)
 \end{code}
 }
 
@@ -30,6 +30,7 @@ private
     δ' : Scope
     γ : Scope
     p : Pattern γ
+    q : Pattern γ
     γ' : Scope
     d : Dir
     d' : Dir
@@ -129,6 +130,21 @@ _⊗expr_ {d = const} γ (ξ / σ)     = (γ ⊗svar ξ) / (γ ⊗sub σ)
 _⊗expr_ {d = compu} γ (var x)     = var (γ ⊗var x)
 _⊗expr_ {d = compu} γ (elim e s)  = elim (γ ⊗expr e) (γ ⊗expr s)
 _⊗expr_ {d = compu} γ (t ∷ T)     = (γ ⊗expr t) ∷ (γ ⊗expr T)
+
+map : (f : ∀{δ} → svar p δ → svar q δ) → Expr p d γ' → Expr q d γ'
+map {d = const} f (` x) = ` x
+map {d = const} f (s ∙ t) = map f s ∙ map f t
+map {d = const} f (bind t) = bind (map f t)
+map {d = const} f (thunk x) = thunk (map f x)
+map {p = p} {q = q} {d = const} f (ξ / σ) = f ξ / mapself σ
+  where
+    -- inline to shut up termination checker
+    mapself : ∀ {n} → BwdVec (Com p γ') n → BwdVec (Com q γ') n
+    mapself ε = ε
+    mapself (xs -, x) = mapself xs -, map f x
+map {d = compu} f (var x) = var x
+map {d = compu} f (elim e x) = elim (map f e) (map f x)
+map {d = compu} f (t ∷ T) = map f t ∷ map f T
 \end{code}
 }
 

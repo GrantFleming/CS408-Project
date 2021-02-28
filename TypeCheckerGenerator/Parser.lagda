@@ -13,7 +13,7 @@ open import Data.String using (String; toList; fromList; fromChar; _++_; length)
 open import Data.Char using (Char; _==_; isDigit; show)
 open import Data.Bool using (if_then_else_; Bool)
 open import Data.Nat using (ℕ; suc; _<ᵇ_)
-open import String using (trim←; toNat)
+open import String using (trim←; toNat; trim←')
 open import Data.Product using (_,_; _×_)
 open import Data.Sum using (inj₁; inj₂; _⊎_)
 open import Data.Maybe using (Maybe; just; nothing; _<∣>_; maybe′)
@@ -82,7 +82,6 @@ module Parsers where
   ... | []      = nothing
   ... | c ∷ rest = just ((c , fromList (c ∷ rest)))
 
-
   all : Parser String
   all = λ s → just (s , "")
 
@@ -144,6 +143,9 @@ module Parsers where
   whitespace : Parser ⊤
   whitespace str = just (tt , trim← str)
 
+  ws+nl : Parser ⊤
+  ws+nl str = just (tt , trim←' str)
+
   ws-tolerant : Parser A → Parser A
   ws-tolerant p = do
                     whitespace
@@ -151,7 +153,15 @@ module Parsers where
                     whitespace
                     return r
     where open parsermonad
-  
+
+  wsnl-tolerant : Parser A → Parser A
+  wsnl-tolerant p = do
+                      ws+nl
+                      r ← p
+                      ws+nl
+                      return r
+    where open parsermonad
+
   literal' : Char → Parser' Char
   literal' c [] = nothing
   literal' c (x ∷ rest)

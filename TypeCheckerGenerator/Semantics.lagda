@@ -10,17 +10,17 @@ module Semantics where
 \hide{
 \begin{code}
 open import CoreLanguage
-open import Pattern using (Pattern; _∙_; _⊗_; _-Env; match)
+open import Pattern using (Pattern; _∙_; _⊗_; _-Env; match; termFrom)
 open import Context using (Context) renaming (_,_ to _-,_)
 open import Data.String using (_++_)
 open import Expression using (toTerm; Con)
-open import Data.Product using (_×_; _,_; Σ-syntax; proj₂)
+open import Data.Product using (_×_; _,_; Σ-syntax; proj₁; proj₂)
 open import Data.List using (List; []; _∷_)
 open import Data.Maybe using (Maybe; just; nothing)
 open import Failable using (Failable; succeed; fail)
 open import Data.Nat using (_+_; _≟_)
 open import Thinning using (_⟨term_)
-open import Rules using (∋rule; typeOf; bind-count)
+open import Rules using (∋rule; typeOf; bind-count; ElimRule; ERuleEnv; match-erule; Prems; ⊗premises)
 open import Pattern using (`; _∙_; bind; place; thing; svar; svar-builder;
                            X; ⇚; ⇛; ↳; build; bind-count-bl)
 open import Relation.Nullary using (yes; no; ¬_)
@@ -37,6 +37,14 @@ private
     γ : Scope
     δ : Scope
     d : Dir
+
+
+  Inferer       = ∀ {γ} → Context γ → (term : Term compu γ) → Failable (Term const γ)
+  PremsChecker  : Set
+  PremsChecker = (δ : Scope) → Context δ → {p q p' : Pattern δ} → p -Env → q -Env  → Prems p q p' → Failable (p' -Env)
+  PremsChecker' : Scope → Set
+  PremsChecker' δ = {p q p' : Pattern δ} → p -Env → q -Env  → Prems p q p' → Failable (p' -Env)
+  Reducer       = ∀ {γ} → PremsChecker' γ → (tar type elim : Const γ) → Failable (Compu γ)
 \end{code}
 }
 
@@ -52,28 +60,29 @@ so care should be taken to compute these forms before attempting to match
 a β-rule.
 \begin{code}
 record β-rule : Set where
+  open ElimRule
   field
-    target targetType eliminator : Pattern 0
-    redTerm redType : Con (target ∙ targetType ∙ eliminator) 0
-
+    target   : Pattern 0
+    erule    : ElimRule
+    redTerm  : Con (target ∙ targetPat erule ∙ eliminator erule) 0
+  
   open Data.Maybe using (_>>=_)
 
   Rule-Env : {γ : Scope} → Set
-  Rule-Env {γ} = ((γ ⊗ target)      ∙ 
-                  (γ ⊗ targetType)  ∙
-                  (γ ⊗ eliminator)) -Env
+  Rule-Env {γ} = (γ ⊗ target) -Env × ERuleEnv {γ} erule
 
   β-match : (targ type elim : Const γ) → Maybe Rule-Env
   β-match tar ty el = do
                         t-env  ← match tar target
-                        ty-env ← match ty targetType
-                        e-env  ← match el eliminator
-                        just (t-env ∙ ty-env ∙ e-env)
+                        e-env ← match-erule erule ty el
+                        just (t-env , e-env)
                       
 
-  β-reduce  :  Rule-Env {γ} → Compu γ
-  β-reduce env
-    = ↞↞ (toTerm env redTerm) (toTerm env redType)
+  β-reduce  : Rule-Env {γ} →
+              (γ ⊗ (proj₁ (premises erule))) -Env →
+              Compu γ 
+  β-reduce {γ = γ} (tenv , (tyenv , eenv)) p'env
+    = ↞↞ (toTerm (tenv ∙ tyenv ∙ eenv) redTerm) (toTerm p'env (output erule))
 open β-rule        
 \end{code}
 We then define a function that will attempt a reduction with regards
@@ -94,13 +103,15 @@ findRule (r ∷ rs) t ty e with β-match r t ty e
 ... | nothing   = findRule rs t ty e
 ... | just env  = succeed (r , env)
 
-reduce : List β-rule              →
+reduce : List β-rule   →
+         PremsChecker' γ →
          (tar type elim : Const γ)  →
          Failable (Compu γ)
-reduce rules ta ty el
+reduce {γ = γ} rules pc ta ty el
   = do
-      (rule , env) ← findRule rules ta ty el
-      succeed (β-reduce rule env)
+      (rule , (t , (ty , e))) ← findRule rules ta ty el
+      p'env ← pc ty e (⊗premises γ (proj₂ (ElimRule.premises (erule rule)))) 
+      succeed (β-reduce rule (t , (ty , e)) p'env)
 \end{code}
 Finally, we implement normalization by evaluation. We first define an evaluation
 function that works in terms of a generic means of reduction and type synthesis
@@ -116,12 +127,11 @@ open η-Rule
 \end{code}
 }
 \begin{code}
-_-_-_∥_∥ :  (reducer : ∀ {γ} → (tar type elim : Const γ) → Failable (Compu γ)) →
-           (inferer : ∀ {γ} → Context γ → (term : Term compu γ) → Failable (Term const γ)) →
-           Context γ →
-           Term d γ →
-           Const γ
-rd - inf - Γ ∥ T ∥ = ⟦ T ⟧ Γ
+_-_∥_∥ :  Reducer × Inferer × PremsChecker →
+         Context γ →
+         Term d γ →
+         Const γ
+(rd , inf , pc) - Γ ∥ T ∥ = ⟦ T ⟧ Γ
   where
     ⟦_⟧ : Term d γ → Context γ → Const γ
     ⟦_⟧ {const} (` x) Γ       = ` x
@@ -129,9 +139,9 @@ rd - inf - Γ ∥ T ∥ = ⟦ T ⟧ Γ
     ⟦_⟧ {const} (bind t) Γ    = bind (⟦ t ⟧ (Γ Context., ` "unknown") )
     ⟦_⟧ {const} (thunk x) Γ   = ⟦ x ⟧ Γ
     ⟦_⟧ {compu} (var x) Γ     = thunk (var x)
-    ⟦_⟧ {compu} (elim t e) Γ with inf Γ t
+    ⟦_⟧ {compu} {γ} (elim t e) Γ with inf Γ t
     ... | fail    n = thunk (elim (↞↞ (⟦ t ⟧ Γ) (` "unknown")) (⟦ e ⟧ Γ))
-    ... | succeed ty with rd (⟦ t ⟧ Γ) ty (⟦ e ⟧ Γ)
+    ... | succeed ty with rd (pc γ Γ) (⟦ t ⟧ Γ) ty (⟦ e ⟧ Γ)
     ... | succeed x = ⟦ x ⟧ Γ
     ... | fail x    = thunk (elim (↞↞ (⟦ t ⟧ Γ) ty) (⟦ e ⟧ Γ))
     ⟦_⟧ {compu} (t ∷ T) Γ   = ⟦ t ⟧ Γ
@@ -165,12 +175,12 @@ qt {γ = γ} rs ty v with EtaRule.findRule rs ty
           (typeOf (checkRule r) (build v) i s)
           (subst (λ x → Const x) (sym p) ((el ⟨term θ)))
 
-normalize : List η-Rule →
+normalize :  List η-Rule →
              List β-rule → 
-             (inferer : ∀ {γ} → Context γ → (term : Term compu γ) → Failable (Term const γ)) →
+             Inferer × PremsChecker →
              Context γ →
              (type : Const γ)   →
              (term : Term d γ)  →
              Const γ
-normalize ηs βs inf Γ ty = (qt ηs ty) ∘ (reduce βs - inf - Γ ∥_∥)
+normalize ηs βs i&c Γ ty = (qt ηs ty) ∘ ((reduce βs , i&c) - Γ ∥_∥)
 \end{code}

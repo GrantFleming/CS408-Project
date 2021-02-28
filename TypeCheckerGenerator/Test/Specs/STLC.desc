@@ -10,11 +10,11 @@ type: A -> B
     type B
   eliminator: E
     if:
-      A <- E
-    elimination-type: B/[]
-  value: \ X. -> M
+      (A) <- E
+    elimination-type: B
+  value: lam X. -> M
     if:
-      .X = A |- B <- M
-    reduction: M/[, E/[]]
+      (A) |- (B) <- M
+    reduction: M/[, E:A]
   eta: \ Y. -> Y
   

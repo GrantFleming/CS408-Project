@@ -214,6 +214,16 @@ check-premise : Context γ   →
                 q -Env      →
                 Prem p q γ p' q'  →
                 Failable (p' -Env × q' -Env)
+
+check-premise-chain  :     RuleSet           →
+                           Context γ         →
+                           {p : Pattern γ}
+                           {q : Pattern γ}
+                           {p' : Pattern γ}  →
+                           p -Env            →
+                           q -Env            →
+                           Prems p q p'      →
+                           Failable (p' -Env)
 --...
 check-premise Γ rules penv qenv (T ∋' ξ [ θ ])
   = do
@@ -230,9 +240,9 @@ check-premise {q = q} Γ rules@(rs t u ∋ e β η) penv qenv (type ξ θ)
 
 check-premise Γ rules@(rs t u ∋ e β η) penv qenv (x ≡' x')
   = do
-    _ ← normalize η β (infer rules) Γ (` "unknown") (toTerm penv x)
+    _ ← normalize η β ((infer rules) , λ scp → check-premise-chain {γ = scp} rules) Γ (` "unknown") (toTerm penv x)
       ≡ᵗ
-      normalize η β (infer rules) Γ (` "unknown") (toTerm penv x')
+      normalize η β ((infer rules) , λ scp → check-premise-chain {γ = scp} rules) Γ (` "unknown") (toTerm penv x')
     succeed (` , qenv)
 check-premise Γ rules@(rs t u ∋ e β η) penv qenv (univ x)
   = do
@@ -244,23 +254,12 @@ check-premise {γ = γ} Γ rules penv qenv (x ⊢' prem)
     succeed ((bind p'env) , q'env)
 \end{code}
 }
-\begin{code}
-check-premise-chain  :  ∀  {p : Pattern γ}
-                           {q : Pattern γ}
-                           {p' : Pattern γ}  →
-                           Context γ         →
-                           RuleSet             →
-                           p -Env            →
-                           q -Env            →
-                           Prems p q p'      →
-                           Failable (p' -Env)
-\end{code}
 \hide{
 \begin{code}
 check-premise-chain Γ rules penv qenv (ε x)       = succeed penv
 check-premise-chain Γ rules penv qenv (prem ⇉ prems)
  = do
-     (p'env , q₁env) ← check-premise Γ rules penv qenv prem
+     (p'env , q₁env) ← check-premise rules Γ penv qenv prem
      p''env ← check-premise-chain Γ rules (penv ∙ p'env) q₁env prems
      succeed p''env
 \end{code}
@@ -300,7 +299,7 @@ run-∋rule {γ} Γ rules@(rs t u ∋ e β η) rule ienv senv
   = do
      _ ← type-check Γ rules t
                     (termFrom (input rule) ienv)
-     _ ← check-premise-chain Γ rules ienv senv
+     _ ← check-premise-chain  rules Γ ienv senv
                     (⊗premises γ (proj₂ (premises rule)))
      succeed tt
 
@@ -312,7 +311,7 @@ run-erule : Context γ                       →
             Failable (Term const γ)
 run-erule {γ} Γ rules rule T-env s-env
   = do
-      p'env ← check-premise-chain Γ rules T-env s-env
+      p'env ← check-premise-chain rules Γ T-env s-env
                     (⊗premises γ (proj₂ (premises rule)))
       succeed (toTerm p'env (output rule))
 \end{code}
@@ -331,13 +330,13 @@ run-univrule : Context γ → RuleSet → (rule : UnivRule) → ((γ ⊗ (input 
 run-univrule {γ = γ} Γ rules@(rs t u ∋ e β η) rule env
   = do
      _ ← type-check Γ rules t (termFrom (input rule) env)
-     _ ← check-premise-chain Γ rules env ` (⊗premises γ (proj₂ (premises rule)))
+     _ ← check-premise-chain rules Γ env ` (⊗premises γ (proj₂ (premises rule)))
      succeed tt
 
 run-typerule : Context γ → RuleSet → (rule : TypeRule) → ((γ ⊗ (subject rule)) -Env) → Failable ⊤
 run-typerule {γ} Γ rules rule env
   = do
-      _ ← check-premise-chain Γ rules ` env (⊗premises γ (proj₂ (premises rule)))
+      _ ← check-premise-chain rules Γ ` env (⊗premises γ (proj₂ (premises rule)))
       succeed tt
 
 
@@ -392,8 +391,8 @@ check {_} {const} rules Γ T (thunk x)         = check rules Γ T x
 check {_} {const} rules@(rs tr u ∋ e β η) Γ T t = ∋-check Γ rules ∋ t T
 check {_} {compu} rules@(rs tr u ∋ e β η) Γ T t = do
                             S ← infer rules Γ t
-                            normalize η β (infer rules) Γ (` "Type") S
+                            normalize η β ((infer rules) , λ scp → check-premise-chain {γ = scp} rules) Γ (` "Type") S
                               ≡ᵗ
-                              normalize η β (infer rules) Γ (` "Type") T
+                              normalize η β ((infer rules) , λ scp → check-premise-chain {γ = scp} rules) Γ (` "Type") T
 \end{code}
 }

@@ -410,14 +410,17 @@ record ElimRule : Set where
     eliminator  :  Pattern 0
     premises    :  Σ[ p' ∈ Pattern 0 ] Prems targetPat eliminator p'
     output      :  Expr (proj₁ premises) const 0
+open ElimRule
+
+ERuleEnv : ∀{γ} → ElimRule → Set
+ERuleEnv {γ} rule = ((γ ⊗ (targetPat rule)) -Env)
+                        ×
+                    ((γ ⊗ (eliminator rule)) -Env)
 
 match-erule : (rule : ElimRule)   →
               (T : Term const γ)  →
               (s : Term const γ)  →
-              Maybe
-                (((γ ⊗ (ElimRule.targetPat rule)) -Env)
-                     ×
-                ((γ ⊗ (ElimRule.eliminator rule)) -Env))
+              Maybe (ERuleEnv rule)
 match-erule rule T s = do
                          T-env ← match T (targetPat rule)
                          s-env ← match s (eliminator rule)

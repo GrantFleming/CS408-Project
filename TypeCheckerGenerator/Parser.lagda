@@ -11,7 +11,7 @@ module Parser where
 open import Data.String using (String; toList; fromList; fromChar; _++_; length)
                         renaming (_==_ to _==ˢ_)
 open import Data.Char using (Char; _==_; isDigit; show)
-open import Data.Bool using (if_then_else_; Bool)
+open import Data.Bool using (if_then_else_; Bool; not)
 open import Data.Nat using (ℕ; suc; _<ᵇ_)
 open import String using (trim←; toNat; trim←')
 open import Data.Product using (_,_; _×_)
@@ -108,6 +108,13 @@ module Parsers where
   optional : Parser A → Parser (A ⊎ ⊤)
   optional = _or nout
 
+  complete : Parser A → Parser A
+  complete p = do
+                 a ← p
+                 rest ← all
+                 if rest ==ˢ "" then return a else fail
+               where open parsermonad
+
   takeIf' : (Char → Bool) → Parser' Char
   takeIf' p []          = nothing
   takeIf' p (c ∷ chars) = if p c then just (c , chars) else nothing
@@ -146,6 +153,12 @@ module Parsers where
   ws+nl : Parser ⊤
   ws+nl str = just (tt , trim←' str)
 
+  ws+nl! : Parser ⊤
+  ws+nl! = do
+              c ← takeIf Data.Char.isSpace
+              ws+nl
+             where open parsermonad
+
   ws-tolerant : Parser A → Parser A
   ws-tolerant p = do
                     whitespace
@@ -159,6 +172,14 @@ module Parsers where
                       ws+nl
                       r ← p
                       ws+nl
+                      return r
+    where open parsermonad
+
+  wsnl-tolerant! : Parser A → Parser A
+  wsnl-tolerant! p = do
+                      ws+nl!
+                      r ← p
+                      ws+nl!
                       return r
     where open parsermonad
 
@@ -191,6 +212,9 @@ module Parsers where
     
   stringof : (Char → Bool) → Parser String
   stringof p = takeIf p *[ _++_ ∘′ fromChar , "" ]
+
+  until : (Char → Bool) → Parser String
+  until p = stringof (not ∘′ p)
 
   nonempty : Parser String → Parser String
   nonempty p = do

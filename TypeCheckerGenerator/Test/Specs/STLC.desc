@@ -1,7 +1,7 @@
-type: alpha
+type: α
   value: a
 
-type: beta
+type: β
   value: b
 
 type: A -> B
@@ -12,7 +12,7 @@ type: A -> B
     if:
       (A) <- E
     elimination-type: B
-  value: lam X. -> M
+  value: \ X. -> M
     if:
       (A) |- (B) <- M
     reduction: M/[, E:A]

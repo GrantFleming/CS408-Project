@@ -498,9 +498,7 @@ module Test where
   open import Pattern using (_∙; ∙_; ⋆)
 
   spec : String
-  spec = "type: A -> B\nif:\ntype A\ntype B\neliminator: E\nif:\n(A) <- E\nelimination-type: B\nvalue: lam X. -> M\nif: (A) |- (B) <- M
-    reduction: M/[, E:A]
-  eta: \ Y. -> Y"
+  spec = ""
 
   test : Maybe (RuleSet × String)
   test = type spec

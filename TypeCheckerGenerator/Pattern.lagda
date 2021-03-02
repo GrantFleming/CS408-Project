@@ -11,7 +11,7 @@ module Pattern where
 \begin{code}
 open import CoreLanguage
 open import Thinning using (_⊑_; Ø; ι; _++_; _⟨term⊗_; ++-identityʳ; Weakenable) renaming (_≟_ to _≟θ_)
-open import Data.String using (String; _==_) renaming (_≟_ to _≟s_)
+open import Data.String using (String; _==_) renaming (_≟_ to _≟s_; _++_ to append)
 open import Data.Nat.Properties renaming (_≟_ to _≟n_)
 open import Data.Maybe using (Maybe; just; nothing; _>>=_)
 open import Data.Bool using (Bool; true; false)
@@ -351,6 +351,12 @@ lem3 {v = ∙ v} = lem3 {v = v}
 lem3 {v = bind v} = cong suc (lem3 {v = v})
 
 {-# REWRITE lem1 lem2 lem3 #-}
+
+print-pat : Pattern γ → String
+print-pat (` x) = x
+print-pat (p ∙ p₁) = append (print-pat p) (append " " (print-pat p₁))
+print-pat (bind p) = append "bind " (print-pat p)
+print-pat (place x) = "PLACE"
 \end{code}
 }
 

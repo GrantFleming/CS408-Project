@@ -146,7 +146,7 @@ print {const} (bind x)   = "(" ++ print x ++ ")"
 print {const} (thunk x)  = "(_" ++ print x ++ "_)"
 print {compu} (var x)    = "VAR"
 print {compu} (elim e s) = "(elim " ++ print e ++ " " ++ print s ++ ")"
-print {compu} (t ∷ T)    = "( {" ++ print t ++ "} ∶ " ++ print T ++ ")"
+print {compu} (t ∷ T)    = "((" ++ print t ++ ") ∶ " ++ print T ++ ")"
 
 printrawvar : Var γ → String
 printrawvar ze     = "ze"

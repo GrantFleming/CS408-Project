@@ -63,6 +63,7 @@ data Pattern (γ : Scope) : Set where
   _∙_    : Pattern γ → Pattern γ → Pattern γ
   bind   : Pattern (suc γ) → Pattern γ
   place  : {δ : Scope} → δ ⊑ γ → Pattern γ
+  ⊥      : Pattern γ
 \end{code}
 \hide{
 \begin{code}
@@ -99,6 +100,7 @@ map : ∀ {δ'} → (∀ {δ} → Const δ → Const (δ' + δ)) → p -Env → 
 γ ⊗ (s ∙ t)  = (γ ⊗ s) ∙ (γ ⊗ t)
 γ ⊗ (bind t) = bind (γ ⊗ t)
 γ ⊗ place θ  = place (ι {γ} ++ θ)
+_ ⊗ ⊥        = ⊥
 
 map f `         = `
 map f (s ∙ t)   = map f s ∙ map f t
@@ -112,6 +114,8 @@ open import Thinning using (ε; _O; _I)
 ⊗-identityʳ {p = p ∙ p₁}  = cong₂ _∙_ ⊗-identityʳ ⊗-identityʳ
 ⊗-identityʳ {p = bind p}  = cong bind ⊗-identityʳ
 ⊗-identityʳ {p = place θ} rewrite ++-identityʳ θ = refl
+⊗-identityʳ {p = ⊥}       = refl
+
 {-# REWRITE ⊗-identityʳ #-}
 
 -- and decide if patterns are equal
@@ -132,19 +136,28 @@ place {δ = δ} x   ≟ place {δ = δ'} y with δ ≟n δ'
 ... | yes refl with x ≟θ y
 ... | yes refl = yes refl
 ... | no p = no (λ { refl → p refl})
+⊥ ≟ ⊥ = yes refl
 
 ` x ≟ (y ∙ y₁)       = no (λ {()})
 ` x ≟ bind y         = no (λ {()})
 ` x ≟ place x₁       = no (λ {()})
+` x ≟ ⊥              = no (λ {()})
 (x ∙ x₁) ≟ ` x₂      = no (λ {()})
 (x ∙ x₁) ≟ bind y    = no (λ {()})
 (x ∙ x₁) ≟ place x₂  = no (λ {()})
+(x ∙ x₁) ≟ ⊥         = no (λ {()})
 bind x ≟ ` x₁        = no (λ {()})
 bind x ≟ (y ∙ y₁)    = no (λ {()})
 bind x ≟ place x₁    = no (λ {()})
+bind x ≟ ⊥           = no (λ {()})
 place x ≟ ` x₁       = no (λ {()})
 place x ≟ (y ∙ y₁)   = no (λ {()})
 place x ≟ bind y     = no (λ {()})
+place x ≟ ⊥          = no (λ {()})
+⊥ ≟ ` x              = no (λ {()})
+⊥ ≟ (x ∙ x₁)         = no (λ {()})
+⊥ ≟ bind x           = no (λ {()})
+⊥ ≟ place x          = no (λ {()})
 \end{code}
 }
 
@@ -271,10 +284,11 @@ termFrom (bind p) (bind e)    = bind (termFrom p e)
 termFrom (place θ) (thing x₁) = x₁ ⟨term⊗ θ
 
 _^pat : Weakenable Pattern
-` x ^pat = ` x
-(s ∙ t) ^pat = (s ^pat) ∙ (t ^pat)
-bind t ^pat = bind (t ^pat)
-place θ ^pat = place (θ O)
+` x ^pat      = ` x
+(s ∙ t) ^pat  = (s ^pat) ∙ (t ^pat)
+bind t ^pat   = bind (t ^pat)
+place θ ^pat  = place (θ O)
+⊥ ^pat        = ⊥
 
 _^svar : svar p γ → svar (p ^pat) γ
 ⋆ ^svar = ⋆
@@ -353,10 +367,11 @@ lem3 {v = bind v} = cong suc (lem3 {v = v})
 {-# REWRITE lem1 lem2 lem3 #-}
 
 print-pat : Pattern γ → String
-print-pat (` x) = x
-print-pat (p ∙ p₁) = append (print-pat p) (append " " (print-pat p₁))
-print-pat (bind p) = append "bind " (print-pat p)
-print-pat (place x) = "PLACE"
+print-pat (` x)      = x
+print-pat (p ∙ p₁)   = append (print-pat p) (append " " (print-pat p₁))
+print-pat (bind p)   = append "bind " (print-pat p)
+print-pat (place x)  = "PLACE"
+print-pat ⊥          = "⊥"
 \end{code}
 }
 

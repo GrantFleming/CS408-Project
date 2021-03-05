@@ -12,7 +12,7 @@ module Rules where
 open import CoreLanguage
 open import Thinning using (_⊑_; ι; _++_)
 open import Pattern using (Pattern; svar; bind; _∙; ∙_; place; ⋆; _∙_;
-                           thing; `; _-Env; match; _-_; _⊗_; _⊗svar_)
+                           thing; `; ⊥; _-Env; match; _-_; _⊗_; _⊗svar_)
 open import Expression using (Expr; _⊗expr_; toTerm; `)
 open import Data.Product using (_×_; _,_; proj₁; proj₂; Σ-syntax)
 open import Data.List using (List)
@@ -116,6 +116,7 @@ data _Placeless {γ : Scope} : Pattern γ → Set where
   `     : (s : String) → ` s Placeless
   _∙_   : {l r : Pattern γ} → (l Placeless) → (r Placeless) → (l ∙ r) Placeless
   bind  : {t : Pattern (suc γ)} → (t Placeless) → (bind t) Placeless
+  ⊥     : ⊥ Placeless
 
 _-places : Pattern γ → Pattern γ
 --...
@@ -127,6 +128,7 @@ place x  -places = ` "⊤"
 ` x      -places = ` x
 (s ∙ t)  -places = (s -places) ∙ (t -places)
 bind t   -places = bind (t -places)
+⊥        -places = ⊥
 \end{code}
 }
 \begin{code}
@@ -142,11 +144,13 @@ _⊗pl_ : p' Placeless → (δ : Scope) → (δ ⊗ p') Placeless
 (s ∙ t) placeless  = (s placeless) ∙ (t placeless)
 bind p placeless   = bind (p placeless)
 place x placeless  = ` "⊤"
+⊥ placeless        = ⊥
 
 
 ` c     ⊗pl δ = ` c
 (s ∙ t) ⊗pl δ = (s ⊗pl δ) ∙ (t ⊗pl δ)
 bind t  ⊗pl δ = bind (t ⊗pl δ)
+⊥       ⊗pl δ = ⊥
 \end{code}
 }
 
@@ -238,7 +242,7 @@ teased out some applicative structure. \hl{move to discussion?}
 \hide{
 \begin{code}
 open import Data.Bool using (Bool; true; false)
-open import Data.Empty
+open import Data.Empty renaming (⊥ to bot)
 open import Relation.Nullary using (¬_; Dec; yes; no; _because_; ofʸ; ofⁿ)
 open import Thinning using (_O)
 open import Data.Nat using (_≟_)
@@ -370,7 +374,7 @@ typeOf {γ = γ'} r v ienv senv =  helper v ienv senv (⊗premises γ' (proj₂ 
       = lem v env qenv prem prems
     helper v env qenv (ε x) = ⊥-elim (lm v x)
       where
-        lm : svar p γ → p Placeless → ⊥
+        lm : svar p γ → p Placeless → bot
         lm ⋆ ()
         lm (v ∙) (l ∙ _) = lm v l
         lm (∙ v) (_ ∙ r) = lm v r

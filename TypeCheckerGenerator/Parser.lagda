@@ -12,13 +12,13 @@ open import Data.String using (String; toList; fromList; fromChar; _++_; length)
                         renaming (_==_ to _==ˢ_)
 open import Data.Char using (Char; _==_; isDigit; show)
 open import Data.Bool using (if_then_else_; Bool; not)
-open import Data.Nat using (ℕ; suc; _<ᵇ_)
+open import Data.Nat using (ℕ; suc; _<ᵇ_; ∣_-_∣)
 open import String using (trim←; toNat; trim←')
 open import Data.Product using (_,_; _×_)
 open import Data.Sum using (inj₁; inj₂; _⊎_)
 open import Data.Maybe using (Maybe; just; nothing; _<∣>_; maybe′)
 open import Data.Unit using (⊤; tt)
-open import Data.List using (List; []; _∷_; foldr)
+open import Data.List using (List; []; _∷_; foldr; map)
 open import Function using (_∘′_)
 open import Category.Monad.State
 open import Data.Maybe.Categorical renaming (monad to MaybeMonad)
@@ -52,10 +52,16 @@ module Parser where
                     just ((a , fromList rest))
                   where open maybemonad
 
-             
-  ParserMonad = StateTMonad String MaybeMonad
+
+  ParserState : RawMonadState String Parser
+  ParserState = StateTMonadState String MaybeMonad
+  
+  ParserMonad = monad
+    where open RawMonadState ParserState
+
 open Parser
 module parsermonad = RawMonad ParserMonad
+module parserstatemonad = RawMonadState ParserState
 \end{code}
 
 
@@ -87,6 +93,21 @@ module Parsers where
 
   try : Parser A → A → Parser A
   try p a str = p str <∣> just (a , str)
+
+  consumes : Parser A → Parser (ℕ × A)
+  consumes p = do
+                 bfr ← (λ s → just (length s , s))
+                 a ← p
+                 afr ← (λ s → just (length s , s))
+                 return (∣ bfr - afr ∣ , a)
+               where open parsermonad
+
+  biggest-of_and_ : Parser A → Parser A → Parser A
+  biggest-of_and_ p1 p2 str with p1 str | p2 str
+  ... | nothing | nothing = nothing
+  ... | nothing | just p = just p
+  ... | just p | nothing = just p
+  ... | just (a1 , rst1) | just (a2 , rst2) = just (if length rst1 <ᵇ length rst2 then (a1 , rst1) else (a2 , rst2))
 
   _or_ : Parser A → Parser B → Parser (A ⊎ B)
   (pa or pb) str = (inj₁ <$> pa) str <∣> (inj₂ <$> pb) str
@@ -142,6 +163,14 @@ module Parsers where
   anyof : List (Parser A) → Parser A
   anyof []       = fail
   anyof (p ∷ ps) = either p or (anyof ps)
+
+  biggest-consumer : List (Parser A) → Parser A
+  biggest-consumer [] = fail
+  biggest-consumer (p ∷ ps) = biggest-of p and biggest-consumer ps
+
+  all-of : List (Parser A) → Parser (List A)
+  all-of [] str = just ([] , str)
+  all-of ps str = just (foldr (λ p las → maybe′ (λ (a , _) → a ∷ las) las (p str) ) [] ps , "") 
 \end{code}
 
 \begin{code}

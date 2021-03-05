@@ -30,6 +30,6 @@ type: A x B
     if:
       (A) <- L
       (B) <- R
-    reduction: L
     reduction: R
+    reduction: L
   eta: fst , snd

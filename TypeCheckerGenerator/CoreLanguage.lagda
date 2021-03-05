@@ -160,5 +160,11 @@ printraw {const} (thunk x)   = "(thunk " ++ printraw x ++ ")"
 printraw {compu} (var x)     = "(var " ++ printrawvar x ++ ")"
 printraw {compu} (elim e s)  = "(elim " ++ printraw e ++ " " ++ printraw s ++ ")"
 printraw {compu} (t ∷ T)     = "(" ++ printraw t ++ "∶" ++ printraw T ++ ")"
+
+_<<_ : Const γ → Const γ → Const γ
+` x << y       = ` x ∙ y
+(x ∙ y') << y  = x ∙ (y' << y)
+bind x << y    = bind x ∙ y
+thunk x << y   = thunk x ∙ y
 \end{code}
 }

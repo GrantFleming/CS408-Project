@@ -12,13 +12,14 @@ open import Data.String using (String; toList; fromList; fromChar; _++_; length)
                         renaming (_==_ to _==ˢ_)
 open import Data.Char using (Char; _==_; isDigit; show)
 open import Data.Bool using (if_then_else_; Bool; not)
-open import Data.Nat using (ℕ; suc; _<ᵇ_; ∣_-_∣)
+open import Data.Nat using (ℕ; zero; suc; _<ᵇ_; ∣_-_∣)
 open import String using (trim←; toNat; trim←')
-open import Data.Product using (_,_; _×_)
+open import Data.Product using (Σ-syntax; _,_; _×_)
 open import Data.Sum using (inj₁; inj₂; _⊎_)
 open import Data.Maybe using (Maybe; just; nothing; _<∣>_; maybe′)
 open import Data.Unit using (⊤; tt)
 open import Data.List using (List; []; _∷_; foldr; map)
+open import Data.Vec using (Vec; _∷_; [])
 open import Function using (_∘′_)
 open import Category.Monad.State
 open import Data.Maybe.Categorical renaming (monad to MaybeMonad)
@@ -170,7 +171,36 @@ module Parsers where
 
   all-of : List (Parser A) → Parser (List A)
   all-of [] str = just ([] , str)
-  all-of ps str = just (foldr (λ p las → maybe′ (λ (a , _) → a ∷ las) las (p str) ) [] ps , "") 
+  all-of ps str = just (foldr (λ p las → maybe′ (λ (a , _) → a ∷ las) las (p str) ) [] ps , "")
+
+  {-# TERMINATING #-}
+  how-many? : Parser A → Parser (Σ[ n ∈ ℕ ] Vec A n)
+  how-many? p = ifp p then (do
+                              a ←  safe p
+                              (n , as) ← how-many? p
+                              return (ℕ.suc n , a ∷ as))
+                else return (0 , [])
+    where open parsermonad
+
+  max_how-many? : ℕ → Parser A → Parser (Σ[ n ∈ ℕ ] Vec A n)
+  max zero how-many? _    = return (0 , [])
+    where open parsermonad
+  max (suc n) how-many? p = ifp p then (do
+                              a ←  safe p
+                              (n , as) ← max n how-many? p
+                              return (ℕ.suc n , a ∷ as))
+                else return (0 , [])
+    where open parsermonad
+
+  exactly : (n : ℕ) → Parser A → Parser (Vec A n)
+  exactly zero _  = return []
+    where open parsermonad
+  exactly (suc n) p = do
+                        a ← p
+                        as ← exactly n p
+                        return (a ∷ as)
+    where open parsermonad
+  
 \end{code}
 
 \begin{code}

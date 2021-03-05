@@ -15,7 +15,7 @@ open import Data.Sum using (inj₁; inj₂)
 open import Data.String.Properties using (<-strictTotalOrder-≈)
 open import Data.Char using (Char; isAlpha; isDigit; isSpace; _==_)
 open import Data.List using (List; _∷_; []; any; _++_; length; concat; partition) renaming (map to lmap; foldr to lfoldr)
-open import Data.Nat using (ℕ; suc; zero; _<ᵇ_)
+open import Data.Nat using (ℕ; suc; zero; _<ᵇ_; ∣_-_∣; _≡ᵇ_)
 open import Data.Nat.Show 
 open import Data.Maybe using (Maybe; just; nothing; maybe′)
 open import Data.Bool using (if_then_else_)
@@ -86,6 +86,8 @@ Rules = List TypeRule × List ∋rule
 TermParser : Scoped → Set
 TermParser A = ∀ {γ} → VarMap γ → Parser (A γ)
 
+TailParser : Set
+TailParser = ∀ {γ} → Const γ → VarMap γ → Parser (Const γ)
 \end{code}
 
 
@@ -143,11 +145,10 @@ module LParsers (rules : Rules) where
   pats = (split ∘′ patterns) rules
 
   head-pats = proj₂ pats
-  pre-tail-pats = filtered (proj₁ pats)
   tail-pats = (tail ∘′ proj₁) pats
 
   phead : TermParser Const
-  ptail : TermParser Const
+  ptail : ℕ → TailParser
   computation : TermParser Compu
   construction : TermParser Const
 
@@ -174,19 +175,31 @@ module LParsers (rules : Rules) where
 
   {-# TERMINATING #-}
   phead vm = biggest-consumer (lmap (λ p → do
-                                             h ← ppat p vm
+                                             (n , _) ← how-many? (wsnl-tolerant (literal '('))
+                                             h ←  ppat p vm
                                              ws+nl
-                                             ` "" ← ptail vm
-                                               where t → return (h ∙ t)
-                                             return h)
+                                             ptail n h vm)
                                              head-pats)
 
-  ptail vm = either biggest-consumer (lmap (λ p → ppat p vm) tail-pats) or return (` "")
+  ptail n tm vm = either biggest-consumer (lmap (λ p → (do
+                                                       start ← ppat p vm
+                                                       (closed , _) ← max n how-many? (wsnl-tolerant (literal ')'))
+                                                       if n <ᵇ closed then fail
+                                                                      else return get
+                                                       if closed ≡ᵇ 0
+                                                         then (do
+                                                                tl ← ptail n start vm
+                                                                return (tm ∙ tl))
+                                                         else ptail ∣ n - closed ∣ (tm ∙ start) vm
+                                                       )) tail-pats)
+                   or (do
+                          exactly n (wsnl-tolerant (literal ')'))
+                          return tm)
 
 
 
   
-  construction vm = either potentially-bracketed (phead vm)
+  construction vm = either (phead vm)
                         or do
                              com ← computation vm
                              return (thunk com)
@@ -195,6 +208,8 @@ module LParsers (rules : Rules) where
   prad : TermParser Compu
   prad vm = do
               t ← construction vm
+              --put ")"
+              --return (` "t is - " ∷ t)
               wsnl-tolerant (literal ':')
               T ← construction vm
               return (t ∷ T)

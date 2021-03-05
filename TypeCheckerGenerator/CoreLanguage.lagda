@@ -141,7 +141,8 @@ infixr 20 _∙_
 
 print : Term d γ → String
 print {const} (` x)      = x
-print {const} (s ∙ t)    = print s ++ print t
+print {const} (` x ∙ t)  = print {γ = 0} (` x) ++ " " ++ print t
+print {const} (s ∙ t)    = "(" ++ print s ++ ") " ++ print t
 print {const} (bind x)   = "(" ++ print x ++ ")"
 print {const} (thunk x)  = "(_" ++ print x ++ "_)"
 print {compu} (var x)    = "VAR"

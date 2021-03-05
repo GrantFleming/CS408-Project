@@ -1,0 +1,35 @@
+type: α
+  value: a
+
+type: β
+  value: b
+
+type: A -> B
+  if:
+    type A
+    type B
+  eliminator: E
+    if:
+      (A) <- E
+    elimination-type: B
+  value: \ X. -> M
+    if:
+      (A) |- (B) <- M
+    reduction: M/[, E:A]
+  eta: \ Y. -> Y
+
+type: A * B
+  if:
+    type A
+    type B
+  eliminator: fst
+    elimination-type: A
+  eliminator: snd
+    elimination-type: B
+  value: L and R
+    if:
+      (A) <- L
+      (B) <- R
+    reduction: L
+    reduction: R
+  eta: fst and snd

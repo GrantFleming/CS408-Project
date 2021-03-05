@@ -15,7 +15,7 @@ open import Data.Sum using (inj₁; inj₂)
 open import Data.String.Properties using (<-strictTotalOrder-≈)
 open import Data.Char using (Char; isAlpha; isDigit; isSpace; _==_)
 open import Data.List using (List; _∷_; []; any; _++_; length; concat; partition) renaming (map to lmap; foldr to lfoldr)
-open import Data.Nat using (ℕ; suc; zero; _<ᵇ_; ∣_-_∣; _≡ᵇ_)
+open import Data.Nat using (ℕ; suc; zero; _<ᵇ_; ∣_-_∣; _≡ᵇ_) renaming (_+_ to  _+'_)
 open import Data.Nat.Show 
 open import Data.Maybe using (Maybe; just; nothing; maybe′)
 open import Data.Bool using (if_then_else_)
@@ -81,7 +81,7 @@ fresh name vm = insert name ze (vm ^)
 \begin{code}
 
 Rules : Set
-Rules = List TypeRule × List ∋rule
+Rules = List TypeRule × List ∋rule × List ElimRule
 
 TermParser : Scoped → Set
 TermParser A = ∀ {γ} → VarMap γ → Parser (A γ)
@@ -95,7 +95,7 @@ TailParser = ∀ {γ} → Const γ → VarMap γ → Parser (Const γ)
 -- first we get all the patterns that define constructions
 
 patterns : Rules → List (Pattern 0)
-patterns (trs , ∋rs) = lmap tysub trs ++ lmap ∋sub ∋rs
+patterns (trs , ∋rs , ers) = lmap tysub trs ++ lmap ∋sub ∋rs ++ lmap eliminator ers
 
 {- 
 But now we may have to deal with the left recursion problem! So lets
@@ -177,9 +177,11 @@ module LParsers (rules : Rules) where
   phead vm = biggest-consumer (lmap (λ p → do
                                              (n , _) ← how-many? (wsnl-tolerant (literal '('))
                                              h ←  ppat p vm
-                                             ws+nl
-                                             ptail n h vm)
+                                             (m , _) ←  wsnl-tolerant (max n how-many? (wsnl-tolerant (literal ')')))
+                                             if n <ᵇ m then fail else return get
+                                             ptail ∣ n - m ∣ h vm)
                                              head-pats)
+
 
   ptail n tm vm = either biggest-consumer (lmap (λ p → (do
                                                        start ← ppat p vm
@@ -200,16 +202,17 @@ module LParsers (rules : Rules) where
 
   
   construction vm = either (phead vm)
-                        or do
+                        or (do
                              com ← computation vm
-                             return (thunk com)
+                             ws+nl
+                             inj₁ tm ← optional (ptail 0 (thunk com) vm)
+                               where inj₂ _ → return (thunk com)
+                             return tm)
 
 
   prad : TermParser Compu
   prad vm = do
               t ← construction vm
-              --put ")"
-              --return (` "t is - " ∷ t)
               wsnl-tolerant (literal ':')
               T ← construction vm
               return (t ∷ T)

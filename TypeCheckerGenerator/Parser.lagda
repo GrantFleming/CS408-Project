@@ -291,7 +291,7 @@ module Parsers where
   bracketed : Parser A → Parser A
   bracketed p = do
                   literal '('
-                  a ← ws-tolerant p
+                  a ← wsnl-tolerant p
                   literal ')'
                   return a
      where open parsermonad
@@ -302,7 +302,7 @@ module Parsers where
   curlybracketed : Parser A → Parser A
   curlybracketed p = do
                   literal '{'
-                  a ← ws-tolerant p
+                  a ← wsnl-tolerant p
                   literal '}'
                   return a
     where open parsermonad
@@ -310,7 +310,7 @@ module Parsers where
   squarebracketed : Parser A → Parser A
   squarebracketed p = do
                   literal '['
-                  a ← ws-tolerant p
+                  a ← wsnl-tolerant p
                   literal ']'
                   return a
     where open parsermonad

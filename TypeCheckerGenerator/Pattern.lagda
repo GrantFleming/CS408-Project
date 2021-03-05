@@ -16,8 +16,8 @@ open import Data.Nat.Properties renaming (_≟_ to _≟n_)
 open import Data.Maybe using (Maybe; just; nothing; _>>=_)
 open import Data.Bool using (Bool; true; false)
 open import Relation.Nullary using (does; _because_; proof; ofʸ; yes; no)
-open import Relation.Binary.PropositionalEquality using (refl;  _≡_; cong; cong₂)
-open import Relation.Binary.Definitions using (DecidableEquality)
+open import Relation.Binary.PropositionalEquality using (refl; _≡_; cong; cong₂; _≢_)
+open import Relation.Binary.Definitions using (DecidableEquality; Decidable)
 open import Data.Nat using (ℕ; zero; suc; _+_)
 open import Opening using (Openable)
 open import Function using (_∘_)
@@ -158,6 +158,11 @@ place x ≟ ⊥          = no (λ {()})
 ⊥ ≟ (x ∙ x₁)         = no (λ {()})
 ⊥ ≟ bind x           = no (λ {()})
 ⊥ ≟ place x          = no (λ {()})
+
+_/≟_ : ∀ {γ} → Decidable {A = Pattern γ} _≢_
+x /≟ y with x ≟ y
+... | yes refl = no λ to⊥ → to⊥ refl
+... | no neq = yes neq
 \end{code}
 }
 

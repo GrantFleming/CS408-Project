@@ -18,3 +18,18 @@ type: A -> B
     reduction: M/[, E:A]
   eta: \ Y. -> Y
   
+type: A x B
+  if:
+    type A
+    type B
+  eliminator: fst
+    elimination-type: A
+  eliminator: snd
+    elimination-type: B
+  value: L , R
+    if:
+      (A) <- L
+      (B) <- R
+    reduction: L
+    reduction: R
+  eta: fst , snd

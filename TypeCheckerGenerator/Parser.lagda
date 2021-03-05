@@ -266,6 +266,9 @@ module Parsers where
                   return a
      where open parsermonad
 
+  potentially-bracketed : Parser A → Parser A
+  potentially-bracketed p = either bracketed p or p
+
   curlybracketed : Parser A → Parser A
   curlybracketed p = do
                   literal '{'

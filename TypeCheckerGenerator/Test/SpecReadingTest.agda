@@ -4,7 +4,8 @@ module Test.SpecReadingTest where
   open import CoreLanguage
   import SpecParser as SP
   open SP.SpecfileParser using (parse-spec)
-  open import LanguageParser using (computation; construction)
+  import LanguageParser
+  open LanguageParser.LParsers
   open import TypeChecker using (RuleSet; rs; infer)
   open import Pattern using (Pattern; print-pat)
   open import Data.List using (List; _∷_; []; foldr; length) renaming (map to lmap)
@@ -23,9 +24,6 @@ module Test.SpecReadingTest where
   open import Function using (_∘′_)
   open import Rules using (TypeRule)
 
-  --term : Compu 0
-  --term = elim ((` "\\" ∙ bind (` "->" ∙ thunk (var ze))) ∷ (` "alpha" ∙ ` "->" ∙ ` "alpha")) (` "a")
-{-
   print-list : ∀ {γ} → List (Pattern γ) → String
   print-list = foldr (_++_ ∘′ ((" || " ++_) ∘′ print-pat)) ""
 
@@ -37,8 +35,7 @@ module Test.SpecReadingTest where
              where nothing → putStrLn (toCostring "Failed to parse spec file")
            _ ← putStrLn (toCostring ("Parsed:\n" ++ show (length tr) ++ " types\n" ++ show (length ∋r) ++ " introduction forms\n" ++ show (length er) ++ " elimination typing rules\n" ++ show (length βr) ++ " β-rules\n"))
            _ ← putStrLn (toCostring "Parsing source file ...")
-           num_tokens ← return (length (words src))
-           just (term , rest) ← return (computation (tr , ∋r , er) empty src)
+           just (term , rest) ← return (computation (tr , ∋r) empty src)
              where nothing → putStrLn (toCostring "Failed to parse source code file.")
            _ ← putStrLn (toCostring ("term parsed: " ++ print term))
            _ ← putStrLn (toCostring ("ignored: " ++ rest ++ "\n"))
@@ -46,8 +43,8 @@ module Test.SpecReadingTest where
              where fail msg → putStrLn (toCostring msg)
            _ ← putStrLn (toCostring ("term: " ++ (print term) ++ "\ntype: " ++ print type)) 
            return tt
--}
 
+{-
   open import Rules using (∋rule; TypeRule; ε; _⇉_; type; _⊢'_; _placeless)
   open import Pattern using (Pattern; `; _∙_; bind; place; ∙_; _∙; ⋆)
   open import Expression using (`)
@@ -81,14 +78,16 @@ module Test.SpecReadingTest where
   premises fake = ` "⊤" ∙ place ι , type ⋆ ι ⇉ ε (` "⊤" placeless)
 
   rules : Rules
-  rules = (t ∷ t' ∷ [] , r ∷ r' ∷ [] , [])
+  rules = (t ∷ t' ∷ [] , r ∷ r' ∷ [])
 
-  ans1 = construction 4 rules {0} empty "lam x -> x"
-  ans2 = construction 3 rules {0} empty "alpha -> alpha"  
-  ans = computation rules {0} empty "(lam x -> x : alpha -> alpha) "
-  
-  ans4 = construction 1 rules {0} empty "alpha"  
+  import LanguageParser
+  open LanguageParser.LParsers rules
 
-  import Parser
-  open Parser.Parsers using (all-of)
-  checker = all-of (lmap (λ tp → tp 3 rules {0} empty) (const-parsers rules)) "alpha -> alpha"
+  ans1 = construction {0} empty "lam x -> x"
+  ans2 = construction {0} empty "alpha -> alpha"  
+  ans3 = computation {0} empty "(lam x -> x : alpha -> alpha) "
+
+  -- import Parser
+  -- open Parser.Parsers using (all-of)
+  -- checker = all-of (lmap (λ tp → tp 3 rules {0} empty) (const-parsers rules)) "alpha -> alpha"
+-}

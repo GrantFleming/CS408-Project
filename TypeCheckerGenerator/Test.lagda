@@ -11,6 +11,7 @@ module Test where
 open import Test.STLCTest
 open import Test.BetaTest
 open import Test.EtaTest
+open import Test.SpecReadingTest
 \end{code}
 }
 

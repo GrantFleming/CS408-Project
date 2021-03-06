@@ -28,7 +28,7 @@ _ = refl
 
 _ : infer rules ε (α ∷ (α ⇨ α))
     ≡
-    fail "failed ∋-check: α→α ∋ α"
+    fail "failed ∋-check: α → α ∋ α"
 _ = refl
 
 -- should check applications are typed:

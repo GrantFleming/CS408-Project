@@ -68,7 +68,7 @@ in the empty scope (unless we have ducked under the $\vdash$ premise). We will l
 require the ability to open such premises when using them to establish trust in
 an arbitrary scope and so we define such an opening function $⊗premise$, the type
 is also given here.
-
+Ty
 \begin{code}
 data Prem  (p : Pattern δ) (q : Pattern δ) (γ : Scope) :
            (p' : Pattern γ) → (q' : Pattern δ) → Set where

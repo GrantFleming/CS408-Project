@@ -199,9 +199,9 @@ module ExpressionParser where
                              
     evar : CompuParser
     evar p γ vmap svmap = do
-                            literal '.'
-                            name ← identifier
-                            maybe′ (return ∘′ var) fail (lookup name vmap)
+                               literal '.'
+                               name ← identifier
+                               maybe′ (return ∘′ var) fail (lookup name vmap)         
     
     erad : CompuParser
     erad p γ vmap svmap = do
@@ -255,14 +255,14 @@ module PremiseParser where
   PremiseParser : Set
   PremiseParser = ∀ {δ}{γ} →
                   (p q : Pattern δ) →
-                  (SVarMap p) → (SVarMap q) →
+                  (SVarMap p) → (SVarMap q) → (VarMap γ) → 
                   Parser (Σ[ (p' , q') ∈ (Pattern γ × Pattern δ) ]
                           SVarMap p' × SVarMap q' × Prem p q γ p' q')
 
   prem : PremiseParser
 
   typeprem : PremiseParser
-  typeprem {γ = γ} p q pmap qmap
+  typeprem {γ = γ} p q pmap qmap vm
     = do
         string "type"
         whitespace
@@ -272,9 +272,9 @@ module PremiseParser where
         return (((place ι) , (q - ξ)) , (singleton name (δ' , ⋆) , qmap -svmap ξ , type ξ ι))
 
   ∋prem : PremiseParser
-  ∋prem {γ = γ} p q pmap qmap
+  ∋prem {γ = γ} p q pmap qmap vm
     = do
-        T ← bracketed (econst p γ empty pmap)
+        T ← bracketed (econst p γ vm pmap)
         ws-tolerant (string "<-")
         ((δ' , ξ) , name) ← schvar q qmap
         yes refl ← return (δ' ≟n γ)
@@ -282,7 +282,7 @@ module PremiseParser where
         return ((place ι , (q - ξ)) , (singleton name (δ' , ⋆) , qmap -svmap ξ , (T ∋' ξ [ ι ])))
 
   ≡prem : PremiseParser
-  ≡prem {γ = γ} p q pmap qmap
+  ≡prem {γ = γ} p q pmap qmap vm
     = do
         S ← bracketed (econst p γ empty pmap)
         ws-tolerant (literal '=')
@@ -290,7 +290,7 @@ module PremiseParser where
         return (((` "⊤") , q) , (empty , qmap , (S ≡' T)))
 
   univprem : PremiseParser
-  univprem {γ = γ} p q pmap qmap
+  univprem {γ = γ} p q pmap qmap vm
     = do
         string "univ"
         whitespace
@@ -299,20 +299,22 @@ module PremiseParser where
 
   {-# TERMINATING #-}
   ⊢prem : PremiseParser
-  ⊢prem {γ = γ} p q pmap qmap
+  ⊢prem {γ = γ} p q pmap qmap vm
     = do
+        name ← identifier
+        ws-tolerant (literal ':')
         S ← (safe ∘′ bracketed) (econst p γ empty pmap)
         ws-tolerant (string "|-")
-        ((p' , q'), (p'm , q'm , P)) ← prem {γ = suc γ} p q pmap qmap
+        ((p' , q'), (p'm , q'm , P)) ← prem {γ = suc γ} p q pmap qmap (insert name ze (map su vm))
         return ((bind p' , q') , (map (λ {(δ , v) → (δ , bind v)} ) p'm , q'm , (S ⊢' P)))
   open import Expression using (`)
-  prem p q pmap qmap
-    = anyof (Data.List.map (λ pp → pp p q pmap qmap )
+  prem p q pmap qmap vm
+    = anyof (Data.List.map (λ pp → pp p q pmap qmap vm)
             (typeprem ∷ ∋prem ∷ ≡prem ∷ univprem ∷ ⊢prem ∷ []))
 open PremiseParser            
 \end{code}
 
-Premise chains:
+-- Premise chains:
 
 \begin{code}
 
@@ -344,9 +346,12 @@ module PremisechainParser where
     nonε-chain : PremisechainParser
     nonε-chain p q pmap qmap
       = do
-          ((p' , q') , (p'm , q'm , prm)) ← prem {γ = 0} p q pmap qmap
+          ((p' , q') , (p'm , q'm , prm)) ← prem {γ = 0} p q pmap qmap empty
           ws+nl
-          (p' , p'm , rest) ← chain (p ∙ p') q'  (map (λ {(s , v) → (s , v ∙)}) pmap) q'm
+          (p' , p'm , rest) ← chain (p ∙ p') q'  (union
+                                                   (map (λ {(s , v) → (s , v ∙)}) pmap)
+                                                   (map (λ {(s , v) → (s , ∙ v)}) p'm))
+                                             q'm
           return (p' , p'm , (prm ⇉ rest))
     
   chain p q pmap qmap = either (nonε-chain p q pmap qmap)
@@ -359,8 +364,7 @@ module PremisechainParser where
                               ws+nl
                               chain p q pmap qmap)
                          or
-                           (εchain p q pmap qmap)
-                         
+                           (εchain p q pmap qmap)                      
 open PremisechainParser  
 \end{code}
 
@@ -371,7 +375,7 @@ We can now parse the whole specification file, the result of which is an entire 
 module SpecfileParser where
 
   open import TypeChecker using (RuleSet; rs)
-  open import Rules using (∋rule; ElimRule)
+  open import Rules using (UnivRule; TypeRule; ∋rule; ElimRule; ε; _placeless)
   open import Expression using (Con; `) renaming (map to emap)
   open import Semantics using (β-rule)
   open import Pattern using (←_)
@@ -478,10 +482,20 @@ module SpecfileParser where
            optional eta
            return (rs tr [] ∋rs (Data.List.map proj₁ elim-rules) βrs [])
 
+  setType : TypeRule
+  TypeRule.subject setType = ` "set"
+  TypeRule.premises setType = ` "⊤" , ε (` "set" placeless)
+
+  setUniv : UnivRule
+  UnivRule.input setUniv = ` "set"
+  UnivRule.premises setUniv = ` "set" , (ε (` "⊤" placeless))
+
   parse-spec : Parser RuleSet
-  parse-spec = (wsnl-tolerant type) ⁺[ (λ {(rs a  b  c  d  e  f)
+  parse-spec = do
+                 (rs ty u ∋ e β η) ← (wsnl-tolerant type) ⁺[ (λ {(rs a  b  c  d  e  f)
                                      (rs a' b' c' d' e' f') →
                                      rs (a ++ a') (b ++ b') (c ++ c') (d ++ d') (e ++ e') (f ++ f')}) , rs [] [] [] [] [] [] ]
+                 return (rs (setType ∷ ty) (setUniv ∷ u) ∋ e β η)
 open SpecfileParser
 \end{code}
 

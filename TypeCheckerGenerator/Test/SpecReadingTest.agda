@@ -24,9 +24,9 @@ module Test.SpecReadingTest where
   open import Function using (_∘′_)
   open import Rules using (TypeRule)
   open import Relation.Binary.PropositionalEquality using (_≡_; refl)
-{-
-  -- UNCOMMENT THIS TO GET A COMPILABLE BINARY TO TEST IF REQUIRED
 
+  -- UNCOMMENT THIS TO GET A COMPILABLE BINARY TO TEST IF REQUIRED
+{-
   print-list : ∀ {γ} → List (Pattern γ) → String
   print-list = foldr (_++_ ∘′ ((" || " ++_) ∘′ print-pat)) ""
 
@@ -46,8 +46,8 @@ module Test.SpecReadingTest where
              where fail msg → putStrLn (toCostring msg)
            _ ← putStrLn (toCostring ("term: " ++ (print term) ++ "\ntype: " ++ print type)) 
            return tt
-
 -}
+
   open import Rules using (∋rule; TypeRule; ElimRule; ε; _⇉_; type; _∋'_[_]; _⊢'_; _placeless)
   open import Pattern using (Pattern; `; _∙_; bind; place; ∙_; _∙; ⋆)
   open import Expression using (`; _/_)
@@ -235,4 +235,5 @@ module Test.SpecReadingTest where
                    ` "->" ∙ ` "both" ∙ ` "alpha" ∙ ` "beta"))
                   , "")
   _ = refl
+
 

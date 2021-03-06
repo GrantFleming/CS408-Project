@@ -348,7 +348,10 @@ univ-check Γ rules (urule ∷ urules) input
 ... | nothing = univ-check Γ rules urules input
 ... | just x = run-univrule Γ rules urule x
 
-
+type-check Γ rules@(rs t u ∋ e β η) trs (thunk x)
+  = do
+      ty ← infer rules Γ x
+      univ-check Γ rules u ty
 type-check  Γ rules []      ms
   = fail ("type-check: " ++ (print ms) ++ " is not a type")
 type-check Γ rules (trule ∷ trules) ms
@@ -356,7 +359,7 @@ type-check Γ rules (trule ∷ trules) ms
 ... | nothing = type-check Γ rules trules ms
 ... | just env = run-typerule Γ rules trule env
 
-
+∋-check Γ rules@(rs t u ∋ e β η) _ sub (` "set") = type-check Γ rules t sub
 ∋-check Γ rules []               sub inp
   = fail ("failed ∋-check: " ++ (print inp) ++ " ∋ " ++ (print sub))
 ∋-check Γ rules (∋-rule ∷ ∋rules) sub inp
@@ -374,18 +377,25 @@ elim-synth Γ rules (erule ∷ erules) T s with match-erule erule T s
 
 infer rules@(rs t u ∋ ee β η) Γ (var x)    = do
                             -- check postcondition:
-                             _ ← type-check Γ rules t (x ‼V Γ)
+                             ty ← return (x ‼V Γ)
+                             tyn ← return (normalize η β (infer rules , (λ scp → check-premise-chain {γ = scp} rules)) Γ (` "Type") ty)
+                             _ ← type-check Γ rules t tyn
                              succeed (x ‼V Γ)
 infer rules@(rs t u ∋ ee β η) Γ (elim e s) = do
                              T ← infer rules Γ e
                              S ← elim-synth Γ rules ee T s
+                             Sn ← return (normalize η β (infer rules , (λ scp → check-premise-chain {γ = scp} rules)) Γ (` "Type") S)      
                              -- check postcondition:
-                             _ ← type-check Γ rules t S
+                             _ ← type-check Γ rules t Sn
                              succeed S
 infer rules@(rs tr u ∋ e β η) Γ (t ∷ T)  = do
                    -- postcondition checks in ∋-check
                    _ ← ∋-check Γ rules ∋ t T
                    succeed T
+
+-- special case, checking if (type ∈ tm) is checking if tm is a type
+check {_} {const} rules@(rs t _ _ _ _ _) Γ (` "set") tm = type-check Γ rules t tm
+check {_} {compu} rules@(rs t _ _ _ _ _) Γ (` "set") tm = type-check Γ rules t (thunk tm)
 
 check {_} {const} rules Γ T (thunk x)         = check rules Γ T x
 check {_} {const} rules@(rs tr u ∋ e β η) Γ T t = ∋-check Γ rules ∋ t T

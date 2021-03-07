@@ -380,18 +380,19 @@ infer rules@(rs t u ∋ ee β η) Γ (var x)    = do
                              ty ← return (x ‼V Γ)
                              tyn ← return (normalize η β (infer rules , (λ scp → check-premise-chain {γ = scp} rules)) Γ (` "Type") ty)
                              _ ← type-check Γ rules t tyn
-                             succeed (x ‼V Γ)
+                             succeed tyn
 infer rules@(rs t u ∋ ee β η) Γ (elim e s) = do
                              T ← infer rules Γ e
                              S ← elim-synth Γ rules ee T s
                              Sn ← return (normalize η β (infer rules , (λ scp → check-premise-chain {γ = scp} rules)) Γ (` "Type") S)      
                              -- check postcondition:
                              _ ← type-check Γ rules t Sn
-                             succeed S
+                             succeed Sn
 infer rules@(rs tr u ∋ e β η) Γ (t ∷ T)  = do
                    -- postcondition checks in ∋-check
-                   _ ← ∋-check Γ rules ∋ t T
-                   succeed T
+                   Tn ← return (normalize η β (infer rules , (λ scp → check-premise-chain {γ = scp} rules)) Γ (` "Type") T)
+                   _ ← ∋-check Γ rules ∋ t Tn
+                   succeed Tn
 
 -- special case, checking if (type ∈ tm) is checking if tm is a type
 check {_} {const} rules@(rs t _ _ _ _ _) Γ (` "set") tm = type-check Γ rules t tm

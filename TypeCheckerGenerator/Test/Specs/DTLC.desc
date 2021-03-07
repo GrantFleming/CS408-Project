@@ -1,18 +1,26 @@
-type: alpha
-  value: a
+type: α
+  value: a1
+  value: a2
 
-type: beta
-  value: b
+type: isa TY TM
+  if:
+    type TY
+    (TY) <- TM
+  value: is V
+    if:
+      (TY) <- V
+      (TM) = V
 
-type: A -> (A. B)
+type: A X. -> B
   if:
     type A
-    type B 
+    X : (A) |- type B
   eliminator: E
     if:
-      A <- E
-    elimination-type: B/[.A = E]   
+      (A) <- E
+    elimination-type: B/[, E:A]
   value: \ X. -> M
     if:
-      .X = A |- B/[.A = .X] <- M
-    reduction: M/[.X = E]
+      X : (A) |- (B/[, .X]) <- M
+    reduction: M/[, E:A]
+  eta: \ Y. -> Y

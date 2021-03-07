@@ -7,16 +7,11 @@ module CoreLanguage where
 \end{code}
 
 \begin{code}
-open import Data.Nat using (ℕ; suc; zero)
+open import Data.Nat using (ℕ; suc; zero; ∣_-_∣)
+open import Data.Nat.Show using (show)
 open import Data.String using (String; _++_)
 open import Function using (id)
 \end{code}
-
-\hide{
-\begin{code}
-\end{code}
-}
-}
 
 The general tactic for type-checking generic code, will be to
 convert user code into an internal language of our design. Our
@@ -143,11 +138,11 @@ print : Term d γ → String
 print {const} (` x)      = x
 print {const} (` x ∙ t)  = print {γ = 0} (` x) ++ " " ++ print t
 print {const} (s ∙ t)    = "(" ++ print s ++ ") " ++ print t
-print {const} (bind x)   = "(" ++ print x ++ ")"
-print {const} (thunk x)  = "(_" ++ print x ++ "_)"
-print {compu} (var x)    = "VAR"
+print {const} {γ} (bind x)   = "V" ++ show γ ++ " " ++ print x
+print {const} (thunk x)  = print x
+print {compu} {γ} (var x)    = "V" ++ show (∣ γ - suc (toNum x) ∣)
 print {compu} (elim e s) = "(elim " ++ print e ++ " " ++ print s ++ ")"
-print {compu} (t ∷ T)    = "((" ++ print t ++ ") ∶ " ++ print T ++ ")"
+print {compu} (t ∷ T)    = "(" ++ print t ++ " ∶ " ++ print T ++ ")"
 
 printrawvar : Var γ → String
 printrawvar ze     = "ze"
@@ -156,7 +151,7 @@ printrawvar (su v) = "su " ++ printrawvar v
 printraw : Term d γ → String
 printraw {const} (` x)       = "(` '" ++ x ++ "')"
 printraw {const} (s ∙ t)     = "(" ++ printraw s ++ " ∙ "  ++ printraw t ++ ")"
-printraw {const} (bind x)    = "(bind " ++ printraw x ++ ")"
+printraw {const} {γ} (bind x)    = "(" ++ "V" ++ show (suc γ) ++ " " ++ printraw x ++ ")"
 printraw {const} (thunk x)   = "(thunk " ++ printraw x ++ ")"
 printraw {compu} (var x)     = "(var " ++ printrawvar x ++ ")"
 printraw {compu} (elim e s)  = "(elim " ++ printraw e ++ " " ++ printraw s ++ ")"

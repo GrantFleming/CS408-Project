@@ -1,33 +1,28 @@
 type: α
-  value: a
+  value: a1
+  value: a2
 
-type: β
-  value: b
+type: isa TY TM
+  if:
+    type TY
+    (TY) <- TM
+  value: is V
+    if:
+      (TY) <- V
+      (TM) = V
 
-type: A -> B
+type: A X. -> B
   if:
     type A
-    type B
+    X : (A) |- type B
   eliminator: E
     if:
       (A) <- E
-    elimination-type: B
+    elimination-type: B/[, E:A]
   value: \ X. -> M
     if:
-      X : (A) |- (B) <- M
+      X : (A) |- (B/[, .X]) <- M
     reduction: M/[, E:A]
   eta: \ Y. -> Y
-
-type: ∀ T. => M
-  if:
-    T : (set) |- type M
-  eliminator: TY
-    if:
-      type TY
-    elimination-type: M/[, TY:set]
-  value: δ T. TM
-    if:
-      T : (set) |- (M/[, .T]) <- TM
-    reduction: TM/[, TY:set]
 
 

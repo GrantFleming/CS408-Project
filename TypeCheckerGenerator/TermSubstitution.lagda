@@ -53,10 +53,16 @@ id {suc γ} = (id {γ} ^) -, var ze
 \end{code}
 }
 
-We also define the action of such a substitution on a term, proceeding
-structurally as one might expect except that we ensure we alter the
-substitution accordingly as we pass under binders, introducing an identity
-substitution for the newly bound variable.
+We also define the action of such a substitution on a term, where most cases
+recurse on direct substructures as one might expect except for two cases of
+interest. The first is that we must ensure we alter the substitution accordingly
+as we pass under binders, introducing an identity substitution for the newly
+bound variable but first fixing up the scope of the substitution we already have.
+The second is where we find some variable and perform the actual substitution.
+Here we do not use the Substitutable type defined previously as the target of
+substitution may be either a construction or a computation, however the objects
+we are substituting in are always computations. This type is reserved for use
+later.
 
 \begin{code}
 _/term_ : Term d γ → γ ⇒ δ → Term d δ

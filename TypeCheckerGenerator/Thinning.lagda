@@ -1,4 +1,5 @@
 \section{Thinnings}
+\label{section-thinnings}
 
 \hide{
 \begin{code}
@@ -46,12 +47,12 @@ private
 A key concept that will be used throughout this implementation is that
 of a Thinning. Thinnings describe embeddings between scopes and are
 denoted $δ ⊑ γ$ where they are embed some scope $δ$ into another
-scope $γ$ and as such is must be that $δ \leq γ$.
+scope $γ$ and as such it must be that $δ \leq γ$.
 
 Thinnings can be represented as bit-vectors $γ$ digits long where each
 digit identifies what is 'new' in $γ$, or alternatively, for things scoped
 in $γ$, which of them existed in $δ$. Our implementation follows this
-intuiting and also enforces the $δ \leq γ$ invariant by construction.
+intuition and also enforces the $δ \leq γ$ invariant by construction.
 
 \begin{code}
 data _⊑_ : Scope → Scope → Set where
@@ -68,8 +69,8 @@ to a concatenation in both directions. Their type signatures are as follows.
 ι     : γ ⊑ γ
 Ø     : 0 ⊑ γ
 _++_  : δ ⊑ γ → δ' ⊑ γ' → (δ + δ') ⊑ (γ + γ')
-_◃_   : (γ : Scope) → (δ : Scope) → γ ⊑ (γ + δ)
-_▹_   : (γ : Scope) → (δ : Scope) → δ ⊑ (γ + δ)
+_◃_   : (γ δ : Scope) → γ ⊑ (γ + δ)
+_▹_   : (γ δ : Scope) → δ ⊑ (γ + δ)
 \end{code}
 
 \hide{
@@ -99,7 +100,8 @@ _++_ {δ} {γ} {suc δ'} {suc γ'} θ (ϕ I)
 \end{code}
 }
 
-We can decide equality of thinnings:
+We can decide equality of thinnings and so we leverage the standard library
+to help us provide this functionality.
 
 \begin{code}
 _≟_ : DecidableEquality (δ ⊑ γ)
@@ -233,7 +235,7 @@ weaken {T} ⟨ t = ⟨ t ↑
 When providing Weakenables, we adopt the naming convention of \^̂some-entity.
 
 As a consequence of being able to easily weaken Thinnable entities, Weakenable
-implementations are often trivial.
+implementations are often trivial. The types of some commonly used weakenings are detailed here.
 
 \begin{code}
 _^      : Weakenable (γ ⊑_)

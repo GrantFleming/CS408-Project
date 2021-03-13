@@ -19,7 +19,14 @@
 \AgdaKeyword{using}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaDatatype{ℕ}\AgdaSymbol{;}\AgdaSpace{}%
 \AgdaInductiveConstructor{suc}\AgdaSymbol{;}\AgdaSpace{}%
-\AgdaInductiveConstructor{zero}\AgdaSymbol{)}\<%
+\AgdaInductiveConstructor{zero}\AgdaSymbol{;}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{∣\AgdaUnderscore{}-\AgdaUnderscore{}∣}}\AgdaSymbol{)}\<%
+\\
+\>[0]\AgdaKeyword{open}\AgdaSpace{}%
+\AgdaKeyword{import}\AgdaSpace{}%
+\AgdaModule{Data.Nat.Show}\AgdaSpace{}%
+\AgdaKeyword{using}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaFunction{show}\AgdaSymbol{)}\<%
 \\
 \>[0]\AgdaKeyword{open}\AgdaSpace{}%
 \AgdaKeyword{import}\AgdaSpace{}%
@@ -34,19 +41,7 @@
 \AgdaKeyword{using}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaFunction{id}\AgdaSymbol{)}\<%
 \end{code}
-
-\hide{
-\begin{code}%
-\>[0]\<%
-\end{code}
 }
-}
-
-The general tactic for type-checking generic code, will be to
-convert user code into an internal language of our design. Our
-internal language will be agnostic with regards to possible external
-syntax but will have the key features needed to represent arbitrary
-syntax.
 
 First we introduce the concept of scope and what it means to be
 scoped. In our system, all variables are de-bruijn indexed and our
@@ -306,18 +301,20 @@ their type checked, while computations have their type synthesized.
 
 This syntax gives us the means to represent atoms of original syntax
 with `, pairs of syntax elements, binding sites (thus increasing the scope
-for a subterm), variables, type annotated terms and eliminations - the
-sites of $β$-reductions. We are also able to embed computations into
-constructions, as we can always check the type of a synthesizable term by
-synthesizing its type and ascertaining if it matches a provided
-type.
+for a subterm), variables, type annotated terms with "::" and eliminations
+- the sites of $β$-reductions. We are also able to embed computations into
+constructions using thunk, as being able to synthesize the type of a term
+guarantees that we are able to check it.
 
 Note that blindly embedding synthesizable terms with 'thunk' is
-not always the best course of action \hl{why?}, in the case of an
-annotated term, we already have a suitable construction under the
-annotation. For convenience we provide a function to perform
-this embedding and hence a function to take \emph{any} term to
-a construction.
+not always the best course of action, in the case of an annotated
+term, we already have a suitable construction under the annotation.
+For convenience we provide a function to perform this embedding and
+hence a function to take \emph{any} computation to a construction and
+another to take any term to a construction. We also prove the opposite
+functionality, allowing us to take any term to a computation, however in
+this case we need to supply a construction that we claim to be the type.
+This may or may not be used in constructing the computation.
 
 \hide{
 \begin{code}%
@@ -374,6 +371,44 @@ a construction.
 \AgdaSymbol{\{}\AgdaInductiveConstructor{compu}\AgdaSymbol{\}}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
 \AgdaFunction{↠}\<%
+\\
+%
+\\[\AgdaEmptyExtraSkip]%
+\>[0]\AgdaFunction{↞↞}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaFunction{Term}\AgdaSpace{}%
+\AgdaGeneralizable{d}\AgdaSpace{}%
+\AgdaGeneralizable{γ}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaDatatype{Const}\AgdaSpace{}%
+\AgdaGeneralizable{γ}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaDatatype{Compu}\AgdaSpace{}%
+\AgdaGeneralizable{γ}\<%
+\\
+\>[0]\AgdaFunction{↞↞}\AgdaSpace{}%
+\AgdaSymbol{\{}\AgdaInductiveConstructor{const}\AgdaSymbol{\}}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{thunk}\AgdaSpace{}%
+\AgdaBound{x}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaBound{T}%
+\>[24]\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaBound{x}\<%
+\\
+\>[0]\AgdaCatchallClause{\AgdaFunction{↞↞}}\AgdaSpace{}%
+\AgdaCatchallClause{\AgdaSymbol{\{}}\AgdaCatchallClause{\AgdaInductiveConstructor{const}}\AgdaCatchallClause{\AgdaSymbol{\}}}%
+\>[12]\AgdaCatchallClause{\AgdaBound{t}}%
+\>[21]\AgdaCatchallClause{\AgdaBound{T}}%
+\>[24]\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaBound{t}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{T}\<%
+\\
+\>[0]\AgdaFunction{↞↞}\AgdaSpace{}%
+\AgdaSymbol{\{}\AgdaInductiveConstructor{compu}\AgdaSymbol{\}}%
+\>[12]\AgdaBound{t}%
+\>[21]\AgdaSymbol{\AgdaUnderscore{}}%
+\>[24]\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaBound{t}\<%
 \end{code}
 
 \hide{
@@ -401,46 +436,79 @@ a construction.
 \\
 \>[0]\AgdaFunction{print}\AgdaSpace{}%
 \AgdaSymbol{\{}\AgdaInductiveConstructor{const}\AgdaSymbol{\}}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaBound{s}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{`}\AgdaSpace{}%
+\AgdaBound{x}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{∙}}\AgdaSpace{}%
 \AgdaBound{t}\AgdaSymbol{)}%
 \>[25]\AgdaSymbol{=}\AgdaSpace{}%
 \AgdaFunction{print}\AgdaSpace{}%
+\AgdaSymbol{\{}\AgdaArgument{γ}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaNumber{0}\AgdaSymbol{\}}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{`}\AgdaSpace{}%
+\AgdaBound{x}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{++}}\AgdaSpace{}%
+\AgdaString{" "}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{++}}\AgdaSpace{}%
+\AgdaFunction{print}\AgdaSpace{}%
+\AgdaBound{t}\<%
+\\
+\>[0]\AgdaCatchallClause{\AgdaFunction{print}}\AgdaSpace{}%
+\AgdaCatchallClause{\AgdaSymbol{\{}}\AgdaCatchallClause{\AgdaInductiveConstructor{const}}\AgdaCatchallClause{\AgdaSymbol{\}}}\AgdaSpace{}%
+\AgdaCatchallClause{\AgdaSymbol{(}}\AgdaCatchallClause{\AgdaBound{s}}\AgdaSpace{}%
+\AgdaCatchallClause{\AgdaOperator{\AgdaInductiveConstructor{∙}}}\AgdaSpace{}%
+\AgdaCatchallClause{\AgdaBound{t}}\AgdaCatchallClause{\AgdaSymbol{)}}%
+\>[25]\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaString{"("}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{++}}\AgdaSpace{}%
+\AgdaFunction{print}\AgdaSpace{}%
 \AgdaBound{s}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{++}}\AgdaSpace{}%
+\AgdaString{") "}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{++}}\AgdaSpace{}%
 \AgdaFunction{print}\AgdaSpace{}%
 \AgdaBound{t}\<%
 \\
 \>[0]\AgdaFunction{print}\AgdaSpace{}%
 \AgdaSymbol{\{}\AgdaInductiveConstructor{const}\AgdaSymbol{\}}\AgdaSpace{}%
+\AgdaSymbol{\{}\AgdaBound{γ}\AgdaSymbol{\}}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{bind}\AgdaSpace{}%
 \AgdaBound{x}\AgdaSymbol{)}%
-\>[25]\AgdaSymbol{=}\AgdaSpace{}%
-\AgdaString{"("}\AgdaSpace{}%
+\>[29]\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaString{"V"}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{++}}\AgdaSpace{}%
+\AgdaFunction{show}\AgdaSpace{}%
+\AgdaBound{γ}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{++}}\AgdaSpace{}%
+\AgdaString{" "}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{++}}\AgdaSpace{}%
 \AgdaFunction{print}\AgdaSpace{}%
-\AgdaBound{x}\AgdaSpace{}%
-\AgdaOperator{\AgdaFunction{++}}\AgdaSpace{}%
-\AgdaString{")"}\<%
+\AgdaBound{x}\<%
 \\
 \>[0]\AgdaFunction{print}\AgdaSpace{}%
 \AgdaSymbol{\{}\AgdaInductiveConstructor{const}\AgdaSymbol{\}}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{thunk}\AgdaSpace{}%
 \AgdaBound{x}\AgdaSymbol{)}%
 \>[25]\AgdaSymbol{=}\AgdaSpace{}%
-\AgdaString{"(\AgdaUnderscore{}"}\AgdaSpace{}%
-\AgdaOperator{\AgdaFunction{++}}\AgdaSpace{}%
 \AgdaFunction{print}\AgdaSpace{}%
-\AgdaBound{x}\AgdaSpace{}%
-\AgdaOperator{\AgdaFunction{++}}\AgdaSpace{}%
-\AgdaString{"\AgdaUnderscore{})"}\<%
+\AgdaBound{x}\<%
 \\
 \>[0]\AgdaFunction{print}\AgdaSpace{}%
 \AgdaSymbol{\{}\AgdaInductiveConstructor{compu}\AgdaSymbol{\}}\AgdaSpace{}%
+\AgdaSymbol{\{}\AgdaBound{γ}\AgdaSymbol{\}}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{var}\AgdaSpace{}%
 \AgdaBound{x}\AgdaSymbol{)}%
-\>[25]\AgdaSymbol{=}\AgdaSpace{}%
-\AgdaString{"VAR"}\<%
+\>[29]\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaString{"V"}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{++}}\AgdaSpace{}%
+\AgdaFunction{show}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaOperator{\AgdaFunction{∣}}\AgdaSpace{}%
+\AgdaBound{γ}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{-}}\AgdaSpace{}%
+\AgdaInductiveConstructor{suc}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaFunction{toNum}\AgdaSpace{}%
+\AgdaBound{x}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{∣}}\AgdaSymbol{)}\<%
 \\
 \>[0]\AgdaFunction{print}\AgdaSpace{}%
 \AgdaSymbol{\{}\AgdaInductiveConstructor{compu}\AgdaSymbol{\}}\AgdaSpace{}%
@@ -466,12 +534,12 @@ a construction.
 \AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
 \AgdaBound{T}\AgdaSymbol{)}%
 \>[25]\AgdaSymbol{=}\AgdaSpace{}%
-\AgdaString{"( \{"}\AgdaSpace{}%
+\AgdaString{"("}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{++}}\AgdaSpace{}%
 \AgdaFunction{print}\AgdaSpace{}%
 \AgdaBound{t}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{++}}\AgdaSpace{}%
-\AgdaString{"\} ∶ "}\AgdaSpace{}%
+\AgdaString{" ∶ "}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{++}}\AgdaSpace{}%
 \AgdaFunction{print}\AgdaSpace{}%
 \AgdaBound{T}\AgdaSpace{}%
@@ -542,10 +610,19 @@ a construction.
 \\
 \>[0]\AgdaFunction{printraw}\AgdaSpace{}%
 \AgdaSymbol{\{}\AgdaInductiveConstructor{const}\AgdaSymbol{\}}\AgdaSpace{}%
+\AgdaSymbol{\{}\AgdaBound{γ}\AgdaSymbol{\}}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{bind}\AgdaSpace{}%
 \AgdaBound{x}\AgdaSymbol{)}%
-\>[29]\AgdaSymbol{=}\AgdaSpace{}%
-\AgdaString{"(bind "}\AgdaSpace{}%
+\>[33]\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaString{"("}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{++}}\AgdaSpace{}%
+\AgdaString{"V"}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{++}}\AgdaSpace{}%
+\AgdaFunction{show}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{suc}\AgdaSpace{}%
+\AgdaBound{γ}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{++}}\AgdaSpace{}%
+\AgdaString{" "}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{++}}\AgdaSpace{}%
 \AgdaFunction{printraw}\AgdaSpace{}%
 \AgdaBound{x}\AgdaSpace{}%
@@ -611,5 +688,60 @@ a construction.
 \AgdaBound{T}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{++}}\AgdaSpace{}%
 \AgdaString{")"}\<%
+\\
+%
+\\[\AgdaEmptyExtraSkip]%
+\>[0]\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}<<\AgdaUnderscore{}}}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaDatatype{Const}\AgdaSpace{}%
+\AgdaGeneralizable{γ}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaDatatype{Const}\AgdaSpace{}%
+\AgdaGeneralizable{γ}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaDatatype{Const}\AgdaSpace{}%
+\AgdaGeneralizable{γ}\<%
+\\
+\>[0]\AgdaInductiveConstructor{`}\AgdaSpace{}%
+\AgdaBound{x}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{<<}}\AgdaSpace{}%
+\AgdaBound{y}%
+\>[15]\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{`}\AgdaSpace{}%
+\AgdaBound{x}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∙}}\AgdaSpace{}%
+\AgdaBound{y}\<%
+\\
+\>[0]\AgdaSymbol{(}\AgdaBound{x}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∙}}\AgdaSpace{}%
+\AgdaBound{y'}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{<<}}\AgdaSpace{}%
+\AgdaBound{y}%
+\>[15]\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaBound{x}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∙}}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{y'}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{<<}}\AgdaSpace{}%
+\AgdaBound{y}\AgdaSymbol{)}\<%
+\\
+\>[0]\AgdaInductiveConstructor{bind}\AgdaSpace{}%
+\AgdaBound{x}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{<<}}\AgdaSpace{}%
+\AgdaBound{y}%
+\>[15]\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{bind}\AgdaSpace{}%
+\AgdaBound{x}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∙}}\AgdaSpace{}%
+\AgdaBound{y}\<%
+\\
+\>[0]\AgdaInductiveConstructor{thunk}\AgdaSpace{}%
+\AgdaBound{x}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{<<}}\AgdaSpace{}%
+\AgdaBound{y}%
+\>[15]\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{thunk}\AgdaSpace{}%
+\AgdaBound{x}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∙}}\AgdaSpace{}%
+\AgdaBound{y}\<%
 \end{code}
 }

@@ -1,17 +1,37 @@
 \chapter{Building a Type Checker Generator}
 
-Now that a user has the means of describing a type system, focus will
-be shifted onto the building of the system in question.
+Now that a user has the means of describing a type system, we will now
+discuss how the generic type-checking software is constructed.
 
-We will describe key aspects of our code as it is written by inluding
-the code as literate agda files, however we hide areas of the code
-from being rendered for brevity and so code shown here is not
-complete and we often show only the type signature where the
-implementation is tedius, long or irrelevant.
+We will describe key definitions and types in order to communicate a
+high level understanding of how the software is designed to work,
+however we will often omit implmentation details in areas where the
+code is less important, tedius or verbose.
+
+The general tactic for type-checking some generic syntax will be to
+parse the required typing, $\beta$ and $\eta$ rules from the
+descriptions provided using our DSL. Using this information we can
+then parse user source code and represent it in a fairly language
+agnostic interal object syntax before using the rules to type-check
+our internal syntax.
+
+We will begin by describing the internal syntax, talk about how we
+might represent the various tools and rules that we need in order to
+type check this syntax and define the type checking process before
+breifly covering our approach to parsing this information from the
+user supplied input files. We purposely keep our parsing conversations
+brief to prioritize the presentation of challanges in other areas.
+
+Our approach in this section is heavily influenced by the work of
+Conor McBride in \emph{The types who say 'ni'} \cite{TypesWhoSayNi} -
+although the code we provide is strictly our own in all cases, there
+are certainly areas where this code is a near direct translation of
+the mathematics in this paper.
+
 \\\\
 \input{../../TypeCheckerGenerator/latex/CoreLanguage.tex}
-\input{../../TypeCheckerGenerator/latex/Substitution.tex}
 \input{../../TypeCheckerGenerator/latex/Thinning.tex}
+\input{../../TypeCheckerGenerator/latex/Substitution.tex}
 \input{../../TypeCheckerGenerator/latex/TermSubstitution.tex}
 \input{../../TypeCheckerGenerator/latex/Context.tex}
 \input{../../TypeCheckerGenerator/latex/Opening.tex}

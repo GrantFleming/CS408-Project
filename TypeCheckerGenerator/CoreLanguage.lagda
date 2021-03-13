@@ -12,12 +12,7 @@ open import Data.Nat.Show using (show)
 open import Data.String using (String; _++_)
 open import Function using (id)
 \end{code}
-
-The general tactic for type-checking generic code, will be to
-convert user code into an internal language of our design. Our
-internal language will be agnostic with regards to possible external
-syntax but will have the key features needed to represent arbitrary
-syntax.
+}
 
 First we introduce the concept of scope and what it means to be
 scoped. In our system, all variables are de-bruijn indexed and our
@@ -94,19 +89,20 @@ Term compu  = Compu
 
 This syntax gives us the means to represent atoms of original syntax
 with `, pairs of syntax elements, binding sites (thus increasing the scope
-for a subterm), variables, type annotated terms and eliminations - the
-sites of $β$-reductions. We are also able to embed computations into
-constructions, as we can always check the type of a synthesizable term by
-synthesizing its type and ascertaining if it matches a provided
-type.
+for a subterm), variables, type annotated terms with "::" and eliminations
+- the sites of $β$-reductions. We are also able to embed computations into
+constructions using thunk, as being able to synthesize the type of a term
+guarantees that we are able to check it.
 
 Note that blindly embedding synthesizable terms with 'thunk' is
-not always the best course of action \hl{why?}, in the case of an
-annotated term, we already have a suitable construction under the
-annotation. For convenience we provide a function to perform
-this embedding and hence a function to take \emph{any} term to
-a construction and another to take any term to a computation so
-long as we know it's type.
+not always the best course of action, in the case of an annotated
+term, we already have a suitable construction under the annotation.
+For convenience we provide a function to perform this embedding and
+hence a function to take \emph{any} computation to a construction and
+another to take any term to a construction. We also prove the opposite
+functionality, allowing us to take any term to a computation, however in
+this case we need to supply a construction that we claim to be the type.
+This may or may not be used in constructing the computation.
 
 \hide{
 \begin{code}

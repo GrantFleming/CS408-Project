@@ -1,4 +1,5 @@
 \section{Thinnings}
+\label{section-thinnings}
 
 \hide{
 \begin{code}%
@@ -68,6 +69,8 @@
 \>[0]\AgdaKeyword{open}\AgdaSpace{}%
 \AgdaKeyword{import}\AgdaSpace{}%
 \AgdaModule{Data.Unit}\AgdaSpace{}%
+\AgdaKeyword{using}\AgdaSpace{}%
+\AgdaSymbol{()}\AgdaSpace{}%
 \AgdaKeyword{renaming}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaRecord{⊤}\AgdaSpace{}%
 \AgdaSymbol{to}\AgdaSpace{}%
@@ -97,6 +100,19 @@
 \>[0]\AgdaKeyword{open}\AgdaSpace{}%
 \AgdaKeyword{import}\AgdaSpace{}%
 \AgdaModule{Substitution}\<%
+\\
+\>[0]\AgdaKeyword{open}\AgdaSpace{}%
+\AgdaKeyword{import}\AgdaSpace{}%
+\AgdaModule{Relation.Binary.Definitions}\AgdaSpace{}%
+\AgdaKeyword{using}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaFunction{DecidableEquality}\AgdaSymbol{)}\<%
+\\
+\>[0]\AgdaKeyword{open}\AgdaSpace{}%
+\AgdaKeyword{import}\AgdaSpace{}%
+\AgdaModule{Relation.Nullary}\AgdaSpace{}%
+\AgdaKeyword{using}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{yes}\AgdaSymbol{;}\AgdaSpace{}%
+\AgdaInductiveConstructor{no}\AgdaSymbol{)}\<%
 \end{code}
 }
 
@@ -172,12 +188,12 @@
 A key concept that will be used throughout this implementation is that
 of a Thinning. Thinnings describe embeddings between scopes and are
 denoted $δ ⊑ γ$ where they are embed some scope $δ$ into another
-scope $γ$ and as such is must be that $δ \leq γ$.
+scope $γ$ and as such it must be that $δ \leq γ$.
 
 Thinnings can be represented as bit-vectors $γ$ digits long where each
 digit identifies what is 'new' in $γ$, or alternatively, for things scoped
 in $γ$, which of them existed in $δ$. Our implementation follows this
-intuiting and also enforces the $δ \leq γ$ invariant by construction.
+intuition and also enforces the $δ \leq γ$ invariant by construction.
 
 \begin{code}%
 \>[0]\AgdaKeyword{data}\AgdaSpace{}%
@@ -265,10 +281,7 @@ to a concatenation in both directions. Their type signatures are as follows.
 \>[0]\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}◃\AgdaUnderscore{}}}%
 \>[6]\AgdaSymbol{:}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaBound{γ}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaFunction{Scope}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaBound{δ}\AgdaSpace{}%
+\AgdaBound{δ}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaFunction{Scope}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaSymbol{→}\AgdaSpace{}%
@@ -281,10 +294,7 @@ to a concatenation in both directions. Their type signatures are as follows.
 \>[0]\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}▹\AgdaUnderscore{}}}%
 \>[6]\AgdaSymbol{:}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaBound{γ}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaFunction{Scope}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaBound{δ}\AgdaSpace{}%
+\AgdaBound{δ}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaFunction{Scope}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaSymbol{→}\AgdaSpace{}%
@@ -440,6 +450,107 @@ to a concatenation in both directions. Their type signatures are as follows.
 \AgdaOperator{\AgdaInductiveConstructor{I}}\<%
 \end{code}
 }
+
+We can decide equality of thinnings and so we leverage the standard library
+to help us provide this functionality.
+
+\begin{code}%
+\>[0]\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}≟\AgdaUnderscore{}}}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaFunction{DecidableEquality}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaGeneralizable{δ}\AgdaSpace{}%
+\AgdaOperator{\AgdaDatatype{⊑}}\AgdaSpace{}%
+\AgdaGeneralizable{γ}\AgdaSymbol{)}\<%
+\\
+\>[0]\AgdaInductiveConstructor{ε}%
+\>[6]\AgdaOperator{\AgdaFunction{≟}}%
+\>[9]\AgdaInductiveConstructor{ε}%
+\>[14]\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{yes}\AgdaSpace{}%
+\AgdaInductiveConstructor{refl}\<%
+\\
+\>[0]\AgdaSymbol{(}\AgdaBound{x}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{O}}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{≟}}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{y}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{O}}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaKeyword{with}\AgdaSpace{}%
+\AgdaBound{x}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{≟}}\AgdaSpace{}%
+\AgdaBound{y}\<%
+\\
+\>[0]\AgdaSymbol{...}\AgdaSpace{}%
+\AgdaSymbol{|}\AgdaSpace{}%
+\AgdaInductiveConstructor{yes}\AgdaSpace{}%
+\AgdaInductiveConstructor{refl}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{yes}\AgdaSpace{}%
+\AgdaInductiveConstructor{refl}\<%
+\\
+\>[0]\AgdaSymbol{...}\AgdaSpace{}%
+\AgdaSymbol{|}\AgdaSpace{}%
+\AgdaInductiveConstructor{no}\AgdaSpace{}%
+\AgdaBound{p}%
+\>[15]\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{no}\AgdaSpace{}%
+\AgdaSymbol{(λ}\AgdaSpace{}%
+\AgdaSymbol{\{}\AgdaSpace{}%
+\AgdaInductiveConstructor{refl}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaBound{p}\AgdaSpace{}%
+\AgdaInductiveConstructor{refl}\AgdaSymbol{\})}\<%
+\\
+\>[0]\AgdaSymbol{(}\AgdaBound{x}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{O}}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{≟}}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{y}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{I}}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{no}\AgdaSpace{}%
+\AgdaSymbol{(λ}\AgdaSpace{}%
+\AgdaSymbol{\{()\})}\<%
+\\
+\>[0]\AgdaSymbol{(}\AgdaBound{x}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{I}}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{≟}}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{y}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{O}}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{no}\AgdaSpace{}%
+\AgdaSymbol{(λ}\AgdaSpace{}%
+\AgdaSymbol{\{()\})}\<%
+\\
+\>[0]\AgdaSymbol{(}\AgdaBound{x}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{I}}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{≟}}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{y}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{I}}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaKeyword{with}\AgdaSpace{}%
+\AgdaBound{x}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{≟}}\AgdaSpace{}%
+\AgdaBound{y}\<%
+\\
+\>[0]\AgdaSymbol{...}\AgdaSpace{}%
+\AgdaSymbol{|}\AgdaSpace{}%
+\AgdaInductiveConstructor{yes}\AgdaSpace{}%
+\AgdaInductiveConstructor{refl}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{yes}\AgdaSpace{}%
+\AgdaInductiveConstructor{refl}\<%
+\\
+\>[0]\AgdaSymbol{...}\AgdaSpace{}%
+\AgdaSymbol{|}\AgdaSpace{}%
+\AgdaInductiveConstructor{no}\AgdaSpace{}%
+\AgdaBound{p}%
+\>[15]\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{no}\AgdaSpace{}%
+\AgdaSymbol{(λ}\AgdaSpace{}%
+\AgdaSymbol{\{}\AgdaSpace{}%
+\AgdaInductiveConstructor{refl}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaBound{p}\AgdaSpace{}%
+\AgdaInductiveConstructor{refl}\AgdaSymbol{\})}\<%
+\end{code}
 
 \hide{
 \begin{code}%
@@ -1041,7 +1152,7 @@ the action of a weakening. A function is provided to weaken anything Thinnable.
 When providing Weakenables, we adopt the naming convention of \^̂some-entity.
 
 As a consequence of being able to easily weaken Thinnable entities, Weakenable
-implementations are often trivial.
+implementations are often trivial. The types of some commonly used weakenings are detailed here.
 
 \begin{code}%
 \>[0]\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}\textasciicircum{}}}%

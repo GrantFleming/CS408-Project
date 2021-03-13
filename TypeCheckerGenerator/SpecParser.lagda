@@ -390,7 +390,7 @@ module SpecfileParser where
 
   β : (t : Pattern 0) → (er : ElimRule) → SVarMap (t ∙ ElimRule.targetPat er ∙ ElimRule.eliminator er) → Parser β-rule
   β t er svmap = do
-            string "reduction:"
+            string "reduces-to:"
             whitespace 
             redTerm ← econst (t ∙ targetPat er ∙ eliminator er) 0 empty svmap
             return (record
@@ -444,12 +444,12 @@ module SpecfileParser where
 
   eliminator : (tty : Pattern 0) → SVarMap tty → Parser thingy'
   eliminator tty ttymap = do
-                            string "eliminator:"
+                            string "eliminated-by:"
                             (e , m) ← ws-tolerant closed-pattern
                             ws+nl
                             (p' , p'm , pc) ← pchain tty e ttymap m
                             ws+nl
-                            string "elimination-type:"
+                            string "resulting-in-type:"
                             et ← ws-tolerant (econst p' 0 empty p'm)
                             return ((record
                                        { targetPat = tty ; eliminator = e ; premises = p' , pc ; output = et }) , (ttymap , m))
@@ -463,7 +463,7 @@ module SpecfileParser where
   open import Data.Unit using (⊤; tt)
   eta : Parser ⊤
   eta = do
-          string "eta:"
+          string "expanded-by:"
           ws-tolerant closed-pattern
           return tt
 
@@ -497,26 +497,5 @@ module SpecfileParser where
                                      rs (a ++ a') (b ++ b') (c ++ c') (d ++ d') (e ++ e') (f ++ f')}) , rs [] [] [] [] [] [] ]
                  return (rs (setType ∷ ty) (setUniv ∷ u) ∋ e β η)
 open SpecfileParser
-\end{code}
-
-Ok now lets actuall get it to try and work:
-
-\begin{code}
-module Test where
-  open import IO
-  open import TypeChecker using (RuleSet)
-  open import Data.Maybe using (Maybe; just; nothing) renaming (maybe′ to maybe)
-  open import Failable hiding (_>>=_; return) renaming (fail to ffail)
-  open import Rules using (∋rule)
-  open import Semantics using (β-rule)
-  open import Pattern using (_∙; ∙_; ⋆)
-
-  spec : String
-  spec = ""
-
-  test : Maybe (RuleSet × String)
-  test = type spec
-open Test
-test' = test
 \end{code}
 

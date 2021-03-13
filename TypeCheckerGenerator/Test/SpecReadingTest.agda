@@ -25,7 +25,7 @@ module Test.SpecReadingTest where
   open import Relation.Binary.PropositionalEquality using (_≡_; refl)
 
   -- UNCOMMENT THIS TO GET A COMPILABLE BINARY TO TEST IF REQUIRED
-{-
+
   open LanguageParser.LParsers
   main : IO ⊤
   main = do
@@ -41,9 +41,9 @@ module Test.SpecReadingTest where
            _ ← putStrLn (toCostring ("ignored: " ++ rest ++ "\n"))
            succeed type ← return (infer rules ε term)
              where fail msg → putStrLn (toCostring msg)
-           _ ← putStrLn (toCostring ("term: " ++ (print term) ++ "\ntype: " ++ print type)) 
+           _ ← putStrLn (toCostring ("te#rm: " ++ (print term) ++ "\ntype: " ++ print type)) 
            return tt
--}
+{-
 
   open import Rules using (∋rule; TypeRule; ElimRule; ε; _⇉_; type; _∋'_[_]; _⊢'_; _placeless)
   open import Pattern using (Pattern; `; _∙_; bind; place; ∙_; _∙; ⋆)
@@ -234,3 +234,4 @@ module Test.SpecReadingTest where
   _ = refl
 
 
+-}

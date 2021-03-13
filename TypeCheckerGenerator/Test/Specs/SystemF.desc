@@ -8,26 +8,26 @@ type: A -> B
   if:
     type A
     type B
-  eliminator: E
+  eliminated-by: E
     if:
       (A) <- E
-    elimination-type: B
+    resulting-in-type: B
   value: \ X. -> M
     if:
       X : (A) |- (B) <- M
-    reduction: M/[, E:A]
-  eta: \ Y. -> Y
+    reduces-to: M/[, E:A]
+  expanded-by: \ Y. -> Y
 
 type: ∀ T. => M
   if:
     T : (set) |- type M
-  eliminator: TY
+  eliminated-by: TY
     if:
       type TY
-    elimination-type: M/[, TY:set]
+    resulting-in-type: M/[, TY:set]
   value: δ T. TM
     if:
       T : (set) |- (M/[, .T]) <- TM
-    reduction: TM/[, TY:set]
+    reduces-to: TM/[, TY:set]
 
 

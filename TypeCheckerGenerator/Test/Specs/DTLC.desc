@@ -15,12 +15,13 @@ type: A X. -> B
   if:
     type A
     X : (A) |- type B
-  eliminator: E
+  eliminated-by: E
     if:
       (A) <- E
-    elimination-type: B/[, E:A]
+    resulting-in-type: B/[, E:A]
   value: \ X. -> M
     if:
       X : (A) |- (B/[, .X]) <- M
-    reduction: M/[, E:A]
-  eta: \ Y. -> Y
+    reduces-to: M/[, E:A]
+  expanded-by: \ Y. -> Y
+  

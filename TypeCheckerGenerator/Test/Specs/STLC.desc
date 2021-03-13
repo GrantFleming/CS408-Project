@@ -8,28 +8,28 @@ type: A -> B
   if:
     type A
     type B
-  eliminator: E
+  eliminated-by: E
     if:
       (A) <- E
-    elimination-type: B
+    resulting-in-type: B
   value: \ X. -> M
     if:
-      (A) |- (B) <- M
-    reduction: M/[, E:A]
-  eta: \ Y. -> Y
+      X : (A) |- (B) <- M
+    reduces-to: M/[, E:A]
+  expanded-by: \ Y. -> Y
   
 type: A x B
   if:
     type A
     type B
-  eliminator: fst
-    elimination-type: A
-  eliminator: snd
-    elimination-type: B
-  value: L , R
+  eliminated-by: fst
+    resulting-in-type: A
+  eliminated-by: snd
+    resulting-in-type: B
+  value: L and R
     if:
       (A) <- L
       (B) <- R
-    reduction: R
-    reduction: L
-  eta: fst , snd
+    reduces-to: L
+    reduces-to: R
+  expanded-by: fst , snd

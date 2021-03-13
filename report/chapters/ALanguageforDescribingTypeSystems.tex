@@ -61,6 +61,7 @@ for now we focus on the important concepts of patterns and expressions
 as these are critical to describing and building terms in our DSL.
 
 \section{Representing Patterns}
+\label{DSL-patterns}
 
 In the high-level structure we make frequent reference to
 patterns. This is a concept we borrow from Conor McBride's previous
@@ -311,6 +312,7 @@ subject. The type of the target is also in scope when we give the
 premises that seek to trust some new eliminator we supply.
 
 \section{$\eta$-expansion rules}
+\label{DSL-eta-rules}
 
 In order for us to perform $\eta$-expansion, there are two pieces of
 information that we must have.
@@ -340,17 +342,46 @@ $\eta$-expansion rule which when applied to some target $T$ would
 result in an $\eta$-expanded term $\setminus Y. \; -> \; (T \; Y)$.
 
 \section{The DSL}
+\label{DSL}
+
+When designing the DSL there were three main problems that we wished to
+address that often occur in the literature. The first is that
+type-theory is an inherently jargon heavy topic and so here we attempt
+to keep our DSL as jargon-free as possible, in particular favouring
+syntax that can be read linearly in the same manner one might read a
+poem. The trickiest part of describing a type-system should be
+constructing the appropriate expressions, not understanding how the
+high-level syntax of the DSL is layed out.
+
+The second issue is that of berevity. For a given type, it is standard
+to give a rule to acertain when it is valid as a type, another for
+determining when a value is of that type, another for detemining the
+type resulting from eliminating terms of this type, $\beta$-rules,
+$\eta$-rules and sometimes more. Typically much information is
+repeated across a set of such rules. It is for this reason we propose
+a hierarchical structure in our DSL. The top level element is a "type"
+which is described by a certain pattern. Any rules pertaining to this
+type sit inside this top-level element and can access the same
+pattern. There are similar hierarchical gains to be had elsewhere in
+the DSL resulting in a concise language that we believe is still
+approachable to read and understand.
+
+The third and final problem that we seek to address is that the
+freedom afforded with most methods of describing type-systems make
+dependencies non-obvious. For instance, it is easy to fall into the
+trap of thinking that perhaps typing some elimination depends on the
+syntax of the target in some way, this is not the case. Dependencies
+are made clear in our DSL using a combination of hierarchical
+structure and carefully chosen ordering in which we require the
+information to be given.
 
 As previously explained, the top level definition in our DSL
-associates a patterns with a type. Every part of the definition
-afterward is indented by 2 spaces.
-
-If premises are required (that is to say, if the pattern contains meta
-level term variables) then we add an "if:" clause, and then we list
-the premises, indented again, on a new line, with each premise on a
-line of its own.
-
-We can now show the full structure of describing types in our DSL.
+associates a patterns with a type. If premises are required (that is
+to say, if the pattern contains meta level term variables that we must
+trust) then we add an "if:" clause, and then we list the premises,
+with each premise on a line of its own. Inside some type description
+we may give values of the type, again these are given as patterns as
+described in \ref{DSL-patterns}.
 
 A description of a simple base type with a single value might look as
 follows:
@@ -360,39 +391,169 @@ follows:
     value: a
 \end{BVerbatim}
 
+We will now outline how we could build more complex types by
+describing functions in the simply typed lambda calculus. We will
+present the description in four stages. The first stage is defining
+the syntax of the type itself. Since our type contains meta-variables
+then we must provide a means to trust these, and so premises are
+required for this type.
 
-\section{Determining appropriate eliminations}
-\label{appr-elim}
+\begin{BVerbatim}
+  type: A -> B
+    if:
+      type A
+      type B
+\end{BVerbatim}
 
-It may seem tempting to enforce certain eliminations. We might have
-thought to treat type-parameterised types as assigning a type to each
-subterm in a value. For every function, function types assign a type to
-the newly bound variable and one to the body, for every pair, product
-types assign a type to each element. With this in might we could have
-enforced that exactly one eliminator exists for each such
-sub-type/sub-term that allows access to this part of the term. This
-train of thought seems sensible and initially appears to hold up to
-scruitiny.
+This is an area in which we evidence the jargon-reduction and
+readability goals of our DSL design.
 
-Following this train of thought further we might consider how we could
-deduce $\eta$-expandability from such well-behaved types and
-eliminations , however, when we consider sum types then this idea
-falters. If we wishted to eta-expand a sum type, how would we know
-which constructor to use without peeking at the structure of the
-original term? There does not appear to be a way that be might choose
-a constructor/eliminator pair that would work to eta-expand an
-arbitrary term of the sum type.
+In the second stage we supply the required information to type
+eliminations. Since this is not dependent on the specifics of the
+actual values of a type, we give the required information for this
+process here before we even define what the values could be making
+this non-dependency far more clear. We define the eliminator by giving
+some pattern, trusting the pattern and finally showing how we might
+build the final type of the elimination with an expression.
 
-As a result, we do not place such restrictions on which eliminators
-must exist, and we put the onus on the user to supply enough
-information for us to generate the eta-rules where necessary.
+\begin{BVerbatim}
+  type: A -> B
+    if:
+      type A
+      type B
+    eliminated-by: E
+      if:
+        (A) <- E
+      resulting-in-type: B
+\end{BVerbatim}
 
-\section{Examples}
+We may give any number of eliminators here so long as when we later
+give values, we give the appropriate number of reductions, one for
+each of the eliminations described here, and we give them in the same
+order. Such an example can be seen in the description of product types
+in appendix \ref{STLCspec}.
 
-\section{Good things}
+In the third stage we define what patterns of syntax correspond to
+values of this type and provide the necessary premises to identify
+when this is the case, in our example we are forced to trust a single
+meta-variable so we need to supply at least one premise to achieve
+this.
 
-conciseness if needed!
+\begin{BVerbatim}
+  type: A -> B
+    if:
+      type A
+      type B
+    eliminated-by: E
+      if:
+        (A) <- E
+      resulting-in-type: B
+    value: \ X. -> M
+      if:
+        X : (A) |- (B) <- M
+      reduces-to: M/[, E:A]
+\end{BVerbatim}
 
-\section{Limitations}
+Note that since we gave one eliminator earlier, we are forced to give
+exactly one reduction inside the value description which we do by
+supplying an expression that substitutes for the free variable in M.
 
-shadowing pattern variables
+Again we emphesize the continued prioritization of a jargon-free linear
+reading experience and the use of hierarchy to make dependency explicity.
+
+Finally we give the required information required to construct the
+$\eta$-expansion rules as described in \ref{DSL-eta-rules} resulting in
+a complete description of simple non-dependent function types.
+
+\begin{BVerbatim}
+  type: A -> B
+    if:
+      type A
+      type B
+    eliminated-by: E
+      if:
+        (A) <- E
+      resulting-in-type: B
+    value: \ X. -> M
+      if:
+        X : (A) |- (B) <- M
+      reduces-to: M/[, E:A]
+    expanded-by: \ Y. -> Y
+\end{BVerbatim}
+
+We have given this description in four stages intentionally to show
+that at each stage we had a valid, parsable description of a type. We
+allow types with no values as was the case after the first stage, we
+allow the elimination typing rule to be supplied even if there are no
+values. We then allow the description of the values of the type, and
+finally we allow the addition of eta-expansion information. The
+resulting DSL is quite modular in nature and this makes definitions
+concise where all of the features are not required, as is the case for
+the base type $alpha$ we introduced initially. This was an intentional
+decision that we made to address the problems with berevity that we
+identified earlier in this section.
+
+A final point to make is that of whitespace. Indentation is irrelevant
+in our DSL to allow maximum flexibility of use, we choose to indent
+our descriptions in such a way as to emphesis the structure of the
+language. There are some cases where new lines are required, after a
+keyword (something ending with ":") or if the keyword is identifying
+some kind of entity described by a pattern then the new line must
+follow the pattern. Also, as previously mentioned, when listing
+premises each one must appear on its own line.
+
+
+\section{DSL Design Critique}
+
+In section \ref{DSL} we identify three common problems with the way type
+systems are currently described in literature.
+
+\begin{enumerate}
+\item Descriptions are often jargon heavy.
+\item Descriptions are often lengthy with repeated information.
+\item The seperate nature of the rules make dependencies non-explicit.
+\end{enumerate}
+
+In addition we prioritized readability, in particular aiming for type
+definitions to be readable in a linear fashion.
+
+We believe that in the previous section we demonstrated the concrete
+ways in which we addressed the identified problems, although there
+were some compromises to be made.
+
+In order to aid readability, we chose keywords carefully in our
+DSL, favouring hyphenated representations of phrases such as
+"eliminated-by", "resulting-in-type" and "if". This decision has the dual
+purpose of allowing the descriptions to be read in a manner somewhat
+like reading a description in English while also reducing some jargon,
+however this can sometimes be at the cost of addressing the second
+identified problem: berevity. We feel like the the gains in
+readability outway the cost in berevity here, and that the berevity is
+far better addressed by the use of hierarchical structure than by
+choosing shorter keywords. 
+
+We were careful with our design to ensure flexibility with regards to
+what type systems were describable. In appendix \ref{STLCspec} we show
+a complete example of a variation of simply typed lambda calculus with
+two base types and product types. In appendix \ref{SystemFspec} we
+demonstrate how we can encode arbitrary polymorphic terms by wrapping
+them in a value that is first eliminated by a type. Finally in
+\ref{DTLCspec} we demonstrate that the DSL is readily used for
+dependent types by describing singleton types and dependent
+functions. The inclusion of a dependently typed example allows us to
+discharge the acceptance criteria where we specified that our solution
+must be capable of representing both non-dependent and dependent types
+so long as the implementation is consistent with the design.
+
+Some aspect of the DSL are worth further thought as there are
+certainly improvements to be had.
+
+Firstly, the dependency on consistent ordering between elimination
+type descriptions and corresponding reductions in each value is not
+ideal. We identify non-explicit dependencies as an issue we wish to
+address and this is a prime example of such a dependency.
+
+Another area worth consideration is the notable absence of any way to
+describe user-defined datatypes. This would certainly need addressed
+in some form before the DSL was useful in any real-world application.
+

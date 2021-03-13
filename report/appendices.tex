@@ -137,48 +137,119 @@ Hindley-Milner polymorphism.
 This appendix shows example specification files for various
 languages.
 
-\subsection{Simply Typed Lambda Calculus}
+\subsection{Simply Typed Lambda Calculus with Product Types}
+\label{STLCspec}
 
 \begin{verbatim}
-# types
+type: α
+  value: a
 
-type    B
-values  b
+type: β
+  value: b
 
-constructor  @ -> @
-
-# terms
-
--- we need not supply a definition for < check > in this example
-
--- the value b is implicitly included here as it is defined in '# types'
--- variables are implicitly included here
-< infer > ::=  \ <var> : <type> . <check>
-            |  ( <infer> <check> )
- 
--- # semantics  
-
--- semantics are not necessary for STLC so we can omit them here
--- they are only necessary if we implement dependent types
-
-# rules
-
--- we need not supply the rule for variables, this is implicit
--- we need not supply the rule for constant b, this is generated for us
-
-===============================================
-'x' : [sigma] | ( {t} ) << ( [tau] )
------------------------------------------------
-| \ 'x' : [sigma] . {t} << ( [sigma] -> [tau] ) 
-===============================================
-
-=================================
-| ( {f} ) << ( [sigma] -> [tau] ) 
-| ( [sigma] ) >> ( {x} )
----------------------------------
-| ( {f} {x} ) << ( [tau] )
-=================================
-
-\end{verbatim}
+type: A -> B
+  if:
+    type A
+    type B
+  eliminated-by: E
+    if:
+      (A) <- E
+    resulting-in-type: B
+  value: \ X. -> M
+    if:
+      X : (A) |- (B) <- M
+    reduces-to: M/[, E:A]
+  expanded-by: \ Y. -> Y
   
+type: A x B
+  if:
+    type A
+    type B
+  eliminated-by: fst
+    resulting-in-type: A
+  eliminated-by: snd
+    resulting-in-type: B
+  value: L and R
+    if:
+      (A) <- L
+      (B) <- R
+    reduces-to: L
+    reduces-to: R
+  expanded-by: fst , snd
+\end{verbatim}
+
+\clearpage
+\subsection{System-F-like language }
+\label{SystemFspec}
+
+Our variation is slighly more general than the original encoding as
+opposed to only polymorphic functions we give the means of
+representing arbitrary polymorphic types.
+
+\begin{verbatim}
+type: α
+  value: a
+
+type: β
+  value: b
+
+type: A -> B
+  if:
+    type A
+    type B
+  eliminated-by: E
+    if:
+      (A) <- E
+    resulting-in-type: B
+  value: \ X. -> M
+    if:
+      X : (A) |- (B) <- M
+    reduces-to: M/[, E:A]
+  expanded-by: \ Y. -> Y
+
+type: ∀ T. => M
+  if:
+    T : (set) |- type M
+  eliminated-by: TY
+    if:
+      type TY
+    resulting-in-type: M/[, TY:set]
+  value: δ T. PTY
+    if:
+      T : (set) |- (M/[, .T]) <- PTY
+    reduces-to: PTY/[, TY:set]
+\end{verbatim}
+
+\clearpage
+\subsection{Lambda Calculus Variation with Dependent Types}
+\label{DTLCspec}
+
+\begin{verbatim}
+type: α
+  value: a1
+  value: a2
+
+type: isa TY TM
+  if:
+    type TY
+    (TY) <- TM
+  value: is V
+    if:
+      (TY) <- V
+      (TM) = V
+
+type: A X. -> B
+  if:
+    type A
+    X : (A) |- type B
+  eliminated-by: E
+    if:
+      (A) <- E
+    resulting-in-type: B/[, E:A]
+  value: \ X. -> M
+    if:
+      X : (A) |- (B/[, .X]) <- M
+    reduces-to: M/[, E:A]
+  expanded-by: \ Y. -> Y
+\end{verbatim}
 \end{appendices}

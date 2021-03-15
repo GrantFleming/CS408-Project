@@ -38,17 +38,16 @@ private
 }
 
 Expressions allow us to define a way that we might construct a term from a
-pattern. In the context of a conclusion of a typing rule, where a pattern
-might match and sculpt out component parts of an input or subject,
-expressions allow us to define an output in terms in terms of these component
-parts. In a premise, it allows us to build an input in terms of the
-conclusion and the output of all previous premise.
+pattern that represents something that we trust. For example, if the expression
+is showing how one might build the required term as the output of some
+type-synthesis rule for elimination, what is trusted might be the type of the
+target and whatever we learn to trust in the premises. These trusted patterns
+contain places that sculpt out component parts in a piece of matched syntax
+and allow us to use these component parts in constructing a new term.
 
 It mirrors the structure of our terms except that it includes the option
-to instantiate a place in a pattern with some substitution of term variables
-that it may depend on. When we are using an expression after matching against
-the appropriate pattern and gaining an environment for it, this gives us the
-necessary information to build a term.
+to reference some place in a pattern and instantiate it with some substitution
+of its free  variables.
 
 \begin{code}
 Expr : Pattern δ → Dir → Scoped
@@ -61,7 +60,7 @@ data Con p γ where
   _∙_    : Con p γ → Con p γ → Con p γ
   bind   : Con p (suc γ) → Con p γ
   thunk  : Com p γ → Con p γ
-  _/_    : svar p γ' → γ' ⇒[ Expr p compu ] γ → Con p γ
+  _/_    : svar p γ' → γ' ⇒[ Com p ] γ → Con p γ
   
 data Com p γ where
   var    : Var γ → Com p γ
@@ -72,21 +71,12 @@ data Com p γ where
 Expr p const γ = Con p γ
 Expr p compu γ = Com p γ
 \end{code}
-
-As is expected by now, we define various functions allowing us to thin,
-weaken and open expressions and substitutions thereof for later use.
-
-\begin{code}
-_⟨exp_   : Thinnable (Expr p d)
-_^exp    : Weakenable (Expr p d)
-_^/exp   : Weakenable (γ ⇒[ Expr p d ]_)
-_⊗expr_  : (γ : Scope) → Expr p d δ → Expr (γ ⊗ p) d (γ + δ)
-\end{code}
-
+As is expected by now, we omit the usual smattering of thinnings, weakenings
+and openings.
 \hide{
 \begin{code}
 infixr 20 _∙_
-
+_⟨exp_   : Thinnable (Expr p d)
 _⟨exp_ {d = const} (` x)    θ = ` x
 _⟨exp_ {d = const} (s ∙ t)  θ = (s ⟨exp θ) ∙ (t ⟨exp θ)
 _⟨exp_ {d = const} (bind t) θ = bind (t ⟨exp (θ I))
@@ -102,9 +92,10 @@ _⟨exp_ {d = compu} (var x)    θ  = var (x ⟨var θ)
 _⟨exp_ {d = compu} (elim e s) θ  = elim (e ⟨exp θ) (s ⟨exp θ)
 _⟨exp_ {d = compu} (t ∷ T) θ  = (t ⟨exp θ) ∷ (T ⟨exp θ)
 
-
+_^exp    : Weakenable (Expr p d)
 _^exp {p = p} {d = d} = weaken {T = Expr p d} _⟨exp_
 
+_^/exp   : Weakenable (γ ⇒[ Expr p d ]_)
 _^/exp {p = p} {d = d}  = ^sub {T = Expr p d}  _⟨exp_
 
 idexpr : γ ⇒[ Expr p compu ] γ
@@ -112,15 +103,10 @@ idexpr {zero}          = ε
 idexpr {suc γ} {p = p}
   = ^sub {T = Expr p compu} _⟨exp_ idexpr -, var (fromNum γ)
 
+_⊗expr_  : (γ : Scope) → Expr p d δ → Expr (γ ⊗ p) d (γ + δ)
 _⊗sub_ : (δ' : Scope) →
          δ ⇒[ Expr p compu ] γ →
          (δ' + δ) ⇒[ Expr (δ' ⊗  p) compu ] (δ' + γ)
-_⊗sub_ {p = p} {γ = γ} δ' ε
-  = ⟨sub {T = Expr (δ' ⊗ p) compu} _⟨exp_ (idexpr {δ'}) (δ' ◃ γ)
-δ' ⊗sub (σ -, x) = (δ' ⊗sub σ) -, (δ' ⊗expr x)
-
-_⟨esub_ : Thinnable (γ ⇒[ Expr p d ]_)
-_⟨esub_ = ⟨sub _⟨exp_ 
 
 _⊗expr_ {d = const} γ (` x)       = ` x
 _⊗expr_ {d = const} γ (s ∙ t)     = (γ ⊗expr s) ∙ (γ ⊗expr t)
@@ -130,6 +116,14 @@ _⊗expr_ {d = const} γ (ξ / σ)     = (γ ⊗svar ξ) / (γ ⊗sub σ)
 _⊗expr_ {d = compu} γ (var x)     = var (γ ⊗var x)
 _⊗expr_ {d = compu} γ (elim e s)  = elim (γ ⊗expr e) (γ ⊗expr s)
 _⊗expr_ {d = compu} γ (t ∷ T)     = (γ ⊗expr t) ∷ (γ ⊗expr T)
+
+_⊗sub_ {p = p} {γ = γ} δ' ε
+  = ⟨sub {T = Expr (δ' ⊗ p) compu} _⟨exp_ (idexpr {δ'}) (δ' ◃ γ)
+δ' ⊗sub (σ -, x) = (δ' ⊗sub σ) -, (δ' ⊗expr x)
+
+_⟨esub_ : Thinnable (γ ⇒[ Expr p d ]_)
+_⟨esub_ = ⟨sub _⟨exp_ 
+
 
 map : (f : ∀{δ} → svar p δ → svar q δ) → Expr p d γ' → Expr q d γ'
 map {d = const} f (` x) = ` x

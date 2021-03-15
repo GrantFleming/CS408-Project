@@ -223,12 +223,8 @@ use. We give a means to remove a place from a pattern, replacing it with
 a trivial atom. Similarly we extend the same functionality to environments.
 We  also define the usual spattering of openings and various other machinery
 we have already covered, using the naming conventions discussed so they are
-to be recognizable.
-
-We also define some openings and a method for retrieving a term from a pattern
-and some opening of its environment. We are unable to use our previously defined
-Openable for schematic variables as the type is a little difference due to it
-having a pattern index which also needs to be opened in the return type.
+to be recognizable. In addition we provde here the type of the function that
+produces an actual term from some pattern together with some environment.
 
 \begin{code}
 _-_       : (p : Pattern γ) → svar p δ → Pattern γ
@@ -301,59 +297,87 @@ bind v ^svar = bind (v ^svar)
 \end{code}
 }
 
-In a minor spoiler of things to come, we also introduce the concept here of an
+In a minor spoiler of things to come, we introduce the concept of an
 svar-builder. We will later find it useful to traverse a pattern and build a
 potential svar on the way down so that when we get to a $place$ we have the svar
-that refers to it. 
+that refers to it.
 
-\begin{code}
-\end{code}
+The notion is that instead of encoding some path to a $place$ in the pattern,
+we instead encode some path between the pattern $p$ and some subpattern $q$. 
+$X$ encodes an empty path between a pattern and itself, then we
+may extend it, say with "\_∙" or "∙\_" so that we now show the path between
+a pair, and one of the elements of that pair. We can continue in a similar fashion,
+building some path, and if we are lucky enough to have it end in a $place$, then
+we know we might convert it to the appropriate svar. This is normally used by
+selecting both $p$ and $q$ to be the pattern we are about to traverse, then 
+using the combinators as we traverse it to strip constructors off q while
+simultaniously encoding that stripped constructor in the path being constructed.
 
-\hide
+\hide{
 \begin{code}
 private
   variable
     b : Bool
-    p' : Pattern δ'
+    lf rt p' : Pattern δ'
+    bn : Pattern (suc δ')
+    θ : δ ⊑ γ'
+\end{code}
+}
 
+\begin{code}
 data svar-builder : Pattern γ → Pattern δ → Set where
   X     : svar-builder p p
   _∙    : svar-builder p p' → svar-builder (p ∙ q) p'
   ∙_    : svar-builder q p' → svar-builder (p ∙ q) p'
   bind  : svar-builder p p' → svar-builder (bind p) p'
+\end{code}
 
-⇚ : ∀{p : Pattern γ}{s t : Pattern δ'} → 
-    svar-builder p (s ∙ t) → 
-    svar-builder p s
+The combinators are fairly trivial but there types are important in showing
+how we creating some distance between patterns in which we are charting some
+path, by structurally reducing the second pattern in the type, but encoding
+that information in the svar-builder we are creating so we remember exactly
+how it was deconstructed. We give the first combinator in full here as an example,
+and the types of the other two.
+
+\begin{code}
+⇚ : svar-builder p (lf ∙ rt) → svar-builder p lf
 ⇚ X          =  X ∙
 ⇚ (v ∙)      =  (⇚ v) ∙
 ⇚ (∙ v)      =  ∙ (⇚ v)
 ⇚ (bind  v)  =  bind (⇚ v )
 
-⇛ : ∀{p : Pattern γ}{s t : Pattern δ'} → 
-    svar-builder p (s ∙ t) → 
-    svar-builder p t 
+⇛ : svar-builder p (lf ∙ rt) → svar-builder p rt 
+↳ : svar-builder p (bind bn) → svar-builder p bn
+\end{code}
+\hide{
+\begin{code}
 ⇛ X          =  ∙ X
 ⇛ (v ∙)      =  (⇛ v) ∙
 ⇛ (∙ v)      =  ∙ (⇛ v)
 ⇛ (bind  v)  =  bind (⇛ v)
 
-↳ : ∀{p : Pattern γ}{t : Pattern (suc δ')} → 
-    svar-builder p (bind t) → 
-    svar-builder p t
 ↳ X          =  bind X
 ↳ (v ∙)      =  (↳ v) ∙
 ↳ (∙ v)      =  ∙ (↳ v)
 ↳ (bind  v)  =  bind (↳ v)
+\end{code}
+}
 
-build : ∀{p : Pattern γ} {θ : δ ⊑ γ'} → 
-       svar-builder p (place θ) → 
-       svar p δ
+Finally we are able to build and actual svar from a builder only if it shows
+the path in some pattern $p$ to some place in that pattern.
+
+\begin{code}
+build : {θ : δ ⊑ γ'} → 
+        svar-builder p (place θ) → 
+        svar p δ
 build X         = ⋆
 build (v ∙)     = (build v) ∙
 build (∙ v)     = ∙ (build v)
 build (bind v)  = bind (build v)
+\end{code}
 
+\hide{
+\begin{code}
 bind-count-bl : svar-builder p q → ℕ
 bind-count-bl X = 0
 bind-count-bl (v ∙) = bind-count-bl v

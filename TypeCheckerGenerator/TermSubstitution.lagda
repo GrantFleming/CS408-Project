@@ -34,7 +34,7 @@ substitution.
 
 \begin{code}
 _⇒_ : Scope → Scope → Set
-γ ⇒ δ = γ ⇒[ Term compu ] δ
+γ ⇒ δ = γ ⇒[ Compu ] δ
 
 _⟨σ_  : Thinnable (γ ⇒_)
 _^    : Weakenable (γ ⇒_)

@@ -15,7 +15,7 @@ open import Data.String using (String; _==_) renaming (_≟_ to _≟s_; _++_ to 
 open import Data.Nat.Properties renaming (_≟_ to _≟n_)
 open import Data.Maybe using (Maybe; just; nothing; _>>=_)
 open import Data.Bool using (Bool; true; false)
-open import Relation.Nullary using (does; _because_; proof; ofʸ; yes; no)
+open import Relation.Nullary using (yes; no)
 open import Relation.Binary.PropositionalEquality using (refl; _≡_; cong; cong₂; _≢_)
 open import Relation.Binary.Definitions using (DecidableEquality; Decidable)
 open import Data.Nat using (ℕ; zero; suc; _+_)
@@ -29,6 +29,7 @@ open import Function using (_∘_)
 private
   variable
     δ : Scope
+    δ' : Scope
     γ : Scope
     γ' : Scope
     d  : Dir
@@ -42,7 +43,7 @@ patterns of constructions, which we then match against concrete syntax.
 Our concept of a pattern is structurally identical to that of a construction,
 except that we exclude thunks, and introduce the notion of a \emph{place} which
 may stand for any arbitrary construction scoped in some $δ$ so long as we show
-how it might be thinned to $γ$.
+how it might be thinned to the scope of the pattern.
 
 The dual concept of a pattern is that of an environment. It is structurally
 similar to a pattern except where a pattern may have a \emph{place}, an
@@ -90,9 +91,8 @@ We also provide means to map a function on terms over an environment.
 
 \begin{code}
 _⊗_ : Openable Pattern
-map : ∀ {δ'} → (∀ {δ} → Const δ → Const (δ' + δ)) → p -Env → (δ' ⊗ p) -Env
+map : (∀ {δ} → Const δ → Const (δ' + δ)) → p -Env → (δ' ⊗ p) -Env
 \end{code}
-
 \hide{
 \begin{code}
 -- We can 'open' patterns
@@ -165,23 +165,21 @@ x /≟ y with x ≟ y
 ... | no neq = yes neq
 \end{code}
 }
-
 We now have the required machinery to define pattern matching. We do not
 define matching over some term and pattern scoped identially, but more 
 generally over some term that might be operating in some wider scope. This
 is crucial as a pattern is often defined in the empty scope so that we might
 not refer to arbirary free variables when defining formal rules. When
 type-checking, the terms we match against them may operate in a wider scope.
-
-For this reason, our matching allows the matching of a term in some wider
-scope, to a pattern in a potentially narrower scope and if it succeeds it
-returns an environment for the \emph{opened} pattern.
+If the matching then succeeds, it returns an environment for the \emph{opened}
+pattern. In practice, this is always taken with $γ = 0$ where we are matching
+some pattern defined in the empty scope.
 
 \begin{code}
 match : Const (δ + γ) → (p : Pattern γ) → Maybe ((δ ⊗ p) -Env)
 match  {γ = γ} t   (place {δ'} θ) with γ ≟n δ'
-... | true because ofʸ refl = just (thing t)
-... | false because _       = nothing
+... | yes refl = just (thing t)
+... | no     _ = nothing
 match (` a) (` c) with a == c
 ... | true   =  just `
 ... | false  =  nothing
@@ -192,9 +190,6 @@ match (s ∙ t) (p ∙ q)   = do
 match (bind t) (bind p) = do
                             x ← match t p
                             just (bind x)
-
--- TO DO, THUNK MATCHING!! evaluate it to head normal form
--- or do we assume that hnf was attempted already?
 match _ _                   = nothing
 \end{code}
 
@@ -226,6 +221,9 @@ bind v  ‼ bind t   = v ‼ t
 We define a few less interesting but critical utility functions for later
 use. We give a means to remove a place from a pattern, replacing it with
 a trivial atom. Similarly we extend the same functionality to environments.
+We  also define the usual spattering of openings and various other machinery
+we have already covered, using the naming conventions discussed so they are
+to be recognizable.
 
 We also define some openings and a method for retrieving a term from a pattern
 and some opening of its environment. We are unable to use our previously defined
@@ -235,10 +233,6 @@ having a pattern index which also needs to be opened in the return type.
 \begin{code}
 _-_       : (p : Pattern γ) → svar p δ → Pattern γ
 _-penv_   : p -Env → (ξ : svar p δ) → (p - ξ) -Env
-_⊗svar_   : (γ : Scope) → svar p δ → svar (γ ⊗ p) (γ + δ)
-_⊗var_    : Openable Var
-_⊗term_   : Openable (Term d)
-_⊗penv_   : (γ : Scope) → p -Env → (γ ⊗ p) -Env
 termFrom  : (p : Pattern γ) → (δ ⊗ p) -Env → Const (δ + γ)
 \end{code}
 \hide{
@@ -265,14 +259,17 @@ bind v -svar bind ξ  = v -svar ξ >>= λ n → just (bind n)
 bind e -penv bind ξ = bind (e -penv ξ)
 thing x -penv ⋆     = `
 
+_⊗svar_   : (γ : Scope) → svar p δ → svar (γ ⊗ p) (γ + δ)
 γ ⊗svar ⋆      = ⋆
 γ ⊗svar (v ∙)  = (γ ⊗svar v) ∙
 γ ⊗svar (∙ v)  = ∙ (γ ⊗svar v)
 γ ⊗svar bind v = bind (γ ⊗svar v)
 
+_⊗var_    : Openable Var
 γ ⊗var ze = ze
 γ ⊗var su v = su (γ ⊗var v)
 
+_⊗term_   : Openable (Term d)
 _⊗term_ {const} γ (` x) = ` x
 _⊗term_ {const} γ (s ∙ t) = (γ ⊗term s) ∙ (γ ⊗term t)
 _⊗term_ {const} γ (bind t) = bind (γ ⊗term t)
@@ -281,6 +278,7 @@ _⊗term_ {compu} γ (var x) = var (γ ⊗var x)
 _⊗term_ {compu} γ (elim t e) = elim (γ ⊗term t) (γ ⊗term e)
 _⊗term_ {compu} γ (t ∷ T) = (γ ⊗term t) ∷ (γ ⊗term T)
 
+_⊗penv_   : (γ : Scope) → p -Env → (γ ⊗ p) -Env
 _⊗penv_ γ  = map (γ ⊗term_)
 
 termFrom (` x) `              = ` x
@@ -300,11 +298,22 @@ _^svar : svar p γ → svar (p ^pat) γ
 (v ∙) ^svar = (v ^svar) ∙
 (∙ v) ^svar = ∙ (v ^svar)
 bind v ^svar = bind (v ^svar)
+\end{code}
+}
 
+In a minor spoiler of things to come, we also introduce the concept here of an
+svar-builder. We will later find it useful to traverse a pattern and build a
+potential svar on the way down so that when we get to a $place$ we have the svar
+that refers to it. 
+
+\begin{code}
+\end{code}
+
+\hide
+\begin{code}
 private
   variable
     b : Bool
-    δ' : Scope
     p' : Pattern δ'
 
 data svar-builder : Pattern γ → Pattern δ → Set where

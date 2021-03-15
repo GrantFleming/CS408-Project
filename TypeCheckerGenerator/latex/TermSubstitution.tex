@@ -90,8 +90,7 @@ substitution.
 \AgdaSymbol{=}\AgdaSpace{}%
 \AgdaBound{γ}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{⇒[}}\AgdaSpace{}%
-\AgdaFunction{Term}\AgdaSpace{}%
-\AgdaInductiveConstructor{compu}\AgdaSpace{}%
+\AgdaDatatype{Compu}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{]}}\AgdaSpace{}%
 \AgdaBound{δ}\<%
 \\
@@ -157,12 +156,15 @@ substitution.
 }
 
 We also define the action of such a substitution on a term, where most cases
-recurse on direct substructures as one might expect except that we ensure we
-alter the substitution accordingly as we pass under binders, introducing an
-identity substitution for the newly bound variable. Here we do not use the
-Substitutable type defined previously as the target of substitution may be
-either a construction or a computation, however the objects we are substituting
-in are always computations. This type is reserved for use later.
+recurse on direct substructures as one might expect except for two cases of
+interest. The first is that we must ensure we alter the substitution accordingly
+as we pass under binders, introducing an identity substitution for the newly
+bound variable but first fixing up the scope of the substitution we already have.
+The second is where we find some variable and perform the actual substitution.
+Here we do not use the Substitutable type defined previously as the target of
+substitution may be either a construction or a computation, however the objects
+we are substituting in are always computations. This type is reserved for use
+later.
 
 \begin{code}%
 \>[0]\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}/term\AgdaUnderscore{}}}\AgdaSpace{}%

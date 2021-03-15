@@ -97,19 +97,14 @@ data Prem  (p : Pattern δ) (q : Pattern δ) (γ : Scope) :
 ⊗premise δ (_⊢'_ {p` = p`} x prem) = (δ ⊗expr x) ⊢' ⊗premise δ prem
 \end{code}
 }
-Before we define how we might chain premise together, it is important to address
-placelessness in patterns. \hl{MOVE TO PATTERNS THEN YA GOOSE!}
 
-We define a type that is structurally equivalent to patterns except for the
-absence of places. This type is indexed by patterns where we use the index
-to match the structure of a Placeless and its Pattern and so it is only
-possible for a Placeless to represent a placeless pattern.
-
-We then define the removal of all places from a pattern by recursing
-structurally, and replacing all places with the trivial atom ` '⊤'.
-
-Finally we show that for any pattern $p$ we can create some Placeless indexed
-by $p -places$ and, as with many of our types, define opening on Placeless.
+We must now define a type that is structurally equivalent to patterns except
+for the absence of places. This type is indexed by the pattern that we are
+trying to represent. It is only possible to represent placeless patterns with
+this type. We write various mechanics using this new type that we will not detail
+here, including the ability to remove a place from a pattern given an svar, and
+thus for any pattern $p$ we have the ability to create some $(p\;-places) Placeless$.
+Placeless can be opened just as Patterns can be.
 
 \begin{code}
 data _Placeless {γ : Scope} : Pattern γ → Set where
@@ -117,36 +112,27 @@ data _Placeless {γ : Scope} : Pattern γ → Set where
   _∙_   : {l r : Pattern γ} → (l Placeless) → (r Placeless) → (l ∙ r) Placeless
   bind  : {t : Pattern (suc γ)} → (t Placeless) → (bind t) Placeless
   ⊥     : ⊥ Placeless
-
-_-places : Pattern γ → Pattern γ
---...
-place x  -places = ` "⊤"
---...
 \end{code}
 \hide{
 \begin{code}
+_-places : Pattern γ → Pattern γ
+place x  -places = ` "⊤"
 ` x      -places = ` x
 (s ∙ t)  -places = (s -places) ∙ (t -places)
 bind t   -places = bind (t -places)
 ⊥        -places = ⊥
 \end{code}
 }
-\begin{code}
-_placeless : (p : Pattern γ) → (p -places) Placeless
-
-_⊗pl_ : p' Placeless → (δ : Scope) → (δ ⊗ p') Placeless
-\end{code}
-
 \hide{
 \begin{code}
-
+_placeless : (p : Pattern γ) → (p -places) Placeless
 ` x placeless      = ` x
 (s ∙ t) placeless  = (s placeless) ∙ (t placeless)
 bind p placeless   = bind (p placeless)
 place x placeless  = ` "⊤"
 ⊥ placeless        = ⊥
 
-
+_⊗pl_ : p' Placeless → (δ : Scope) → (δ ⊗ p') Placeless
 ` c     ⊗pl δ = ` c
 (s ∙ t) ⊗pl δ = (s ⊗pl δ) ∙ (t ⊗pl δ)
 bind t  ⊗pl δ = bind (t ⊗pl δ)

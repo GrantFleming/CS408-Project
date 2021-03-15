@@ -170,8 +170,8 @@ infixr 20 _⇉_
 \end{code}}
 \section{Typing Rules}
 
-Now we will define the various rules that may be used to build typing
-rules when detailing a specification.
+Now we will define the various types that represent typing rules that
+might exist in some type checker.
 
 A TypeRule is used to establish the conditions under which a piece
 of syntax is determined a type. The rule applies to a subject and
@@ -184,47 +184,34 @@ record TypeRule : Set where
   field
     subject   : Pattern 0
     premises  : Σ[ p' ∈ Pattern 0 ] Prems (` "⊤") subject p'
-
+\end{code}
+\hide{
+\begin{code}
 match-typerule : (rule : TypeRule)  →
                  Term const γ       →
                  Maybe ((γ ⊗ (TypeRule.subject rule)) -Env)
 match-typerule rule term = match term (TypeRule.subject rule)
 \end{code}
-
+}
 The Universe rule work in much the same way except that the premise
 chain seeks to establish trust in a trivial placeless pattern. I.e.
 it seeks to establish no trust whatsever since the Universe rule
 applies to an input and we take inputs to be entites which we trust.
 Matching a Universe rule involves matching the input only.
-
-\hide{
 \begin{code}
 record UnivRule : Set where
   field
     input     :  Pattern 0
     premises  :  Σ[ p' ∈ Pattern 0 ] Prems input (` "⊤") p'
-
+\end{code}
+\hide{
+\begin{code}
 match-univrule  :  (rule : UnivRule)  →
                    Term const γ       →
                    Maybe ((γ ⊗ (UnivRule.input rule)) -Env)
 match-univrule rule term = match term (UnivRule.input rule)
-\end{code}}
-
-The Type-Checking rule (∋) involves both an input and a subject. For
-$T ∋ t$ we take T to be a trusted input and seek to establish trust
-in t. Our premise chain reflects this by using the input as its
-trusted pattern and seeking trust in the subject. Matching occurs on
-both the input and the subject and so, if successful, returns a
-pair of environments. We may also use this rule to reverse engineer
-the type of any place in the original patterns, taking advantage that
-out premise chain can only establish trust in a place by ultimately making
-a statement either about its type, or about it being a type. This function
-turned out to be non-trivial, and many proofs were required to convice
-Agda to accept the implementation. An alternative might have been to
-construct a pattern environment where each place corresponded to the
-type of the corresponding part of the pattern. We could have even gone
-so far as to generalise what may be stored at places in patterns and
-teased out some applicative structure. \hl{move to discussion?}
+\end{code}
+}
 \hide{
 \begin{code}
 open import Data.Bool using (Bool; true; false)
@@ -307,6 +294,21 @@ proof' (bind v) (bind ξ) (inj₁ x) = cong suc (proof' v ξ (inj₁ x))
 proof' (bind v) (bind ξ) (inj₂ (refl , snd)) = cong suc (proof' v ξ (inj₂ (refl , (λ x → snd (cong bind x)))))
 \end{code}
 }
+The Type-Checking rule (∋) involves both an input and a subject. For
+$T ∋ t$ we take T to be a trusted input and seek to establish trust
+in t. Our premise chain reflects this by using the input as its
+trusted pattern and seeking trust in the subject. Matching occurs on
+both the input and the subject and , if successful, returns a
+pair of environments. We may also use this rule to reverse engineer
+the type of any place in the subject, taking advantage of the fact that
+our premise chain can only establish trust in a place by ultimately making
+a statement either about its type, or about it being a type. This function
+turned out to be non-trivial, and many proofs were required to convice
+Agda to accept the implementation. An alternative might have been to
+construct a pattern environment where each place corresponded to the
+type of the corresponding part of the pattern. We could have even gone
+so far as to generalise what may be stored at places in patterns and
+teased out some applicative structure.
 \begin{code}
 record ∋rule : Set where
   field
@@ -314,18 +316,6 @@ record ∋rule : Set where
     input    : Pattern 0
     premises : Σ[ p' ∈ Pattern 0 ] Prems input subject p'
 open ∋rule
-
-match-∋rule  :  (rule : ∋rule)  →
-                (type term : Term const γ) →
-                (Maybe
-                  (((γ ⊗ (input rule))   -Env)
-                       ×
-                   ((γ ⊗ (subject rule))  -Env)))
-match-∋rule rule ty tm
-  = do
-      tyenv   ←  match ty (input rule)
-      tmenv  ←  match tm (subject rule)
-      just (tyenv , tmenv)
 
 typeOf : (r : ∋rule)                   →
          (s : svar (γ ⊗ subject r) δ)  →
@@ -366,6 +356,19 @@ typeOf {γ = γ'} r v ienv senv =  helper v ienv senv (⊗premises γ' (proj₂ 
         lm (∙ v) (_ ∙ r) = lm v r
         lm (bind v) (bind t) = lm v t
     helper v env qenv (p ⇉ prems) = lem v env qenv p prems
+
+  
+match-∋rule  :  (rule : ∋rule)  →
+                (type term : Term const γ) →
+                (Maybe
+                  (((γ ⊗ (input rule))   -Env)
+                       ×
+                   ((γ ⊗ (subject rule))  -Env)))
+match-∋rule rule ty tm
+  = do
+      tyenv   ←  match ty (input rule)
+      tmenv  ←  match tm (subject rule)
+      just (tyenv , tmenv)
 \end{code}
 }
 
@@ -391,8 +394,8 @@ We do not need the user to supply this information and so we take just a pattern
 that we might use to match against $T$, one that we might match against $eliminator$,
 and seek to establish trust in $eliminator$ under the assumption that we trust $T$.
 We also use an Expression to build the type of the elimination from everything in
-which the premise chain has established trust.
-
+which the premise chain has established trust. Matching an elimination rule requires
+matching both the target pattern and the eliminator.
 \begin{code}
 record ElimRule : Set where
   field
@@ -401,7 +404,9 @@ record ElimRule : Set where
     premises    :  Σ[ p' ∈ Pattern 0 ] Prems targetPat eliminator p'
     output      :  Expr (proj₁ premises) const 0
 open ElimRule
-
+\end{code}
+\hide{
+\begin{code}
 ERuleEnv : ∀{γ} → ElimRule → Set
 ERuleEnv {γ} rule = ((γ ⊗ (targetPat rule)) -Env)
                         ×
@@ -417,5 +422,9 @@ match-erule rule T s = do
                          just (T-env , s-env)
                        where
                          open ElimRule
-
 \end{code}
+}
+In this section we have glossed over the functions that were defined to match the
+various rules, however these have explanitory names such as \emph{match-∋rule} which
+will make them obvious if we come across them when exploring future sections of
+code.

@@ -977,8 +977,8 @@ previous premise has asked us to trust contains no places.
 \end{code}}
 \section{Typing Rules}
 
-Now we will define the various rules that may be used to build typing
-rules when detailing a specification.
+Now we will define the various types that represent typing rules that
+might exist in some type checker.
 
 A TypeRule is used to establish the conditions under which a piece
 of syntax is determined a type. The rule applies to a subject and
@@ -1016,9 +1016,9 @@ a type rule is just attempting to match the subject pattern.
 \AgdaString{"⊤"}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaField{subject}\AgdaSpace{}%
 \AgdaBound{p'}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
+\end{code}
+\hide{
+\begin{code}%
 \>[0]\AgdaFunction{match-typerule}\AgdaSpace{}%
 \AgdaSymbol{:}%
 \>[659I]\AgdaSymbol{(}\AgdaBound{rule}\AgdaSpace{}%
@@ -1049,14 +1049,12 @@ a type rule is just attempting to match the subject pattern.
 \AgdaSymbol{(}\AgdaField{TypeRule.subject}\AgdaSpace{}%
 \AgdaBound{rule}\AgdaSymbol{)}\<%
 \end{code}
-
+}
 The Universe rule work in much the same way except that the premise
 chain seeks to establish trust in a trivial placeless pattern. I.e.
 it seeks to establish no trust whatsever since the Universe rule
 applies to an input and we take inputs to be entites which we trust.
 Matching a Universe rule involves matching the input only.
-
-\hide{
 \begin{code}%
 \>[0]\AgdaKeyword{record}\AgdaSpace{}%
 \AgdaRecord{UnivRule}\AgdaSpace{}%
@@ -1087,9 +1085,9 @@ Matching a Universe rule involves matching the input only.
 \AgdaSymbol{(}\AgdaInductiveConstructor{`}\AgdaSpace{}%
 \AgdaString{"⊤"}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaBound{p'}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
+\end{code}
+\hide{
+\begin{code}%
 \>[0]\AgdaFunction{match-univrule}%
 \>[16]\AgdaSymbol{:}%
 \>[19]\AgdaSymbol{(}\AgdaBound{rule}\AgdaSpace{}%
@@ -1119,23 +1117,8 @@ Matching a Universe rule involves matching the input only.
 \AgdaBound{term}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaField{UnivRule.input}\AgdaSpace{}%
 \AgdaBound{rule}\AgdaSymbol{)}\<%
-\end{code}}
-
-The Type-Checking rule (∋) involves both an input and a subject. For
-$T ∋ t$ we take T to be a trusted input and seek to establish trust
-in t. Our premise chain reflects this by using the input as its
-trusted pattern and seeking trust in the subject. Matching occurs on
-both the input and the subject and so, if successful, returns a
-pair of environments. We may also use this rule to reverse engineer
-the type of any place in the original patterns, taking advantage that
-out premise chain can only establish trust in a place by ultimately making
-a statement either about its type, or about it being a type. This function
-turned out to be non-trivial, and many proofs were required to convice
-Agda to accept the implementation. An alternative might have been to
-construct a pattern environment where each place corresponded to the
-type of the corresponding part of the pattern. We could have even gone
-so far as to generalise what may be stored at places in patterns and
-teased out some applicative structure. \hl{move to discussion?}
+\end{code}
+}
 \hide{
 \begin{code}%
 \>[0]\AgdaKeyword{open}\AgdaSpace{}%
@@ -2011,6 +1994,21 @@ teased out some applicative structure. \hl{move to discussion?}
 \AgdaBound{x}\AgdaSymbol{)))))}\<%
 \end{code}
 }
+The Type-Checking rule (∋) involves both an input and a subject. For
+$T ∋ t$ we take T to be a trusted input and seek to establish trust
+in t. Our premise chain reflects this by using the input as its
+trusted pattern and seeking trust in the subject. Matching occurs on
+both the input and the subject and , if successful, returns a
+pair of environments. We may also use this rule to reverse engineer
+the type of any place in the subject, taking advantage of the fact that
+our premise chain can only establish trust in a place by ultimately making
+a statement either about its type, or about it being a type. This function
+turned out to be non-trivial, and many proofs were required to convice
+Agda to accept the implementation. An alternative might have been to
+construct a pattern environment where each place corresponded to the
+type of the corresponding part of the pattern. We could have even gone
+so far as to generalise what may be stored at places in patterns and
+teased out some applicative structure.
 \begin{code}%
 \>[0]\AgdaKeyword{record}\AgdaSpace{}%
 \AgdaRecord{∋rule}\AgdaSpace{}%
@@ -2052,83 +2050,14 @@ teased out some applicative structure. \hl{move to discussion?}
 \\
 %
 \\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaFunction{match-∋rule}%
-\>[13]\AgdaSymbol{:}%
-\>[16]\AgdaSymbol{(}\AgdaBound{rule}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaRecord{∋rule}\AgdaSymbol{)}%
-\>[32]\AgdaSymbol{→}\<%
-\\
-%
-\>[16]\AgdaSymbol{(}\AgdaBound{type}\AgdaSpace{}%
-\AgdaBound{term}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaFunction{Term}\AgdaSpace{}%
-\AgdaInductiveConstructor{const}\AgdaSpace{}%
-\AgdaGeneralizable{γ}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaSymbol{→}\<%
-\\
-%
-\>[16]\AgdaSymbol{(}\AgdaDatatype{Maybe}\<%
-\\
-\>[16][@{}l@{\AgdaIndent{0}}]%
-\>[18]\AgdaSymbol{(((}\AgdaGeneralizable{γ}%
-\>[1420I]\AgdaOperator{\AgdaFunction{⊗}}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaField{input}\AgdaSpace{}%
-\AgdaBound{rule}\AgdaSymbol{))}%
-\>[41]\AgdaOperator{\AgdaDatatype{-Env}}\AgdaSymbol{)}\<%
-\\
-\>[.][@{}l@{}]\<[1420I]%
-\>[23]\AgdaOperator{\AgdaFunction{×}}\<%
-\\
-\>[18][@{}l@{\AgdaIndent{0}}]%
-\>[19]\AgdaSymbol{((}\AgdaGeneralizable{γ}\AgdaSpace{}%
-\AgdaOperator{\AgdaFunction{⊗}}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaField{subject}\AgdaSpace{}%
-\AgdaBound{rule}\AgdaSymbol{))}%
-\>[42]\AgdaOperator{\AgdaDatatype{-Env}}\AgdaSymbol{)))}\<%
-\\
-\>[0]\AgdaFunction{match-∋rule}\AgdaSpace{}%
-\AgdaBound{rule}\AgdaSpace{}%
-\AgdaBound{ty}\AgdaSpace{}%
-\AgdaBound{tm}\<%
-\\
-\>[0][@{}l@{\AgdaIndent{0}}]%
-\>[2]\AgdaSymbol{=}%
-\>[1429I]\AgdaKeyword{do}\<%
-\\
-\>[1429I][@{}l@{\AgdaIndent{0}}]%
-\>[6]\AgdaBound{tyenv}%
-\>[14]\AgdaOperator{\AgdaFunction{←}}%
-\>[17]\AgdaFunction{match}\AgdaSpace{}%
-\AgdaBound{ty}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaField{input}\AgdaSpace{}%
-\AgdaBound{rule}\AgdaSymbol{)}\<%
-\\
-%
-\>[6]\AgdaBound{tmenv}%
-\>[13]\AgdaOperator{\AgdaFunction{←}}%
-\>[16]\AgdaFunction{match}\AgdaSpace{}%
-\AgdaBound{tm}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaField{subject}\AgdaSpace{}%
-\AgdaBound{rule}\AgdaSymbol{)}\<%
-\\
-%
-\>[6]\AgdaInductiveConstructor{just}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaBound{tyenv}\AgdaSpace{}%
-\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
-\AgdaBound{tmenv}\AgdaSymbol{)}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
 \>[0]\AgdaFunction{typeOf}\AgdaSpace{}%
 \AgdaSymbol{:}%
-\>[1440I]\AgdaSymbol{(}\AgdaBound{r}\AgdaSpace{}%
+\>[1413I]\AgdaSymbol{(}\AgdaBound{r}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaRecord{∋rule}\AgdaSymbol{)}%
 \>[39]\AgdaSymbol{→}\<%
 \\
-\>[.][@{}l@{}]\<[1440I]%
+\>[.][@{}l@{}]\<[1413I]%
 \>[9]\AgdaSymbol{(}\AgdaBound{s}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaDatatype{svar}\AgdaSpace{}%
@@ -2189,7 +2118,7 @@ teased out some applicative structure. \hl{move to discussion?}
 \>[2][@{}l@{\AgdaIndent{0}}]%
 \>[4]\AgdaFunction{lem}\AgdaSpace{}%
 \AgdaSymbol{:}%
-\>[1478I]\AgdaSymbol{∀}\AgdaSpace{}%
+\>[1451I]\AgdaSymbol{∀}\AgdaSpace{}%
 \AgdaSymbol{\{}\AgdaBound{n}\AgdaSymbol{\}\{}\AgdaBound{δ'}\AgdaSymbol{\}\{}\AgdaBound{p}\AgdaSpace{}%
 \AgdaBound{q}\AgdaSpace{}%
 \AgdaBound{q'}\AgdaSpace{}%
@@ -2204,7 +2133,7 @@ teased out some applicative structure. \hl{move to discussion?}
 \AgdaGeneralizable{δ}\AgdaSymbol{)\}}\AgdaSpace{}%
 \AgdaSymbol{→}\<%
 \\
-\>[.][@{}l@{}]\<[1478I]%
+\>[.][@{}l@{}]\<[1451I]%
 \>[10]\AgdaSymbol{(}\AgdaBound{s}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaDatatype{svar}\AgdaSpace{}%
@@ -2686,6 +2615,77 @@ teased out some applicative structure. \hl{move to discussion?}
 \AgdaBound{qenv}\AgdaSpace{}%
 \AgdaBound{p}\AgdaSpace{}%
 \AgdaBound{prems}\<%
+\\
+%
+\\[\AgdaEmptyExtraSkip]%
+\>[0]\<%
+\\
+\>[0]\AgdaFunction{match-∋rule}%
+\>[13]\AgdaSymbol{:}%
+\>[16]\AgdaSymbol{(}\AgdaBound{rule}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaRecord{∋rule}\AgdaSymbol{)}%
+\>[32]\AgdaSymbol{→}\<%
+\\
+%
+\>[16]\AgdaSymbol{(}\AgdaBound{type}\AgdaSpace{}%
+\AgdaBound{term}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaFunction{Term}\AgdaSpace{}%
+\AgdaInductiveConstructor{const}\AgdaSpace{}%
+\AgdaGeneralizable{γ}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{→}\<%
+\\
+%
+\>[16]\AgdaSymbol{(}\AgdaDatatype{Maybe}\<%
+\\
+\>[16][@{}l@{\AgdaIndent{0}}]%
+\>[18]\AgdaSymbol{(((}\AgdaGeneralizable{γ}%
+\>[1869I]\AgdaOperator{\AgdaFunction{⊗}}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaField{input}\AgdaSpace{}%
+\AgdaBound{rule}\AgdaSymbol{))}%
+\>[41]\AgdaOperator{\AgdaDatatype{-Env}}\AgdaSymbol{)}\<%
+\\
+\>[.][@{}l@{}]\<[1869I]%
+\>[23]\AgdaOperator{\AgdaFunction{×}}\<%
+\\
+\>[18][@{}l@{\AgdaIndent{0}}]%
+\>[19]\AgdaSymbol{((}\AgdaGeneralizable{γ}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{⊗}}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaField{subject}\AgdaSpace{}%
+\AgdaBound{rule}\AgdaSymbol{))}%
+\>[42]\AgdaOperator{\AgdaDatatype{-Env}}\AgdaSymbol{)))}\<%
+\\
+\>[0]\AgdaFunction{match-∋rule}\AgdaSpace{}%
+\AgdaBound{rule}\AgdaSpace{}%
+\AgdaBound{ty}\AgdaSpace{}%
+\AgdaBound{tm}\<%
+\\
+\>[0][@{}l@{\AgdaIndent{0}}]%
+\>[2]\AgdaSymbol{=}%
+\>[1878I]\AgdaKeyword{do}\<%
+\\
+\>[1878I][@{}l@{\AgdaIndent{0}}]%
+\>[6]\AgdaBound{tyenv}%
+\>[14]\AgdaOperator{\AgdaFunction{←}}%
+\>[17]\AgdaFunction{match}\AgdaSpace{}%
+\AgdaBound{ty}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaField{input}\AgdaSpace{}%
+\AgdaBound{rule}\AgdaSymbol{)}\<%
+\\
+%
+\>[6]\AgdaBound{tmenv}%
+\>[13]\AgdaOperator{\AgdaFunction{←}}%
+\>[16]\AgdaFunction{match}\AgdaSpace{}%
+\AgdaBound{tm}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaField{subject}\AgdaSpace{}%
+\AgdaBound{rule}\AgdaSymbol{)}\<%
+\\
+%
+\>[6]\AgdaInductiveConstructor{just}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{tyenv}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaBound{tmenv}\AgdaSymbol{)}\<%
 \end{code}
 }
 
@@ -2711,8 +2711,8 @@ We do not need the user to supply this information and so we take just a pattern
 that we might use to match against $T$, one that we might match against $eliminator$,
 and seek to establish trust in $eliminator$ under the assumption that we trust $T$.
 We also use an Expression to build the type of the elimination from everything in
-which the premise chain has established trust.
-
+which the premise chain has established trust. Matching an elimination rule requires
+matching both the target pattern and the eliminator.
 \begin{code}%
 \>[0]\AgdaKeyword{record}\AgdaSpace{}%
 \AgdaRecord{ElimRule}\AgdaSpace{}%
@@ -2760,9 +2760,9 @@ which the premise chain has established trust.
 \\
 \>[0]\AgdaKeyword{open}\AgdaSpace{}%
 \AgdaModule{ElimRule}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
+\end{code}
+\hide{
+\begin{code}%
 \>[0]\AgdaFunction{ERuleEnv}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaSymbol{∀\{}\AgdaBound{γ}\AgdaSymbol{\}}\AgdaSpace{}%
@@ -2856,6 +2856,9 @@ which the premise chain has established trust.
 \>[23][@{}l@{\AgdaIndent{0}}]%
 \>[25]\AgdaKeyword{open}\AgdaSpace{}%
 \AgdaModule{ElimRule}\<%
-\\
-\>[0]\<%
 \end{code}
+}
+In this section we have glossed over the functions that were defined to match the
+various rules, however these have explanitory names such as \emph{match-∋rule} which
+will make them obvious if we come across them when exploring future sections of
+code.

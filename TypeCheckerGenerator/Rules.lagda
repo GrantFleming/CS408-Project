@@ -70,7 +70,7 @@ an arbitrary scope and so we define such an opening function $⊗premise$, the t
 is also given here.
 Ty
 \begin{code}
-data Prem  (p : Pattern δ) (q : Pattern δ) (γ : Scope) :
+data Prem  (p q : Pattern δ) (γ : Scope) :
            (p' : Pattern γ) → (q' : Pattern δ) → Set where
    type     : (ξ : svar q δ') → (θ : δ' ⊑ γ) → Prem p q γ (place θ) (q - ξ)
    _∋'_[_]  : (T : Expr p const γ) → (ξ : svar q δ') → (θ : δ' ⊑ γ)  → Prem p q γ (place θ) (q - ξ)
@@ -154,7 +154,7 @@ If we wish to end a chain of premise, we must show that there is nothing left
 that requires the establishment of trust by proving that the pattern the
 previous premise has asked us to trust contains no places.
 \begin{code}
-data Prems (p₀ : Pattern γ) (q₀ : Pattern γ) : (p₂ : Pattern γ) → Set where
+data Prems (p₀ q₀ : Pattern γ) : (p₂ : Pattern γ) → Set where
   ε    :  (q₀ Placeless) → Prems p₀ q₀ p₀
   _⇉_  :  Prem p₀ q₀ γ pᵍ q₁` →
           Prems (p₀ ∙ pᵍ) q₁` p₂` →

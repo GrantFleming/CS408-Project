@@ -1,4 +1,5 @@
 \section{η-Rules}
+\label{section-etarules}
 \hide{
 \begin{code}%
 \>[0]\AgdaSymbol{\{-\#}\AgdaSpace{}%
@@ -159,6 +160,12 @@ build the eliminations from the eliminators.
 \AgdaOperator{\AgdaDatatype{-Env}}\<%
 \\
 %
+\>[2]\AgdaFunction{headForm}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaField{subject}\AgdaSpace{}%
+\AgdaField{checkRule}\<%
+\\
+%
 \\[\AgdaEmptyExtraSkip]%
 %
 \>[2]\AgdaFunction{eliminations}\AgdaSpace{}%
@@ -171,8 +178,7 @@ build the eliminations from the eliminators.
 \AgdaSymbol{→}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaGeneralizable{γ}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{⊗}}\AgdaSpace{}%
-\AgdaField{subject}\AgdaSpace{}%
-\AgdaField{checkRule}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaFunction{headForm}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaOperator{\AgdaDatatype{-Env}}\<%
 \\
 %
@@ -183,9 +189,9 @@ build the eliminations from the eliminators.
 \\
 \>[2][@{}l@{\AgdaIndent{0}}]%
 \>[4]\AgdaSymbol{=}%
-\>[85I]\AgdaFunction{map}\<%
+\>[87I]\AgdaFunction{map}\<%
 \\
-\>[85I][@{}l@{\AgdaIndent{0}}]%
+\>[87I][@{}l@{\AgdaIndent{0}}]%
 \>[8]\AgdaSymbol{(λ}\AgdaSpace{}%
 \AgdaSymbol{\{}\AgdaBound{δ}\AgdaSymbol{\}}\AgdaSpace{}%
 \AgdaBound{const}\AgdaSpace{}%
@@ -226,8 +232,7 @@ build the eliminations from the eliminators.
 \AgdaBound{tm}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
 \AgdaFunction{termFrom}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaField{subject}\AgdaSpace{}%
-\AgdaField{checkRule}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaFunction{headForm}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaFunction{eliminations}\AgdaSpace{}%
 \AgdaBound{ty}\AgdaSpace{}%
 \AgdaBound{tm}\AgdaSymbol{)}\<%
@@ -280,7 +285,7 @@ build the eliminations from the eliminators.
 \\
 \>[0]\AgdaFunction{findRule}\AgdaSpace{}%
 \AgdaSymbol{:}%
-\>[149I]\AgdaDatatype{List}\AgdaSpace{}%
+\>[150I]\AgdaDatatype{List}\AgdaSpace{}%
 \AgdaRecord{η-Rule}\AgdaSpace{}%
 \AgdaSymbol{→}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaBound{ty}\AgdaSpace{}%
@@ -289,7 +294,7 @@ build the eliminations from the eliminators.
 \AgdaGeneralizable{γ}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaSymbol{→}\<%
 \\
-\>[.][@{}l@{}]\<[149I]%
+\>[.][@{}l@{}]\<[150I]%
 \>[11]\AgdaDatatype{Failable}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaFunction{Σ[}\AgdaSpace{}%
 \AgdaBound{r}\AgdaSpace{}%

@@ -169,6 +169,7 @@ infixr 20 _⇉_
 ⊗premises δ (prem ⇉ prems)  = ⊗premise δ prem ⇉ ⊗premises δ prems
 \end{code}}
 \section{Typing Rules}
+\label{section-rules}
 
 Now we will define the various types that represent typing rules that
 might exist in some type checker.
@@ -323,6 +324,7 @@ typeOf : (r : ∋rule)                   →
          ((γ ⊗ (subject r))  -Env)     →
          Const ((bind-count s) + γ)
 \end{code}
+\hl{TODO! - talk about typeof as we discuss it later in NBE}
 \hide{
 \begin{code}
 typeOf {γ = γ'} r v ienv senv =  helper v ienv senv (⊗premises γ' (proj₂ (premises r)))
@@ -336,7 +338,7 @@ typeOf {γ = γ'} r v ienv senv =  helper v ienv senv (⊗premises γ' (proj₂ 
     ... | no ¬p rewrite proof' v ξ (inj₁ ¬p) = helper (-svar v ξ (inj₁ ¬p)) (env ∙ bindsenv (thing (ξ ‼ qenv))) (qenv -penv ξ) prems 
     ... | yes refl  with v is ξ
     ... | no ¬p rewrite proof' v ξ (inj₂ (refl , ¬p)) = helper (-svar v ξ (inj₂ (refl , ¬p))) (env ∙ bindsenv (thing (ξ ‼ qenv))) (qenv -penv ξ) prems
-    ... | yes p = ` "Type"
+    ... | yes p = ` "set"
     lem {n = n} {δ' = δ''} {p' = place ϕ} v env qenv prem@(_∋'_[_] {δ' = δ'} T ξ θ) prems with δ'' ≟ δ'
     ... | no ¬p rewrite proof' v ξ (inj₁ ¬p) = helper (-svar v ξ (inj₁ ¬p)) (env ∙ bindsenv (thing (ξ ‼ qenv))) (qenv -penv ξ) prems
     ... | yes refl with v is ξ | n ≟ (bind-count ξ)

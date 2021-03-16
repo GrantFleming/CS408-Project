@@ -1,4 +1,5 @@
 \section{Patterns}
+\label{section-patterns}
 
 \hide{
 \begin{code}

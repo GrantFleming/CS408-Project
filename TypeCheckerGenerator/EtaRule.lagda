@@ -1,4 +1,5 @@
 \section{η-Rules}
+\label{section-etarules}
 \hide{
 \begin{code}
 {-# OPTIONS --rewriting #-}
@@ -51,15 +52,16 @@ record η-Rule : Set where
   field
     checkRule    :  ∋rule
     eliminators  :  subject checkRule -Env
+  headForm = subject checkRule
 
-  eliminations : (type target : Const γ) → (γ ⊗ subject checkRule) -Env
+  eliminations : (type target : Const γ) → (γ ⊗ headForm) -Env
   eliminations {γ} type target
     = map
         (λ {δ} const → thunk (elim ((↞↞ target type) ⟨term (γ ◃ δ)) (γ ⊗term const)))
         eliminators
 
   η-expand : (type target : Const γ) → Const γ
-  η-expand ty tm = termFrom (subject checkRule) (eliminations ty tm)         
+  η-expand ty tm = termFrom headForm (eliminations ty tm)         
 \end{code}
 \hide{
 \begin{code}

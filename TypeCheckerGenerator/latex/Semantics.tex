@@ -417,9 +417,7 @@ a context.
 \begin{code}%
 \>[0]\AgdaFunction{PremsChecker}\AgdaSpace{}%
 \AgdaSymbol{=}%
-\>[16]\AgdaSymbol{(}\AgdaBound{δ}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaFunction{Scope}\AgdaSymbol{)}\AgdaSpace{}%
+\>[16]\AgdaSymbol{∀\{}\AgdaBound{δ}\AgdaSymbol{\}}\AgdaSpace{}%
 \AgdaSymbol{→}\AgdaSpace{}%
 \AgdaFunction{Context}\AgdaSpace{}%
 \AgdaBound{δ}%
@@ -472,11 +470,11 @@ we need) before finally making a call to reduce with this information.
 \begin{code}%
 \>[0]\AgdaFunction{findRule}\AgdaSpace{}%
 \AgdaSymbol{:}%
-\>[262I]\AgdaDatatype{List}\AgdaSpace{}%
+\>[260I]\AgdaDatatype{List}\AgdaSpace{}%
 \AgdaRecord{β-rule}\AgdaSpace{}%
 \AgdaSymbol{→}\<%
 \\
-\>[.][@{}l@{}]\<[262I]%
+\>[.][@{}l@{}]\<[260I]%
 \>[11]\AgdaSymbol{(}\AgdaBound{tar}\AgdaSpace{}%
 \AgdaBound{type}\AgdaSpace{}%
 \AgdaBound{elim}\AgdaSpace{}%
@@ -505,10 +503,10 @@ we need) before finally making a call to reduce with this information.
 \AgdaBound{e}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
 \AgdaInductiveConstructor{fail}%
-\>[284I]\AgdaSymbol{(}\AgdaString{"No matching β-rule found for "}\AgdaSpace{}%
+\>[282I]\AgdaSymbol{(}\AgdaString{"No matching β-rule found for "}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{++}}\<%
 \\
-\>[284I][@{}l@{\AgdaIndent{0}}]%
+\>[282I][@{}l@{\AgdaIndent{0}}]%
 \>[27]\AgdaFunction{print}\AgdaSpace{}%
 \AgdaBound{t}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{++}}\AgdaSpace{}%
@@ -562,11 +560,11 @@ we need) before finally making a call to reduce with this information.
 \begin{code}%
 \>[0]\AgdaFunction{reduce}\AgdaSpace{}%
 \AgdaSymbol{:}%
-\>[323I]\AgdaDatatype{List}\AgdaSpace{}%
+\>[321I]\AgdaDatatype{List}\AgdaSpace{}%
 \AgdaRecord{β-rule}%
 \>[23]\AgdaSymbol{→}\<%
 \\
-\>[.][@{}l@{}]\<[323I]%
+\>[.][@{}l@{}]\<[321I]%
 \>[9]\AgdaFunction{PremsChecker'}\AgdaSpace{}%
 \AgdaGeneralizable{γ}\AgdaSpace{}%
 \AgdaSymbol{→}\<%
@@ -595,9 +593,9 @@ we need) before finally making a call to reduce with this information.
 \\
 \>[0][@{}l@{\AgdaIndent{0}}]%
 \>[2]\AgdaSymbol{=}%
-\>[340I]\AgdaKeyword{do}\<%
+\>[338I]\AgdaKeyword{do}\<%
 \\
-\>[340I][@{}l@{\AgdaIndent{0}}]%
+\>[338I][@{}l@{\AgdaIndent{0}}]%
 \>[6]\AgdaSymbol{(}\AgdaBound{rule}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
 \AgdaBound{t}\AgdaSpace{}%
@@ -634,7 +632,7 @@ we need) before finally making a call to reduce with this information.
 \AgdaBound{e}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaBound{p'env}\AgdaSymbol{)}\<%
 \\
-\>[.][@{}l@{}]\<[340I]%
+\>[.][@{}l@{}]\<[338I]%
 \>[4]\AgdaKeyword{where}\AgdaSpace{}%
 \AgdaKeyword{open}\AgdaSpace{}%
 \AgdaModule{ElimRule}\<%
@@ -732,7 +730,7 @@ results. The responsibility of type-checking the term falls to the caller.
 }
 \begin{code}%
 \>[0]\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}-\AgdaUnderscore{}∥\AgdaUnderscore{}∥}}%
-\>[394I]\AgdaSymbol{:}%
+\>[392I]\AgdaSymbol{:}%
 \>[10]\AgdaFunction{Reducer}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{×}}\AgdaSpace{}%
 \AgdaFunction{Inferer}\AgdaSpace{}%
@@ -740,7 +738,7 @@ results. The responsibility of type-checking the term falls to the caller.
 \AgdaFunction{PremsChecker}\AgdaSpace{}%
 \AgdaSymbol{→}\<%
 \\
-\>[394I][@{}l@{\AgdaIndent{0}}]%
+\>[392I][@{}l@{\AgdaIndent{0}}]%
 \>[9]\AgdaFunction{Context}\AgdaSpace{}%
 \AgdaGeneralizable{γ}\AgdaSpace{}%
 \AgdaSymbol{→}\<%
@@ -831,7 +829,6 @@ results. The responsibility of type-checking the term falls to the caller.
 \AgdaKeyword{with}\AgdaSpace{}%
 \AgdaBound{rd}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaBound{pc}\AgdaSpace{}%
-\AgdaBound{γ}\AgdaSpace{}%
 \AgdaBound{Γ}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaOperator{\AgdaFunction{⟦}}\AgdaSpace{}%
 \AgdaBound{t}\AgdaSpace{}%
@@ -1031,7 +1028,7 @@ of this early on and maintain it than it is to build such a proof at the "leaf".
 \AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
 \AgdaBound{i}\AgdaSymbol{)}%
 \>[23]\AgdaSymbol{=}%
-\>[586I]\AgdaKeyword{let}\AgdaSpace{}%
+\>[583I]\AgdaKeyword{let}\AgdaSpace{}%
 \AgdaBound{elms}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
 \AgdaFunction{eliminations}\AgdaSpace{}%
@@ -1040,7 +1037,7 @@ of this early on and maintain it than it is to build such a proof at the "leaf".
 \AgdaBound{v}\AgdaSpace{}%
 \AgdaKeyword{in}\<%
 \\
-\>[586I][@{}l@{\AgdaIndent{0}}]%
+\>[583I][@{}l@{\AgdaIndent{0}}]%
 \>[28]\AgdaFunction{helper}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaBound{γ}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{⊗}}\AgdaSpace{}%
@@ -1065,14 +1062,14 @@ of this early on and maintain it than it is to build such a proof at the "leaf".
 %
 \>[4]\AgdaFunction{helper}\AgdaSpace{}%
 \AgdaSymbol{:}%
-\>[608I]\AgdaSymbol{∀}\AgdaSpace{}%
+\>[605I]\AgdaSymbol{∀}\AgdaSpace{}%
 \AgdaSymbol{\{}\AgdaBound{γ'}\AgdaSymbol{\}(}\AgdaBound{q}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaDatatype{Pattern}\AgdaSpace{}%
 \AgdaBound{γ'}\AgdaSymbol{)}%
 \>[58]\AgdaSymbol{→}\<%
 \\
-\>[.][@{}l@{}]\<[608I]%
+\>[.][@{}l@{}]\<[605I]%
 \>[13]\AgdaSymbol{((}\AgdaBound{γ}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{⊗}}\AgdaSpace{}%
 \AgdaField{input}\AgdaSpace{}%
@@ -1201,9 +1198,9 @@ of this early on and maintain it than it is to build such a proof at the "leaf".
 \>[4][@{}l@{\AgdaIndent{0}}]%
 \>[6]\AgdaSymbol{=}\AgdaSpace{}%
 \AgdaFunction{qt}%
-\>[698I]\AgdaBound{rs}\<%
+\>[695I]\AgdaBound{rs}\<%
 \\
-\>[.][@{}l@{}]\<[698I]%
+\>[.][@{}l@{}]\<[695I]%
 \>[11]\AgdaSymbol{(}\AgdaFunction{typeOf}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaField{checkRule}\AgdaSpace{}%
 \AgdaBound{r}\AgdaSymbol{)}\AgdaSpace{}%

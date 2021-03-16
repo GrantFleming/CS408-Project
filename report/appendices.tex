@@ -252,4 +252,246 @@ type: A X. -> B
     reduces-to: M/[, E:A]
   expanded-by: \ Y. -> Y
 \end{verbatim}
+\clearpage
+\section{Parser Combinators}
+\label{appendix-parsercombinators}
+
+\begin{verbatim}
+fail : Parser A
+fail str = nothing
+
+-- guarantees a parser, if it succeeds, consumes some input
+safe : Parser A → Parser A
+safe p s = do
+             (a , leftover) ← p s
+             if length leftover <ᵇ length s then just (a , leftover) else nothing
+           where open maybemonad
+
+peak : Parser Char
+peak str with toList str
+... | []      = nothing
+... | c ∷ rest = just ((c , fromList (c ∷ rest)))
+
+all : Parser String
+all = λ s → just (s , "")
+
+try : Parser A → A → Parser A
+try p a str = p str <∣> just (a , str)
+
+consumes : Parser A → Parser (ℕ × A)
+consumes p = do
+               bfr ← (λ s → just (length s , s))
+               a ← p
+               afr ← (λ s → just (length s , s))
+               return (∣ bfr - afr ∣ , a)
+             where open parsermonad
+
+biggest-of_and_ : Parser A → Parser A → Parser A
+biggest-of_and_ p1 p2 str with p1 str | p2 str
+... | nothing | nothing = nothing
+... | nothing | just p = just p
+... | just p | nothing = just p
+... | just (a1 , rst1) | just (a2 , rst2) = just (if length rst1 <ᵇ length rst2 then (a1 , rst1) else (a2 , rst2))
+
+_or_ : Parser A → Parser B → Parser (A ⊎ B)
+(pa or pb) str = (inj₁ <$> pa) str <∣> (inj₂ <$> pb) str
+  where
+    open parsermonad
+
+either_or_ : Parser A → Parser A → Parser A
+(either pa or pb) str = maybe′ just (pb str) (pa str)
+
+ifp_then_else_ : Parser A → Parser B → Parser B → Parser B
+(ifp p then pthen else pelse) str with p str
+... | nothing = pelse str
+... | just x  = pthen str
+
+nout : Parser ⊤
+nout = return tt
+  where open parsermonad
+
+optional : Parser A → Parser (A ⊎ ⊤)
+optional = _or nout
+
+complete : Parser A → Parser A
+complete p = do
+               a ← p
+               rest ← all
+               if rest ==ˢ "" then return a else fail
+             where open parsermonad
+
+takeIfc : (Char → Bool) → Parserp Char
+takeIfc p []          = nothing
+takeIfc p (c ∷ chars) = if p c then just (c , chars) else nothing
+
+takeIf : (Char → Bool) → Parser Char
+takeIf p = →[ takeIfc p ]→
+
+-- This terminates as we ensure to make p "safe" before we
+-- use it, forcing the parser to fail if it does not consume
+-- any input
+{-# TERMINATING #-}
+_*[_,_] : Parser A → (A → B → B) → B → Parser B
+p *[ f , b ] = do
+                 inj₁ a ← optional (safe p)
+                   where inj₂ _ → return b
+                 b ← p *[ f , b ] 
+                 return (f a b)
+  where open parsermonad
+
+
+_⁺[_,_] : Parser A → (A → B → B) → B → Parser B
+p ⁺[ f , b ] = pure f ⊛ p ⊛ (p *[ f , b ])
+  where open parsermonad
+
+anyof : List (Parser A) → Parser A
+anyof []       = fail
+anyof (p ∷ ps) = either p or (anyof ps)
+
+biggest-consumer : List (Parser A) → Parser A
+biggest-consumer [] = fail
+biggest-consumer (p ∷ ps) = biggest-of p and biggest-consumer ps
+
+all-of : List (Parser A) → Parser (List A)
+all-of [] str = just ([] , str)
+all-of ps str = just (foldr (λ p las → maybe′ (λ (a , _) → a ∷ las) las (p str) ) [] ps , "")
+
+{-# TERMINATING #-}
+how-many? : Parser A → Parser (Σ[ n ∈ ℕ ] Vec A n)
+how-many? p = ifp p then (do
+                            a ←  safe p
+                            (n , as) ← how-many? p
+                            return (ℕ.suc n , a ∷ as))
+              else return (0 , [])
+  where open parsermonad
+
+max_how-many? : ℕ → Parser A → Parser (Σ[ n ∈ ℕ ] Vec A n)
+max zero how-many? _    = return (0 , [])
+  where open parsermonad
+max (suc n) how-many? p = ifp p then (do
+                            a ←  safe p
+                            (n , as) ← max n how-many? p
+                            return (ℕ.suc n , a ∷ as))
+              else return (0 , [])
+  where open parsermonad
+
+exactly : (n : ℕ) → Parser A → Parser (Vec A n)
+exactly zero _  = return []
+  where open parsermonad
+exactly (suc n) p = do
+                      a ← p
+                      as ← exactly n p
+                      return (a ∷ as)
+-- text/number parsing
+
+whitespace : Parser ⊤
+whitespace str = just (tt , trim← str)
+
+ws+nl : Parser ⊤
+ws+nl str = just (tt , trim←p str)
+
+ws+nl! : Parser ⊤
+ws+nl! = do
+            c ← takeIf Data.Char.isSpace
+            ws+nl
+           where open parsermonad
+
+ws-tolerant : Parser A → Parser A
+ws-tolerant p = do
+                  whitespace
+                  r ← p
+                  whitespace
+                  return r
+  where open parsermonad
+
+wsnl-tolerant : Parser A → Parser A
+wsnl-tolerant p = do
+                    ws+nl
+                    r ← p
+                    ws+nl
+                    return r
+  where open parsermonad
+
+wsnl-tolerant! : Parser A → Parser A
+wsnl-tolerant! p = do
+                    ws+nl!
+                    r ← p
+                    ws+nl!
+                    return r
+  where open parsermonad
+
+literalc : Char → Parserp Char
+literalc c [] = nothing
+literalc c (x ∷ rest)
+  = if c == x then just (c , rest)
+              else nothing
+
+literal : Char → Parser Char
+literal c = →[ literalc c ]→
+
+newline = literal "\n"
+
+nextCharc : Parserp Char
+nextCharc []          = nothing
+nextCharc (c ∷ chars) = just (c , chars)
+
+nextChar = →[ nextCharc ]→
+
+literalAsString = (fromChar <$>_) ∘′ literal
+  where open parsermonad
+
+string : String → Parser String
+string str = foldr
+                 (λ c p → (pure _++_) ⊛ (literalAsString c) ⊛ p)
+                 (return "") (toList str)
+  where open parsermonad
+
+  
+stringof : (Char → Bool) → Parser String
+stringof p = takeIf p *[ _++_ ∘ fromChar , "" ]
+
+until : (Char → Bool) → Parser String
+until p = stringof (not ∘ p)
+
+nonempty : Parser String → Parser String
+nonempty p = do
+               r ← p
+               if r ==ˢ "" then (λ _ → nothing) else return r
+  where open parsermonad
+
+nat : Parser ℕ
+nat = do
+        d ← nonempty (stringof isDigit)
+        return (toNat d)
+      where open parsermonad
+
+
+bracketed : Parser A → Parser A
+bracketed p = do
+                literal "("
+                a ← wsnl-tolerant p
+                literal ")"
+                return a
+   where open parsermonad
+
+potentially-bracketed : Parser A → Parser A
+potentially-bracketed p = either bracketed p or p
+
+curlybracketed : Parser A → Parser A
+curlybracketed p = do
+                literal "{"
+                a ← wsnl-tolerant p
+                literal "}"
+                return a
+  where open parsermonad
+
+squarebracketed : Parser A → Parser A
+squarebracketed p = do
+                literal "["
+                a ← wsnl-tolerant p
+                literal "]"
+                return a
+  where open parsermonad
+  open Parsers
+\end{verbatim}
 \end{appendices}

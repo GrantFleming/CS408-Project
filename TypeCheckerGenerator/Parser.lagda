@@ -1,11 +1,10 @@
-\section{Parsers}
+\section{Parser Combinators}
 
 \hide{
 \begin{code}
 module Parser where
 \end{code}
 }
-
 \hide{
 \begin{code}
 open import Data.String using (String; toList; fromList; fromChar; _++_; length)
@@ -28,7 +27,6 @@ open import Level
 module maybemonad = RawMonad {f = 0ℓ} MaybeMonad
 \end{code}
 }
-
 \hide{
 \begin{code}
 private
@@ -38,6 +36,18 @@ private
     C : Set
 \end{code}
 }
+
+We acknowledge that parsing is an entire field of study in its own right
+and that it is certainly not the focus of this project. However, in order
+to have the user describe the type system in our DSL rather than in Agda
+code, we will require a parser to make sense of this input.
+
+We capitalise on the definitions in the Agda standard library and define
+a parser in terms of the State monad transformer. A parser is given a string
+as input, then it may fail or it may succeed and return something along with
+the rest of the string minus what was consumed during parsing. For convenience,
+we also provide a similar type that describes a parser of a list of characters
+and a way to plumb this into a real parser by making the appropriate conversions.
 
 \begin{code}
 module Parser where
@@ -52,25 +62,27 @@ module Parser where
                     (a , rest) ← (P' ∘′ toList) str
                     just ((a , fromList rest))
                   where open maybemonad
+\end{code}
 
-
+\hide{
+\begin{code}
   ParserState : RawMonadState String Parser
   ParserState = StateTMonadState String MaybeMonad
-  
   ParserMonad = monad
     where open RawMonadState ParserState
-
 open Parser
 module parsermonad = RawMonad ParserMonad
 module parserstatemonad = RawMonadState ParserState
 \end{code}
+}
 
-
-
-
-
-Useful common parsers:
-
+We build a small library of useful parsers, allowing us to build parsers
+incrementally using these parser combinators. We provide parsers that parser
+conditionally, parse zero-or-more times. Parsers that fail if they do not
+consume all their input, parsers to parse literal characters and strings. The
+list is somewhat large so we will not detail these parsers here. A full list of
+the basic combinators used is available in appendix \ref{appendix-parsercombinators}.
+\hide{
 \begin{code}
 module Parsers where
 
@@ -316,3 +328,4 @@ module Parsers where
     where open parsermonad
 open Parsers
 \end{code}
+}

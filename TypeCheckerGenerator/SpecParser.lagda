@@ -1,11 +1,10 @@
-\section{}
+\section{Parsing the DSL}
 
 \hide{
 \begin{code}
 module SpecParser where
 \end{code}
 }
-
 \hide{
 \begin{code}
 open import CoreLanguage
@@ -30,7 +29,6 @@ open P.Parser
 open P.Parsers
 \end{code}
 }
-
 \hide{
 \begin{code}
 private
@@ -42,11 +40,18 @@ private
 \end{code}
 }
 
-We define mappings for variable names to svars, and create a type for pattern
-parsers which aim to parse some pattern along with mappings from names to
-svars in the pattern. This map is used to retrieve the svars when parsing
-components such as expressions which depend on this.
+Since we have modelled typing rules, β-rules and η-rules explicitly in our
+software, parsing the DSL becomes a reasonably straightforward process. We
+use our combinators to build parsers for patterns, expressions, premises and
+premise chains before assembling these to parse type rules, elimination rules
+and other such rules we will require before finally combining these to parse the
+overall description of a type. Parsing a specification file is then a matter
+of parsing one or more types (and we have a combinator for this).
 
+The result of parsing a specification file successfully is a set of rules
+which we can use to check the types of a term.
+
+\hide{
 \begin{code}
 SVar : Pattern γ → Set
 SVar p = Σ[ δ ∈ Scope ] svar p δ 
@@ -59,9 +64,7 @@ map -svmap ξ  = foldr (λ k (δ , v) t → maybe (λ v → insert k (δ , v) t)
 
 PatternParser : Scope → Set
 PatternParser γ = Parser (Σ[ p ∈ Pattern γ ] SVarMap p)
-\end{code}
 
-\begin{code}
 module PatternParser where
   open parsermonad
   
@@ -84,9 +87,6 @@ module PatternParser where
               literal '.'
               return name
 
-\end{code}
-  
-\begin{code}
   pat : PatternParser γ
   private
     atom : PatternParser γ
@@ -117,13 +117,6 @@ module PatternParser where
 
   closed-pattern = pat {0}
 open PatternParser
-\end{code}
-
-Now we must parse expressions. The parsing of an expression must be done in
-terms of a pattern, but also a mapping from variable names to svars, thus the
-user does not have to deal with the svars externally.
-
-\begin{code}
 {-
   If we want to refer to variables by name in our expressions, then we have to
   use another map
@@ -232,14 +225,6 @@ module ExpressionParser where
                   where inj₂ _ → return fst                  
              return (elim fst eliminator)
 open ExpressionParser
-\end{code}
-
-With our ability to parse patterns and expressions, we can now parse
-premise and premise chains. In general, to parse a premise we must know
-everything that is trusted and what we still have to trust.
-
-
-\begin{code}
 
 module PremiseParser where
 
@@ -312,11 +297,6 @@ module PremiseParser where
     = anyof (Data.List.map (λ pp → pp p q pmap qmap vm)
             (typeprem ∷ ∋prem ∷ ≡prem ∷ univprem ∷ ⊢prem ∷ []))
 open PremiseParser            
-\end{code}
-
--- Premise chains:
-
-\begin{code}
 
 module PremisechainParser where
 
@@ -365,12 +345,7 @@ module PremisechainParser where
                               chain p q pmap qmap)
                          or
                            (εchain p q pmap qmap)                      
-open PremisechainParser  
-\end{code}
-
-We can now parse the whole specification file, the result of which is an entire set of rules.
-
-\begin{code}
+open PremisechainParser
 
 module SpecfileParser where
 
@@ -498,4 +473,4 @@ module SpecfileParser where
                  return (rs (setType ∷ ty) (setUniv ∷ u) ∋ e β η)
 open SpecfileParser
 \end{code}
-
+}

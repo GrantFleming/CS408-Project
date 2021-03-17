@@ -1,3 +1,5 @@
+\hide{
+\begin{code}
 module Test.BetaTest where
 
 open import CoreLanguage
@@ -12,7 +14,9 @@ private
     γ : Scope
 
 open β-rule
-
+\end{code}
+}
+\begin{code}
 ------------------------------------------------------
 -- β-reduction tests
 ------------------------------------------------------
@@ -21,7 +25,7 @@ module βredtests where
 
   open import TypeChecker using (check-premise-chain)
   open import BwdVec using (ε)
-  PC = check-premise-chain {0} rules ε
+  PC = check-premise-chain rules ε
 
   test1 : Failable (Compu 0)
   test1 = reduce betarules PC (lam (~ ze)) (α ⇨ α) a
@@ -64,7 +68,7 @@ module normbyeval where
   open import TypeChecker using (infer; check-premise-chain)
   open import Data.Product using (_,_)
   open import BwdVec
-  PC = λ scp → check-premise-chain {γ = scp} rules 
+  PC = check-premise-chain rules
 
   -- take in a function, an argument and apply them
   func : Const γ
@@ -151,4 +155,4 @@ module normbyeval where
   _ : test9 ≡ lam (lam (thunk (app (app (var (su (su ze))) (~ (su ze))) (~ ze))))
   _ = refl
 
-  
+\end{code}

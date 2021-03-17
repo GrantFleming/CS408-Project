@@ -1,5 +1,5 @@
 \section{Premises}
-
+\label{section-premises}
 \hide{
 \begin{code}
 {-# OPTIONS --rewriting #-}

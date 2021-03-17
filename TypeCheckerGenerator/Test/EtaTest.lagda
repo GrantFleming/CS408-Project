@@ -1,3 +1,5 @@
+\hide{
+\begin{code}
 module Test.EtaTest where
 
 open import Test.Specs.STLC using (etarules; lam-ηrule; betarules; rules)
@@ -11,8 +13,9 @@ open η-Rule
 open import Thinning using (_^term)
 open import Failable
 open import Data.List using ([])
-
-
+\end{code}
+}
+\begin{code}
 ---------------------------------------------
 -- Test 1:
 -- η expanding λx.a = λy.(λx.a y)
@@ -47,3 +50,5 @@ _ = refl
 
 _ : η-expand lam-ηrule test2type test2 ≡ lam (thunk (elim (↞↞ (test2 ^term) (test2type ^term)) (~ ze)))
 _ = refl
+
+\end{code}

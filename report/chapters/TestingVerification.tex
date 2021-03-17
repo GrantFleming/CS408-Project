@@ -1,0 +1,101 @@
+\chapter{Testing and Verification}
+
+Throughout the process of building the software, we have tried to
+ensure we leverage Agda's expressive type system to maintain
+invariants that allow us to forgo large swathes of testing that would
+otherwise be required. There are certainly benefits to be had here
+however there are limitations to this method and it is often not
+practical to rely on capturing such invariants in all cases.
+
+Firstly we note that we are explicit about scope throughout the
+code. We formalise the notion of something being \emph{Scoped} early
+on and make liberal use of this type throughout. Variables are defined
+to be well-scoped by construction allowing 
+us to ensure that the scoped entites that use such variables (like
+terms and expressions) are guaranteed to be well scoped and as such we
+manage to eliminate a huge testing space where various functions would
+have otherwise had to deal with potential "out of scope"
+errors. Similarly we can use scope to mandate that we are given a
+context sufficient for use with a particular scoped term and more
+generally ensure that we are explicit about the scope that we expect,
+that the scope that we choose to return.
+
+Another area where we make careful use of types is that of patterns
+and environments. The way that an environment is
+constructed relative to some pattern that indexes it ensures that it
+is well formed according to the pattern in question. This also gives
+us the power to request such a well formed environment, simultaniously
+excluding the need to test for behaviour on ill-formed environments
+while having the effect of guaranteeing a sensible output where we
+might otherwise have had to employ a Maybe result. Schematic variables
+get similar treatment here allowing us to provide a function to look
+up the term referred to by these variable in a manner that cannot
+fail. 
+
+The benefits of the careful use of types here has far reaching
+consequences in our software. By way of example let us look at the
+type of our \emph{toTerm} function which builds a term from an expression.
+
+\begin{verbatim}
+toTerm : (γ ⊗ p) -Env → Expr p d γ’ → Term d (γ + γ’)
+\end{verbatim}
+
+First note how we are able to ensure that we get the correct kind of
+environment for the expression by sharing the same pattern \emph{p} in
+the environment and expression types. We ensure we get the correct
+kind of term, either a construction or a computation by sharing the
+same directionality \emph{d} between the expression type and term
+type. Finally we manage the scope explicitly, ensuring that for an
+expression in some scope \emph{γ'} and some pattern (in the empty
+scope although you cannot see that explicitly in the type here) which
+has been opened in \emph{γ} results in a term scoped in (γ + γ'). We
+certainly get a lot of verification "bang-for-the-buck" and make sure
+to capitalize on this throughout.
+
+Another example where could expose our type-led verification is in
+that of premise chains described in section \ref{section-premises}. We
+give a type \emph{Placeless} which is indexed by a pattern and is able
+to encode the information in the pattern if and only if the pattern
+contains no places. We then ensure that the only way to end a chain of
+premise is to give some proof of the placelessness of what is left to
+trust. This eliminates a vast amount of potential validation code and
+allows us to enforce this aspect of the well-formedness of premise
+chains rather than having to test how the software might deal
+with the failures resulting from ill-formed premises.
+
+\begin{verbatim}
+data _Placeless {γ : Scope} : Pattern γ → Set where
+  ’     : (s : String) → ’s Placeless
+  _∙_   : {l r : Pattern γ} → (l Placeless) → (r Placeless) → (l ∙ r) Placeless
+  bind  : {t : Pattern (suc γ)} → (t Placeless) → (bind t) Placeless
+  ⊥     : ⊥ Placeless
+
+data Prems (p₀ q₀ : Pattern γ) : (p₂ : Pattern γ) → Set where
+  ε     :  (q₀ Placeless) → Prems p₀ q₀ p₀
+  _⇉_  :  Prem p₀ q₀ γ pᵍ q₁’ →
+          Prems (p₀ ∙ pᵍ) q₁’ p₂’ →
+          Prems p₀ q₀ p₂’
+\end{verbatim}
+
+We have given some example of where we have used the type system to
+verify important properties of our code however this is a technique we
+used extensively when constructing the software and we consider it our
+primary method of ensuring a good level of correctness.
+
+\section{Where verification is insufficient}
+
+What we certainly need to test is aspects of the system that depend on
+user supplied instantiations of the concepts and rules we have
+defined. Especially where the results depend on several parts of the
+system working together. Using the type system to verify software is
+more suited to checking the software at a lower level of verifying
+small component parts. The invariants required when we start to
+combine these parts are often large, complex and overly difficult to
+capture in a type and so these aspects of the system are tested in a
+more traditional manner.
+
+When writing this software, we include a suite of tests that cover
+areas such as beta reduction, normalisation, eta expansion, type
+checking and various aspects of parsing, an area where we
+focused less on type-led verification. A larger example of the testing
+conducted is available in appendix \ref{appendix-tests}.

@@ -428,3 +428,4 @@ check {_} {compu} rules@(rs _ _ _ _ β η) Γ T t
        normalize η β (infer rules , check-premise-chain rules) Γ (` "set") T
 \end{code}
 }
+

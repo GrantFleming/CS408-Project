@@ -1,6 +1,6 @@
 module Test.SpecReadingTest where
 
-  open import IO.Primitive
+  open import IO
   open import CoreLanguage
   import SpecParser as SP
   open SP.SpecfileParser using (parse-spec)
@@ -9,7 +9,7 @@ module Test.SpecReadingTest where
   open import Pattern using (Pattern; print-pat)
   open import Data.List using (List; _∷_; []; foldr; length) renaming (map to lmap)
   open import BwdVec using (ε)
-  open import Data.Unit using (⊤; tt)
+  open import Data.Unit.Polymorphic.Base
   open import Data.Maybe using (just; nothing)
   open import Data.Product using (_,_)
   open import Failable using (succeed; fail)
@@ -27,22 +27,21 @@ module Test.SpecReadingTest where
   -- UNCOMMENT THIS TO GET A COMPILABLE BINARY TO TEST IF REQUIRED
 
   open LanguageParser.LParsers
-  main : IO ⊤
-  main = do
+  main = run( do
            desc ← readFiniteFile "/home/grant/Uni/CS408-Project/TypeCheckerGenerator/Test/Specs/STLCTST.desc"
            src  ← readFiniteFile "/home/grant/Uni/CS408-Project/TypeCheckerGenerator/Test/Specs/STLCSource.desc"
            just (rules@(rs tr ur ∋r er βr ηr) , rest) ← return (parse-spec desc)
-             where nothing → putStrLn (toCostring "Failed to parse spec file")
-           _ ← putStrLn (toCostring ("Parsed:\n" ++ show (length tr) ++ " types\n" ++ show (length ∋r) ++ " introduction forms\n" ++ show (length er) ++ " elimination typing rules\n" ++ show (length βr) ++ " β-rules\n"))
-           _ ← putStrLn (toCostring "Parsing source file ...")
+             where nothing → putStrLn ("Failed to parse spec file")
+           _ ← putStrLn ( ("Parsed:\n" ++ show (length tr) ++ " types\n" ++ show (length ∋r) ++ " introduction forms\n" ++ show (length er) ++ " elimination typing rules\n" ++ show (length βr) ++ " β-rules\n"))
+           _ ← putStrLn ( "Parsing source file ...")
            just (term , rest) ← return (computation (tr , ∋r , er) empty src)
-             where nothing → putStrLn (toCostring "Failed to parse source code file.")
-           _ ← putStrLn (toCostring ("term parsed: " ++ print term))
-           _ ← putStrLn (toCostring ("ignored: " ++ rest ++ "\n"))
+             where nothing → putStrLn ( "Failed to parse source code file.")
+           _ ← putStrLn ( ("term parsed: " ++ print term))
+           _ ← putStrLn ( ("ignored: " ++ rest ++ "\n"))
            succeed type ← return (infer rules ε term)
-             where fail msg → putStrLn (toCostring msg)
-           _ ← putStrLn (toCostring ("te#rm: " ++ (print term) ++ "\ntype: " ++ print type)) 
-           return tt
+             where fail msg → putStrLn ( msg)
+           _ ← putStrLn ( ("te#rm: " ++ (print term) ++ "\ntype: " ++ print type)) 
+           return tt)
 {-
 
   open import Rules using (∋rule; TypeRule; ElimRule; ε; _⇉_; type; _∋'_[_]; _⊢'_; _placeless)

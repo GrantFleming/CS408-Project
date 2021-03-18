@@ -95,7 +95,7 @@ except it is a type constructor that accepts some scope and returns
 the type of something able to check premises that is pre-loaded with
 a context.
 \begin{code}
-PremsChecker =  ∀{δ} → Context δ         →
+PremsChecker =  (δ : Scope) → Context δ  →
                 {p q p' : Pattern δ}     →
                 p -Env → q -Env          →
                 Prems p q p'             →
@@ -193,7 +193,7 @@ _-_∥_∥ :  Reducer × Inferer × PremsChecker →
     -- ...
     ⟦_⟧ {compu} {γ} (elim t e) Γ with inf Γ t
     ... | fail    n = thunk (elim (↞↞ (⟦ t ⟧ Γ) (` "unknown")) (⟦ e ⟧ Γ))
-    ... | succeed ty with rd (pc Γ) (⟦ t ⟧ Γ) ty (⟦ e ⟧ Γ)
+    ... | succeed ty with rd (pc γ Γ) (⟦ t ⟧ Γ) ty (⟦ e ⟧ Γ)
     ... | succeed x = ⟦ x ⟧ Γ
     ... | fail x    = thunk (elim (↞↞ (⟦ t ⟧ Γ) ty) (⟦ e ⟧ Γ))
     -- ...

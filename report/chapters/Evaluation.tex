@@ -1,0 +1,221 @@
+\chapter{Evaluation}
+
+\section{DSL Evaluation}
+\label{chapter-DSL-eval}
+
+In section \ref{DSL} we identify three common problems with the way type
+systems are currently described in literature.
+
+\begin{enumerate}
+\item Descriptions are often jargon heavy.
+\item Descriptions are often lengthy with repeated information.
+\item The seperate nature of the rules make dependencies non-explicit.
+\end{enumerate}
+
+In addition we prioritized readability, in particular aiming for type
+definitions to be readable in a linear fashion.
+
+We believe that in the previous section we demonstrated the concrete
+ways in which we addressed the identified problems, although there
+were some compromises to be made.
+
+In order to aid readability, we chose keywords carefully in our
+DSL, favouring hyphenated representations of phrases such as
+"eliminated-by", "resulting-in-type" and "if". This decision has the dual
+purpose of allowing the descriptions to be read in a manner somewhat
+like reading a description in English while also reducing some jargon,
+however this can sometimes be at the cost of addressing the second
+identified problem: berevity. We feel like the the gains in
+readability outway the cost in berevity here, and that the berevity is
+far better addressed by the use of hierarchical structure than by
+choosing shorter keywords. 
+
+We were careful with our design to ensure flexibility with regards to
+what type systems were describable. In appendix \ref{STLCspec} we show
+a complete example of a variation of simply typed lambda calculus with
+two base types and product types. In appendix \ref{SystemFspec} we
+demonstrate how we can encode arbitrary polymorphic terms by wrapping
+them in a value that is first eliminated by a type. Finally in
+\ref{DTLCspec} we demonstrate that the DSL is readily used for
+dependent types by describing singleton types and dependent
+functions. The inclusion of a dependently typed example allows us to
+discharge the acceptance criteria where we specified that our solution
+must be capable of representing both non-dependent and dependent types
+so long as the implementation is consistent with the design.
+
+Some aspect of the DSL are worth further thought as there are
+certainly improvements to be had.
+
+Firstly, the dependency on consistent ordering between elimination
+type descriptions and corresponding reductions in each value is not
+ideal. We identify non-explicit dependencies as an issue we wish to
+address and this is a prime example of such a dependency.
+
+Another area worth consideration is the notable absence of any way to
+describe user-defined datatypes. This would certainly need addressed
+in some form before the DSL was useful in any real-world application.
+
+A final limitation of our DSL is that when we introduce a new variable
+binding, the scope of that new binding begins immediately after the
+variable is introduced, there is no way for us to specify an
+alternative location to begin the newly weakened scope. Consequently,
+we are unable to represent let-expressions in the customary manner, as
+the variable name appears before the value we then bind to it meaning
+that we provide the new value in the already weakened scope. I.e. for
+\begin{verbatim}
+let x = <some-term> in <some expression involving x>
+\end{verbatim}
+then x is in-scope when defining the term we plan to associate to
+it. This problem appears more generally any time we wish to provide a
+syntax for some kind of assignment in this manner. We can work around
+this issue by simply providing the term before the binding name,
+however this results in wildly unintuitive syntax, opposing decades of
+convention.
+\begin{verbatim}
+let <some-term> = x in <some expression involving x>
+\end{verbatim}
+
+\section{Software Evaluation}
+
+We open our evaluation of the software by first revisiting the
+acceptance criteria provided in section \ref{sec-acceptance}. We have
+already shown that the software can be ran in the manner described by
+the first criterion.
+
+We over achieve on the second criterion by including somewhat more
+helpful output that we originally considered in-scope in section
+\ref{sec-scope}. The program output details the number of each kind of
+rule it was able to parse from the specification file rather than just
+a simple success or failure message. Similarly the program output does
+not simply acknowledge whither it managed to parse the source file,
+but shows the user a representation of what it managed to parse along
+with any remaining input it was unable to parse. Finally, although we
+only commited to a success or failure message resulting from the
+type-checking process, we instead supply the user with the type of the
+term provided in the source file. By providing this functionality over
+and above what we commited to, we greatly improve the experience in
+using the software, especially where users are able to see various
+rules accumulate as they write their type-system description.
+
+We have described in chapter \ref{chapter-testing} the test cases that
+evidence our efforts in meeting the third acceptance criterion.
+
+Finally, appendix \ref{appendix:examplespecifications} shows the
+specifications that we used to test our system describe both
+non-dependant and dependent types discharging our final acceptance
+criterion.
+
+Another area where we believe this project succeeds is in the
+transation of various areas of meta-theory to Agda code. We manage to
+capture many useful invariants in our careful use of types as
+discussed in the previous chapter. This helped to ensure consistent
+code quality throughout the lifetime of the project.
+
+Although there are a variety of languages we are able to type-check
+using this software, there are also certain notable limitations. We
+are most obviously limited by what we are able to describe using the
+DSL as is discussed in the previous section. We also require users
+source code to be extremely explicit about type information. There are
+no appeals to techniques such as unification in order to shorten the
+syntax of the languages we describe. For example, when we eliminate
+some term in our end syntax, that term cannot be a construction, it
+must be a computation with a synthesizable type. This is true even if
+the elimination itself is type-annotated and so we might be able to
+make appeals to 'magic' in order provide in this missing type
+information.
+
+There are also areas of the project where we might find ways to
+improve the quality of the code. Particularly in sections
+\ref{section-normalisation} and \ref{section-checking-types} we notice
+that many functions take long lists of arguments which is certainly
+indicative of a particular 'code smell'. There are improvements to be
+had by revisiting some sections of the code and collecting commonly
+associated information under some sensible type, and perhaps more
+generally reconsidering where some of these definitons life in order
+to remove the need for so many arguments. For example, the function
+for running a particular rule would be better defined inside the
+record type of the rule itself. Another concrete example to be had is
+that of the Context and Ruleset frequency being supplied together in
+function defintions, it may have been easier to collect this
+information under some type.
+
+Finally, we believe there are key areas where we missed opportunities
+to capitalize on mathematical structure when writing our
+code. We noted previously that we might have altered 
+our definition of \emph{Pattern} to expose some applicative functor
+structure which would have been a welcome addition to later
+definitions. We are also aware that patterns as they are defined
+presently form a lattice. A partial order on the set of patterns may
+be defined.
+$$
+\mbox{let} \;μ(p) = \mbox{the set of all terms that match the pattern}\;p
+$$
+$$
+p \leq q \iff \mu (p) \subseteq  \mu (q)
+$$
+
+We give algorithms for calculating the meet and join of a set of
+patterns in appendix \ref{appendix-joinalgorithms} completing the
+definition of a lattice. We might have then used this structure to
+validate user supplied typing rules by ensuring that a piece of syntax
+describing a type cannot match more than one rule. For each new user
+supplied type pattern $t$ and the set all all existing type patterns $T$
+this would be equivalent to ensuring
+$$
+\forall P \in \{t\} × T \;,\; \mu (meet \; P) = \emptyset
+$$
+which is easily calculable by checking whither $(meet \; P)$ contains
+any $\bot$s.
+
+There are also areas where we might have used this structure to help
+us in parsing the source code as we rely heavily on parsing according
+to patterns.
+
+\section{Personal Performance Evaluation}
+
+In general, the project unfolded as detailed in the project plan. We
+deliver the artifacts outlined in section \ref{section-artifacts} and we
+hit the milestones outlined in section \ref{section-milestones}. We
+devoted much of the first semester to reading and research and started
+to write the software during the Christmas break, completing the
+software in early March and leaving some time for testing and verification.
+
+During the implementation phase, we did not hit the target
+dates chosen for the completion of the software and the completion of
+the testing. We found the project to be substantially more difficult
+that we anticipated and found ourselves lacking key skills that would
+have helped us to meet the deadlines we set originally. This has
+resulted in a slight decrease in code quality that is apparent in some
+of the later areas of the codebase.
+
+Firstly we over-estimated our dependently-typed programming skills and,
+being somewhat new to this typing paradigm, progress was naturally
+slower as thought was given as to how best use the features it
+affords. Secondly we found ourselves lacking experience in the design
+of functional programs. We certainly had experience of providing
+individual functions however we had very little experience of
+functional design at a higher level. We often found ourselves having
+to rewrite sections of code that seemed sufficient at the time but
+that made subsequent definitions prohibitively difficult.
+
+There are two possible solutions that could have been employed here in
+order to make better use of the time that was available. Firstly we
+might have been more careful about reducing scope earlier in the
+project. While we did not overly commit in defining exactly what we
+would deliver, we initially included some optional areas that we might
+explore if time allowed. This led us to conduct a broader range of
+background research that was required when it might have been
+more useful to regain some of that time to use in the implementation
+and testing of the software. Secondly, we might have considered
+writing the software in a language in which we were already familiar.
+
+Although we do detail the above points as potential ways in which we
+could have improved certain aspects of the project, we believe that we
+were able to learn certain skills by writing the project in a
+dependently typed function language. These skills would have been more
+difficult to learn in other paradigms and we do not regret our choices
+in this area.
+
+Despite the issues discussed here, we did not have to compromise on
+the features we chose to deliver and our final artifacts conform fully
+with our acceptance criteria.

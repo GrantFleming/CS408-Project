@@ -345,19 +345,16 @@ result in an $\eta$-expanded term $\setminus Y. \; -> \; (T \; Y)$.
 \label{DSL}
 
 When designing the DSL there were three main problems that we wished to
-address that often occur in the literature. The first is that
+address. The first is that
 type-theory is an inherently jargon heavy topic and so here we attempt
 to keep our DSL as jargon-free as possible, in particular favouring
-syntax that can be read linearly in the same manner one might read a
-poem. The trickiest part of describing a type-system should be
-constructing the appropriate expressions, not understanding how the
-high-level syntax of the DSL is layed out.
+syntax that can be read linearly. The trickiest part of describing a
+type-system should be constructing the appropriate expressions,
+not understanding how the high-level syntax of the DSL is layed out.
 
 The second issue is that of berevity. For a given type, it is standard
-to give a rule to acertain when it is valid as a type, another for
-determining when a value is of that type, another for detemining the
-type resulting from eliminating terms of this type, $\beta$-rules,
-$\eta$-rules and sometimes more. Typically much information is
+to supply many rules for the purposes of checking types, reduction,
+η-expansion and more. Typically much information is
 repeated across a set of such rules. It is for this reason we propose
 a hierarchical structure in our DSL. The top level element is a "type"
 which is described by a certain pattern. Any rules pertaining to this
@@ -494,7 +491,7 @@ decision that we made to address the problems with berevity that we
 identified earlier in this section.
 
 A final point to make is that of whitespace. Indentation is irrelevant
-in our DSL to allow maximum flexibility of use, we choose to indent
+in our DSL to allow maximum flexibility, we choose to indent
 our descriptions in such a way as to emphesis the structure of the
 language. There are some cases where new lines are required, after a
 keyword (something ending with ":") or if the keyword is identifying
@@ -502,58 +499,6 @@ some kind of entity described by a pattern then the new line must
 follow the pattern. Also, as previously mentioned, when listing
 premises each one must appear on its own line.
 
-
-\section{DSL Design Critique}
-
-In section \ref{DSL} we identify three common problems with the way type
-systems are currently described in literature.
-
-\begin{enumerate}
-\item Descriptions are often jargon heavy.
-\item Descriptions are often lengthy with repeated information.
-\item The seperate nature of the rules make dependencies non-explicit.
-\end{enumerate}
-
-In addition we prioritized readability, in particular aiming for type
-definitions to be readable in a linear fashion.
-
-We believe that in the previous section we demonstrated the concrete
-ways in which we addressed the identified problems, although there
-were some compromises to be made.
-
-In order to aid readability, we chose keywords carefully in our
-DSL, favouring hyphenated representations of phrases such as
-"eliminated-by", "resulting-in-type" and "if". This decision has the dual
-purpose of allowing the descriptions to be read in a manner somewhat
-like reading a description in English while also reducing some jargon,
-however this can sometimes be at the cost of addressing the second
-identified problem: berevity. We feel like the the gains in
-readability outway the cost in berevity here, and that the berevity is
-far better addressed by the use of hierarchical structure than by
-choosing shorter keywords. 
-
-We were careful with our design to ensure flexibility with regards to
-what type systems were describable. In appendix \ref{STLCspec} we show
-a complete example of a variation of simply typed lambda calculus with
-two base types and product types. In appendix \ref{SystemFspec} we
-demonstrate how we can encode arbitrary polymorphic terms by wrapping
-them in a value that is first eliminated by a type. Finally in
-\ref{DTLCspec} we demonstrate that the DSL is readily used for
-dependent types by describing singleton types and dependent
-functions. The inclusion of a dependently typed example allows us to
-discharge the acceptance criteria where we specified that our solution
-must be capable of representing both non-dependent and dependent types
-so long as the implementation is consistent with the design.
-
-Some aspect of the DSL are worth further thought as there are
-certainly improvements to be had.
-
-Firstly, the dependency on consistent ordering between elimination
-type descriptions and corresponding reductions in each value is not
-ideal. We identify non-explicit dependencies as an issue we wish to
-address and this is a prime example of such a dependency.
-
-Another area worth consideration is the notable absence of any way to
-describe user-defined datatypes. This would certainly need addressed
-in some form before the DSL was useful in any real-world application.
-
+This concludes the design of our DSL and allows us to begin
+implementing our software. We will later evaluate our design in
+section \ref{chapter-DSL-eval}.

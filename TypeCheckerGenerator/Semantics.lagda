@@ -144,6 +144,7 @@ existance of the rule, and the successful checking of the premise chain. The cal
 to β-reduce is not in itself a failable operation.
 
 \section{Normalisation by evaluation}
+\label{section-normalisation}
 
 We previously gave a type describing what a premise checker might look like, now
 we give similar types for things that will reduce for us, and things that might

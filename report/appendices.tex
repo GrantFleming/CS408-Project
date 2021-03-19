@@ -509,5 +509,67 @@ squarebracketed p = do
 
 \subsection{Type checking STLC}
 \input{../../TypeCheckerGenerator/latex/Test/STLCTest.tex}
+\clearpage
+\section{Lattice Meet/Join Algorithms}
+\label{appendix-joinalgorithms}
+
+We simplify these algorithms by ignoring scope, in practice we would
+need to consider scope if we were to use these algorithms in our code.
+
+The following algorithm may be used to calculate the meet of a set
+of patterns.
+
+\begin{enumerate}
+\item Consider all the topmost data constructors in the patterns
+  \begin{enumerate}
+  \item if they are not all the same then the meet is a \emph{place}
+  \item if they are all \emph{atoms}
+    \begin{enumerate}
+    \item if they are all the same atom, then the meet is that atom
+      \item if they are all different atoms, then the meet is a \emph{place}
+    \end{enumerate}
+  \item if they are all \emph{place}s then the meet is a \emph{place}
+  \item if the are all \emph{⊥}s then the meet is \emph{⊥}  
+  \item if they are all pairs
+    \begin{enumerate}
+      \item calculate the meet of all the left elements $M_l$
+      \item calulate the meet of all the right elements $M_r$
+      \item the meet is the pair ($M_l$ ∙ $M_r$)
+    \end{enumerate}
+  \item if they are all binds
+    \begin{enumerate}
+    \item calculate the meet of the terms under all the binders $M_b$
+    \item the meet is (bind $M_b$)
+    \end{enumerate}
+  \end{enumerate}
+\end{enumerate}
+
+The following algorithm may be used to calculate the join of a set
+of patterns.
+
+\begin{enumerate}
+\item Consider all the topmost data constructors in the patterns
+  \begin{enumerate}
+  \item if they are not all the same then the join is \emph{⊥}
+  \item if they are all \emph{atoms}
+    \begin{enumerate}
+    \item if they are all the same atom, then the join is that atom.
+      \item if they are all different atoms, then the join is \emph{⊥}
+    \end{enumerate}
+  \item if they are all \emph{place}s then the join is a \emph{place}
+  \item if the are all \emph{⊥}s then the join is \emph{⊥}  
+  \item if they are all pairs
+    \begin{enumerate}
+      \item calculate the join of all the left elements $J_l$
+      \item calulate the join of all the right elements $J_r$
+      \item the join is the pair ($J_l$ ∙ $J_r$)
+    \end{enumerate}
+  \item if they are all binds
+    \begin{enumerate}
+    \item calculate the join of the terms under all the binders $J_b$
+    \item the join is (bind $J_b$)
+    \end{enumerate}
+  \end{enumerate}
+\end{enumerate}
 
 \end{appendices}

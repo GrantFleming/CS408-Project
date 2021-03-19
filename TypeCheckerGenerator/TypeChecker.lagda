@@ -78,30 +78,26 @@ fail with a descriptive error.
 
 \begin{code}
 ∋-check     :  Context γ            →
-               RuleSet                →
-               List ∋rule           →
+               RuleSet              →
                (subject : Const γ)  →
                (input : Const γ)    →
                Failable ⊤
               
 type-check  :  Context γ            →
-               RuleSet                →
-               List TypeRule        →
+               RuleSet              →
                (subject : Const γ)  →
                Failable ⊤
               
 univ-check  :  Context γ            →
-               RuleSet                →
-               List UnivRule        →
+               RuleSet              →
                (input : Const γ)    →
                Failable ⊤
 
-elim-synth : Context γ                    →
-             RuleSet                        →
-             List ElimRule                →
-             (synth-type : Term const γ)  →
-             (eliminator : Term const γ)  →
-             Failable (Term const γ)
+elim-synth : Context γ               →
+             RuleSet                 →
+             (synth-type : Const γ)  →
+             (eliminator : Const γ)  →
+             Failable (Const γ)
 \end{code}
 
 We define a notion of equivalence of terms that we will need in order
@@ -235,18 +231,18 @@ check-premise Γ rules penv qenv (T ∋' ξ [ θ ])
 \begin{code}
 check-premise {q = q} Γ rules@(rs t u ∋ e β η) penv qenv (type ξ θ)
   = do
-    _ ← type-check  Γ rules t ((ξ ‼ qenv) ⟨term θ)
+    _ ← type-check  Γ rules ((ξ ‼ qenv) ⟨term θ)
     succeed (thing (ξ ‼ qenv) , (qenv -penv ξ))
 
 check-premise Γ rules@(rs t u ∋ e β η) penv qenv (x ≡' x')
   = do
-    _ ← normalize η β ((infer rules) , λ scp → check-premise-chain {γ = scp} rules) Γ (` "unknown") (toTerm penv x)
+    _ ← normalize η β ((infer rules) , check-premise-chain rules) Γ (` "unknown") (toTerm penv x)
       ≡ᵗ
-      normalize η β ((infer rules) , λ scp → check-premise-chain {γ = scp} rules) Γ (` "unknown") (toTerm penv x')
+      normalize η β ((infer rules) , check-premise-chain rules) Γ (` "unknown") (toTerm penv x')
     succeed (` , qenv)
 check-premise Γ rules@(rs t u ∋ e β η) penv qenv (univ x)
   = do
-    _ ← univ-check Γ rules u (toTerm {γ = 0} penv x)
+    _ ← univ-check Γ rules (toTerm {γ = 0} penv x)
     succeed (` , qenv)
 check-premise {γ = γ} Γ rules penv qenv (x ⊢' prem)
   = do
@@ -297,7 +293,7 @@ run-∋rule  :  Context γ                    →
               Failable ⊤
 run-∋rule {γ} Γ rules@(rs t u ∋ e β η) rule ienv senv
   = do
-     _ ← type-check Γ rules t
+     _ ← type-check Γ rules
                     (termFrom (input rule) ienv)
      _ ← check-premise-chain  rules Γ ienv senv
                     (⊗premises γ (proj₂ (premises rule)))
@@ -329,7 +325,7 @@ while constructing this system of functions.
 run-univrule : Context γ → RuleSet → (rule : UnivRule) → ((γ ⊗ (input rule)) -Env) → Failable ⊤
 run-univrule {γ = γ} Γ rules@(rs t u ∋ e β η) rule env
   = do
-     _ ← type-check Γ rules t (termFrom (input rule) env)
+     _ ← type-check Γ rules (termFrom (input rule) env)
      _ ← check-premise-chain rules Γ env ` (⊗premises γ (proj₂ (premises rule)))
      succeed tt
 
@@ -341,70 +337,81 @@ run-typerule {γ} Γ rules rule env
 
 
 {-# TERMINATING #-}
-univ-check Γ rules  []              input
-  = fail ("univ-check: " ++ (print input) ++ " is not a universe")
-univ-check Γ rules (urule ∷ urules) input
-  with match-univrule urule input
-... | nothing = univ-check Γ rules urules input
-... | just x = run-univrule Γ rules urule x
+univ-check Γ rules@(rs _ u _ _ _ _) input = univ-check' u
+  where
+    univ-check' : List UnivRule → Failable ⊤
+    univ-check' []
+      = fail ("univ-check: " ++ (print input) ++ " is not a universe")
+    univ-check' (urule ∷ urules)
+      with match-univrule urule input
+    ... | nothing = univ-check' urules
+    ... | just x = run-univrule Γ rules urule x
 
-type-check Γ rules@(rs t u ∋ e β η) trs (thunk x)
+type-check Γ rules (thunk x)
   = do
       ty ← infer rules Γ x
-      univ-check Γ rules u ty
-type-check  Γ rules []      ms
-  = fail ("type-check: " ++ (print ms) ++ " is not a type")
-type-check Γ rules (trule ∷ trules) ms
-  with match-typerule trule ms
-... | nothing = type-check Γ rules trules ms
-... | just env = run-typerule Γ rules trule env
+      univ-check Γ rules ty
+type-check  Γ rules@(rs t _ _ _ _ _) ms = type-check' t
+  where
+    type-check' : List TypeRule → Failable ⊤
+    type-check'  []
+      = fail ("type-check: " ++ (print ms) ++ " is not a type")
+    type-check' (trule ∷ trules)
+      with match-typerule trule ms
+    ... | nothing = type-check' trules
+    ... | just env = run-typerule Γ rules trule env
 
-∋-check Γ rules@(rs t u ∋ e β η) _ sub (` "set") = type-check Γ rules t sub
-∋-check Γ rules []               sub inp
-  = fail ("failed ∋-check: " ++ (print inp) ++ " ∋ " ++ (print sub))
-∋-check Γ rules (∋-rule ∷ ∋rules) sub inp
-  with match-∋rule ∋-rule inp sub
-... | nothing = ∋-check Γ rules ∋rules sub inp
-... | just (subj-env , input-envs) = run-∋rule Γ rules ∋-rule subj-env input-envs
+∋-check Γ rules@(rs t _ _ _ _ _) sub (` "set") = type-check Γ rules sub
+∋-check Γ rules@(rs t u ∋ e β η) sub inp = ∋-check' ∋
+  where
+    ∋-check' : List ∋rule → Failable ⊤
+    ∋-check' []
+      = fail ("failed ∋-check: " ++ (print inp) ++ " ∋ " ++ (print sub))
+    ∋-check' (∋-rule ∷ ∋rules)
+      with match-∋rule ∋-rule inp sub
+    ... | nothing = ∋-check' ∋rules
+    ... | just (subj-env , input-envs) = run-∋rule Γ rules ∋-rule subj-env input-envs
 
 
-elim-synth Γ rules []             T s
-  = fail ("elim-synth: failed to match elimination rule for target = " ++ (print T) ++ " and eliminator = " ++ (print s))
-elim-synth Γ rules (erule ∷ erules) T s with match-erule erule T s
-... | nothing              = elim-synth Γ rules erules T s
-... | just (T-env , s-env) = run-erule Γ rules erule T-env s-env
+elim-synth {γ} Γ rules@(rs _ _ _ e _ _) T s = elim-synth'GHC e
+  where
+    elim-synth' : List ElimRule → Failable (Const γ)
+    elim-synth' []
+      = fail ("elim-synth: failed to match elimination rule for target = " ++ (print T) ++ " and eliminator = " ++ (print s))
+    elim-synth' (erule ∷ erules) with match-erule erule T s
+    ... | nothing              = elim-synth' erules
+    ... | just (T-env , s-env) = run-erule Γ rules erule T-env s-env
 
 
 infer rules@(rs t u ∋ ee β η) Γ (var x)    = do
                             -- check postcondition:
                              ty ← return (x ‼V Γ)
-                             tyn ← return (normalize η β (infer rules , (λ scp → check-premise-chain {γ = scp} rules)) Γ (` "Type") ty)
-                             _ ← type-check Γ rules t tyn
+                             tyn ← return (normalize η β (infer rules , check-premise-chain rules) Γ (` "set") ty)
+                             _ ← type-check Γ rules tyn
                              succeed tyn
 infer rules@(rs t u ∋ ee β η) Γ (elim e s) = do
                              T ← infer rules Γ e
-                             S ← elim-synth Γ rules ee T s
-                             Sn ← return (normalize η β (infer rules , (λ scp → check-premise-chain {γ = scp} rules)) Γ (` "Type") S)      
+                             S ← elim-synth Γ rules T s
+                             Sn ← return (normalize η β (infer rules , check-premise-chain rules) Γ (` "set") S)      
                              -- check postcondition:
-                             _ ← type-check Γ rules t Sn
+                             _ ← type-check Γ rules Sn
                              succeed Sn
 infer rules@(rs tr u ∋ e β η) Γ (t ∷ T)  = do
                    -- postcondition checks in ∋-check
-                   Tn ← return (normalize η β (infer rules , (λ scp → check-premise-chain {γ = scp} rules)) Γ (` "Type") T)
-                   _ ← ∋-check Γ rules ∋ t Tn
+                   Tn ← return (normalize η β (infer rules , check-premise-chain rules) Γ (` "set") T)
+                   _ ← ∋-check Γ rules t Tn
                    succeed Tn
 
 -- special case, checking if (type ∈ tm) is checking if tm is a type
-check {_} {const} rules@(rs t _ _ _ _ _) Γ (` "set") tm = type-check Γ rules t tm
-check {_} {compu} rules@(rs t _ _ _ _ _) Γ (` "set") tm = type-check Γ rules t (thunk tm)
+check rules@(rs t _ _ _ _ _) Γ (` "set") tm = type-check Γ rules (↠↠ tm)
 
 check {_} {const} rules Γ T (thunk x)         = check rules Γ T x
-check {_} {const} rules@(rs tr u ∋ e β η) Γ T t = ∋-check Γ rules ∋ t T
+check {_} {const} rules@(rs tr u ∋ e β η) Γ T t = ∋-check Γ rules t T
 check {_} {compu} rules@(rs tr u ∋ e β η) Γ T t = do
                             S ← infer rules Γ t
-                            normalize η β ((infer rules) , λ scp → check-premise-chain {γ = scp} rules) Γ (` "Type") S
+                            normalize η β ((infer rules) , check-premise-chain rules) Γ (` "set") S
                               ≡ᵗ
-                              normalize η β ((infer rules) , λ scp → check-premise-chain {γ = scp} rules) Γ (` "Type") T
+                              normalize η β ((infer rules) , check-premise-chain rules) Γ (` "set") T
 \end{code}
 }
 

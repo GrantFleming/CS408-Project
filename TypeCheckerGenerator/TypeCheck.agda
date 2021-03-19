@@ -30,12 +30,11 @@ module TypeCheck where
 
   getArgs = lift getArgsRaw
 
-  main : Main
   main = run (do
            (desc-filename ∷ source-filename ∷ []) ← getArgs
              where _ → do
                          _ ← putStrLn ("Must supply the name of the specification file" ++
-                                       "and the source code file.")
+                                       " and the source code file.")
                          return tt
            desc ← readFiniteFile desc-filename
            src  ← readFiniteFile source-filename

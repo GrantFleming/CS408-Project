@@ -66,11 +66,7 @@ data RuleSet : Set where
 
 
 Firstly, we present four functions, one for checking each of the user
-provided typing rules. We must provide the list of specific rule types
-alongside the complete structure of all rules so that we might recurse
-over this list when looking for a matching rule while keeping the entire
-collection of rules whole for the purpose of providing it to other
-functions as may be required. Each definition proceeds in the same way,
+provided typing rules. Each definition proceeds in the same way,
 attempting to match an appropriate rule, if a match is found, the rule is
 run. We will explore what it means to run a rule later. If no rule is
 found to match, and there are no rules left to check, these functions
@@ -169,16 +165,16 @@ so that it might check the elimination rules. Any term given back in this
 process is checked to be a type before $infer$ returns it.
 
 \begin{code}
-check  :  RuleSet                   →
-          Context γ               →
-          (type : Term const γ)   →
-          (term : Term d γ)       →
+check  :  RuleSet            →
+          Context γ          →
+          (type : Const γ)   →
+          (term : Term d γ)  →
           Failable ⊤
           
-infer  :  RuleSet                  →
-          Context γ              →
-          (term : Term compu γ)  →
-          Failable (Term const γ)
+infer  :  RuleSet            →
+          Context γ          →
+          (term : Compu γ)   →
+          Failable (Const γ)
 \end{code}
 
 We now introduce the ability to check a chain of premises. The result of
@@ -202,7 +198,16 @@ accumulate while the environments for the things that remain to be trusted
 are whittled away. It is expected that these functions are called with
 the opened premise chain, they will not open the chain to the scope in
 which we are currently operating.
-
+\hide{
+\begin{code}
+check-premise-chain  :     RuleSet              →
+                           ∀{γ} → Context γ     →
+                           {p q p' : Pattern γ} →
+                           p -Env → q -Env      →
+                           Prems p q p'         →
+                           Failable (p' -Env)
+\end{code}
+}
 \begin{code}
 check-premise : Context γ   →
                 RuleSet       →
@@ -210,44 +215,33 @@ check-premise : Context γ   →
                 q -Env      →
                 Prem p q γ p' q'  →
                 Failable (p' -Env × q' -Env)
-
-check-premise-chain  :     RuleSet           →
-                           Context γ         →
-                           {p : Pattern γ}
-                           {q : Pattern γ}
-                           {p' : Pattern γ}  →
-                           p -Env            →
-                           q -Env            →
-                           Prems p q p'      →
-                           Failable (p' -Env)
 --...
 check-premise Γ rules penv qenv (T ∋' ξ [ θ ])
   = do
-    _ ← check rules Γ (toTerm {γ = 0} penv T) ((ξ ‼ qenv) ⟨term θ)
-    succeed ((thing (ξ ‼ qenv)) , (qenv -penv ξ))
+      _ ← check rules Γ (toTerm penv T) ((ξ ‼ qenv) ⟨term θ)
+      succeed ((thing (ξ ‼ qenv)) , (qenv -penv ξ))
 --...
 \end{code}
 \hide{
 \begin{code}
-check-premise {q = q} Γ rules@(rs t u ∋ e β η) penv qenv (type ξ θ)
+check-premise Γ rules penv qenv (type ξ θ)
   = do
     _ ← type-check  Γ rules ((ξ ‼ qenv) ⟨term θ)
     succeed (thing (ξ ‼ qenv) , (qenv -penv ξ))
-
-check-premise Γ rules@(rs t u ∋ e β η) penv qenv (x ≡' x')
+check-premise Γ rules@(rs _ _ _ _ β η) penv qenv (x ≡' x')
   = do
-    _ ← normalize η β ((infer rules) , check-premise-chain rules) Γ (` "unknown") (toTerm penv x)
-      ≡ᵗ
-      normalize η β ((infer rules) , check-premise-chain rules) Γ (` "unknown") (toTerm penv x')
-    succeed (` , qenv)
-check-premise Γ rules@(rs t u ∋ e β η) penv qenv (univ x)
+      _ ← normalize η β (infer rules , check-premise-chain rules) Γ (` "unknown") (toTerm penv x)
+        ≡ᵗ
+        normalize η β (infer rules , check-premise-chain rules) Γ (` "unknown") (toTerm penv x')
+      succeed (` , qenv)
+check-premise Γ rules penv qenv (univ x)
   = do
-    _ ← univ-check Γ rules (toTerm {γ = 0} penv x)
-    succeed (` , qenv)
-check-premise {γ = γ} Γ rules penv qenv (x ⊢' prem)
+      _ ← univ-check Γ rules (toTerm penv x)
+      succeed (` , qenv)
+check-premise Γ rules penv qenv (x ⊢' prem)
   = do
-    (p'env , q'env) ← check-premise (Γ -, toTerm {γ = 0} penv x) rules penv qenv prem
-    succeed ((bind p'env) , q'env)
+      (p'env , q'env) ← check-premise (Γ -, toTerm penv x) rules penv qenv prem
+      succeed ((bind p'env) , q'env)
 \end{code}
 }
 \hide{
@@ -286,15 +280,14 @@ the output of running the elimination rule.
 
 \begin{code}
 run-∋rule  :  Context γ                    →
-              RuleSet                        →
+              RuleSet                      →
               (rule : ∋rule)               →
               ((γ ⊗ (input rule)) -Env)    →
               ((γ ⊗ (subject rule)) -Env)  →
               Failable ⊤
 run-∋rule {γ} Γ rules@(rs t u ∋ e β η) rule ienv senv
   = do
-     _ ← type-check Γ rules
-                    (termFrom (input rule) ienv)
+     _ ← type-check Γ rules (termFrom (input rule) ienv)
      _ ← check-premise-chain  rules Γ ienv senv
                     (⊗premises γ (proj₂ (premises rule)))
      succeed tt
@@ -304,7 +297,7 @@ run-erule : Context γ                       →
             (rule : ElimRule)               →
             (γ ⊗ targetPat rule)  -Env →
             (γ ⊗ eliminator rule) -Env →
-            Failable (Term const γ)
+            Failable (Const γ)
 run-erule {γ} Γ rules rule T-env s-env
   = do
       p'env ← check-premise-chain rules Γ T-env s-env
@@ -361,8 +354,8 @@ type-check  Γ rules@(rs t _ _ _ _ _) ms = type-check' t
     ... | nothing = type-check' trules
     ... | just env = run-typerule Γ rules trule env
 
-∋-check Γ rules@(rs t _ _ _ _ _) sub (` "set") = type-check Γ rules sub
-∋-check Γ rules@(rs t u ∋ e β η) sub inp = ∋-check' ∋
+∋-check Γ rules sub (` "set") = type-check Γ rules sub
+∋-check Γ rules@(rs _ _ ∋ _ _ _) sub inp = ∋-check' ∋
   where
     ∋-check' : List ∋rule → Failable ⊤
     ∋-check' []
@@ -373,7 +366,7 @@ type-check  Γ rules@(rs t _ _ _ _ _) ms = type-check' t
     ... | just (subj-env , input-envs) = run-∋rule Γ rules ∋-rule subj-env input-envs
 
 
-elim-synth {γ} Γ rules@(rs _ _ _ e _ _) T s = elim-synth'GHC e
+elim-synth {γ} Γ rules@(rs _ _ _ e _ _) T s = elim-synth' e
   where
     elim-synth' : List ElimRule → Failable (Const γ)
     elim-synth' []
@@ -383,21 +376,18 @@ elim-synth {γ} Γ rules@(rs _ _ _ e _ _) T s = elim-synth'GHC e
     ... | just (T-env , s-env) = run-erule Γ rules erule T-env s-env
 
 
-infer rules@(rs t u ∋ ee β η) Γ (var x)    = do
-                            -- check postcondition:
+infer rules@(rs _ _ _ _ β η) Γ (var x)    = do
                              ty ← return (x ‼V Γ)
                              tyn ← return (normalize η β (infer rules , check-premise-chain rules) Γ (` "set") ty)
                              _ ← type-check Γ rules tyn
                              succeed tyn
-infer rules@(rs t u ∋ ee β η) Γ (elim e s) = do
+infer rules@(rs _ _ _ _ β η) Γ (elim e s) = do
                              T ← infer rules Γ e
                              S ← elim-synth Γ rules T s
                              Sn ← return (normalize η β (infer rules , check-premise-chain rules) Γ (` "set") S)      
-                             -- check postcondition:
                              _ ← type-check Γ rules Sn
                              succeed Sn
-infer rules@(rs tr u ∋ e β η) Γ (t ∷ T)  = do
-                   -- postcondition checks in ∋-check
+infer rules@(rs _ _ _ _  β η) Γ (t ∷ T)  = do
                    Tn ← return (normalize η β (infer rules , check-premise-chain rules) Γ (` "set") T)
                    _ ← ∋-check Γ rules t Tn
                    succeed Tn
@@ -405,9 +395,9 @@ infer rules@(rs tr u ∋ e β η) Γ (t ∷ T)  = do
 -- special case, checking if (type ∈ tm) is checking if tm is a type
 check rules@(rs t _ _ _ _ _) Γ (` "set") tm = type-check Γ rules (↠↠ tm)
 
-check {_} {const} rules Γ T (thunk x)         = check rules Γ T x
-check {_} {const} rules@(rs tr u ∋ e β η) Γ T t = ∋-check Γ rules t T
-check {_} {compu} rules@(rs tr u ∋ e β η) Γ T t = do
+check {_} {const} rules Γ T (thunk x)  = check rules Γ T x
+check {_} {const} rules Γ T t          = ∋-check Γ rules t T
+check {_} {compu} rules@(rs _ _ _ _ β η) Γ T t = do
                             S ← infer rules Γ t
                             normalize η β ((infer rules) , check-premise-chain rules) Γ (` "set") S
                               ≡ᵗ

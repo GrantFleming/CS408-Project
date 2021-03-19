@@ -1,13 +1,59 @@
-\chapter{Discussion}
+\chapter{Conclusion}
 
+\section{Summary}
 
-Sought after properties of type-systems:
-stability under substitution -
-For establishing type-soundness
-subject reduction - evaluation of expressions does not cause their
-type to change. If we follow the advice in \cite{TypesWhoSayNi} Types
-who say ni, we may be able to show this easily.
-progress -
-confluence - 
-bad use of Agda module system
-   opening module for whole file, bad naming etc
+This project was concerned with description of type systems. We began
+by conducting a range of background research in the field of
+type-theory. We then expanded our research to include various subject
+that might have helped us the the construction of a type-checker. We
+designed a DSL that was capable of describing type systems. We then
+wrote a type checker that was able to read such a description from a 
+file, generate the type checker, then type-check code in the language it
+described.
+
+We believe that we are able to represent a broad range of
+type-systems using our DSL and type-check all of these with the software we
+provide. We also explore areas where both our DSL and our software
+fall short. We finish by giving a qualitative evaluation of the DSL,
+the software and our personal performance during the development
+process. 
+
+\section{Future Work}
+
+There are many areas that could provide excellent areas for future
+work.
+
+One area of particular interest would be to explore the introduction
+of Hindley-Milner style type inference. Clearly there are areas where
+such inference is impossible in a dependently typed setting, but is it
+such a black and white distinction? What exactly would a user have to
+forgo in order to enjoy the convenience of this inference, and could
+they choose to allow it in only certain places, yet still use
+dependent types in others? This would be an excellent area for
+exploration and it is not clear to us how it could be used effectively
+for user specified type systems.
+
+Another area of interest would be to consider an extension of the DSL
+syntax to allow subtyping. Is there a sensible set of abstractions
+that could be introduced here to allow the user to specifying the
+mechanics of subtyping in a language while being prohibitive enough to
+exclude some amount of nonsense that might be provided? This is
+certainly worth further thought.
+
+Finally we might explore how such a system as this might be combined
+with a compiler-generator so that we might give specifications of
+entire languages and get a fully fledged compiler with static
+analysis.
+
+\section{Conclusion}
+
+We round off our report by simply stating that we are pleased with the
+process and outcome of this project.
+
+This project allowed us to learn a good mixture of some of the
+theoretical underpinnings of type theory while also allowing us to
+further develop our function programming skills. It familiarised us
+with the reading of academic literature and taught us the value of
+being precise in our definitions. We learned that being realistic is
+easier but being amitious is more enjoyable. This project certainly
+proved to be a major challange and we are better for it.

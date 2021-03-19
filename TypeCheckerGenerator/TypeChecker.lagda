@@ -149,8 +149,8 @@ a call to check the type of any term.
 
 When checking constructions, we only make the distinction of two cases,
 either we duck under a thunk to check the computation beneath it, or we
-call to $∋-check$ otherwise. When checking computations, we always start
-by synthesizing the type with a call to $infer$ safe in the knowledge that
+call to \emph{∋-check} otherwise. When checking computations, we always start
+by synthesizing the type with a call to \emph{infer} safe in the knowledge that
 if it succeeds, we are guaranteed that what is given is a type. We then check
 equivalence between what was inferred, and the type we are checking as
 described above.
@@ -160,7 +160,7 @@ context. We check to ensure that what we got from the context was indeed
 a type before returning it. Terms with type annotations have their
 type checked against their annotation, the annotation is verified as being
 a type in this process, and the annotation is returned. Eliminations are
-checked by synthesizing the type of the target before delegating to $elim-synth$
+checked by synthesizing the type of the target before delegating to \emph{elim-synth}
 so that it might check the elimination rules. Any term given back in this
 process is checked to be a type before $infer$ returns it.
 
@@ -177,27 +177,21 @@ infer  :  RuleSet            →
           Failable (Const γ)
 \end{code}
 
-We now introduce the ability to check a chain of premises. The result of
+Before we discuss the running of rule instances, we first discuss how
+we check a premise chain. The result of
 matching against a given rule provides us with the necessary environments
 in which we can get concrete terms from the schematic variables and
 expressions in our premise. In our implementation checking the premise
 turns out to be mostly trivial, if verbose. Each data constructor of a Premise
-maps nicely to functionality we have already provided - such as $type-check$,
-$univ-check$ and $\_≡ᵗ\_$. We provide just the definition for the $∈$ premise
-by way of example here.
+maps nicely to functionality we have already provided - such as \emph{type-check},
+\emph{univ-check} and \emph{\_≡ᵗ\_}. We provide just the definition for the
+∈ premise by way of example here.
 
 Here we delegate to check, creating a concrete type to check from the
 expression $T$, and looking up the term we are checking using the schematic
 variable $ξ$, thinning it appropriately. A successful checking of a premise
 results in environments for the patterns determining what is newly
 trusted and what is left to be trusted.
-
-The checking of a whole chain of premise proceeds as one might expect.
-Each premise is checked in order. The environments for the things we trust
-accumulate while the environments for the things that remain to be trusted
-are whittled away. It is expected that these functions are called with
-the opened premise chain, they will not open the chain to the scope in
-which we are currently operating.
 \hide{
 \begin{code}
 check-premise-chain  :     RuleSet              →
@@ -222,6 +216,11 @@ check-premise Γ rules penv qenv (T ∋' ξ [ θ ])
       succeed ((thing (ξ ‼ qenv)) , (qenv -penv ξ))
 --...
 \end{code}
+The checking of a whole chain of premise proceeds as one might expect and so
+we do not give the code here. Each premise is checked in order. The environments
+for the things we trust accumulate while the environments for the things that
+remain to be trusted are whittled away. The result of checking a chain of premises
+is an environment for everything that we now trust.
 \hide{
 \begin{code}
 check-premise Γ rules penv qenv (type ξ θ)

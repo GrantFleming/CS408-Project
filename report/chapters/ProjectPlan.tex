@@ -1,7 +1,5 @@
 \chapter{Project Plan}
 
-** TODO - introduce the chapter
-
 \section{Project Specification}
 
   \subsection{Overview}
@@ -36,7 +34,7 @@
 
   \begin{itemize}
   \item A type-checker generator as a standalone binary
-  \item At least one example specification in the DSL
+  \item At least two example specifications in the DSL
   \item At least two source code examples for each
     specification, one which type-checks successfully and one
     which does not
@@ -60,10 +58,6 @@
     Single usable feature of 'running' the generator on a
     specification and piece of source code
     & Quality of life / usability features or other niceties \\ \hline
-    High level reasoning on why the generated type-checkers
-    are likely to be sound and complete
-    & Formally proving the generator produces type-checkers
-    that are sound and complete\\
   \end{tabular}            
   \end{center}        
   
@@ -97,7 +91,7 @@
     \item Failure to successfully type-check source code
     \end{itemize}
   \item The software passes a fixed set of test cases (specifications and
-    source codes) - succeeding, failing and showing
+    source codes) succeeding, failing and showing
     appropriate errors as detailed in the test cases.
   \item The software can generate type-checkers capable of
     checking both non-dependent and dependent types.
@@ -105,107 +99,28 @@
 
 \section{Project Plan}
 
-\subsection{Objective Timeline}
+\subsection{Timeline}
 
-The following timeline assigned deadlines to the previously
-identified objectives.
+The following timeline assigns provisional deadlines to key stages in
+the project. We use this information later when we retroactively
+evaluate our personal performance. 
 
 \begin{center}
 \begin{vtimeline}[description={text width=11cm}, 
  row sep=3em]
 16/11/2020 & Complete initial readings on type-theory. \endlr
 30/11/2020 & Complete specific readings relating to the design and
-  implementation of various type systems and components thereof.* \endlr
+  implementation of various type systems and components thereof.\endlr
 07/12/2020 & Identify all elements needed to fully and
   unambiguously describe a type system. \endlr
-14/12/2020 & Verify sufficiency of identified elements by fully describing
-    two different type systems in the framework. \endlr
-21/12/2020 & Formalize a syntax for expressing these elements. \endlr
-04/01/2021 & Write a specification of a type-checker-generator,
-including identifying areas for verification and/or testing. \endlr
+28/12/2020 & Design a DSL, formalising a syntax for expressing these
+elements. \endlr
+04/01/2020 & Produce sample specifications for testing using the DSL. \endlr
 01/03/2021 & Design and implement a type-checker-generator. \endlr
-15/03/2021 & Verify the implementation according to the
-  specification. \endlr
-22/03/2021 & Evaluate the DSL and identify any limitations on the
-  kind of type systems that it can represent. \endlr
+15/03/2021 & Verify and test the implementation. \endlr
+22/03/2021 & Conduct a qualitative evaluation of the DSL and resulting
+software.\endlr
 \end{vtimeline}          
 \end{center}
 \hrule
-* This is the target date of completion for \emph{currently planned}
-readings only
 
-\section{The Development Process}
-\subsection{Development Methodology}
-
-In this project, although the primary goal is the production
-of software, much of the work is theoretical in nature. With
-that in mind, it is proposed to split the project in three:
-initial theoretical work (such as formalizing a language to
-describe type systems), the design and implementation of the
-type-checker-generator (the software development element) and
-the verification of the software (again somewhat theoretical
-in nature where we look at soundness and completeness).
-
-In the development phase of the project, an agile approach to
-development will be employed. 
-
-The author will take a Scrum-style approach to the development
-process, adapting the usual teamwork-focused elements to be
-more suited to a single developer environment.
-
-Of the four identified milestones, the last three of these
-will make up the epics under this system, where these will be
-broken down into more granular tickets for each sprint.
-
-The development section of the project has been allocated 8
-weeks, this will be split into four sprints each lasting two
-weeks. 
-
-\subsection{Design}
-
-As development is taking place within a scrum-style agile framework, the
-design will take place in small increments within each
-sprint.
-
-As we are working in a functional language, there are many
-prevalent concepts that, although present in design literature
-in general, are not as relevant in this context. For
-instance, object-oriented programming places an emphasis on
-the concepts of "design patterns", this is a concept discussed
-far less with regards to functional programming - some might
-argue because it is a more efficient paradigm that does not
-require them, others might argue that their use is implicit.
-
-One area of particular interest is type driven
-design - where much of the type information is filled in
-first, and the implementation details often follow
-afterward. This style of development could aid us in making
-better use of Agda's dependent type system.
-
-It is hoped that with careful consideration of types, it might
-be possible to identify areas to better verify correctness of
-implementing code by introducing invariants that guarantee desirable
-properties and reduce the number of possible incorrect
-implementations - although this is an area of research in its
-own right and is certainly not the focus of this project.
-
-\subsection{Testing/Verification}
-
-The testing and verification process is multi-faceted in
-nature.
-
-This project aims to utilize the type system in
-order to help verify correctness at the level of component
-functions (as described when discussing type-driven design
-previously).
-
-In addition, high level test cases (in other paradigms
-referred to as integration tests) will be conducted by
-supplying example source code to the type-checker where the
-expected outcome is known in advance. Clearly these examples
-will be small in nature as the the expected outcome needs to
-be calculated by hand.
-
-Finally, this project aims to explore the likelihood that generated
-type-checkers are sound and complete by reasoning about our
-software. 

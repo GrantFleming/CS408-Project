@@ -284,6 +284,8 @@
           n \to Vec \: X \: n$, and yet maybe it does not depend on the first
           argument at all and $B$ simply corresponds to $\lambda n \to
           Vec \: X \: 2$ - there is no way for us to definitively
-          deduce $B$ from the value alone. \hl{The essense of this
-            part is that functions and substitution are, in general,
-            not uniquely invertable - rewrite}
+          deduce $B$ from the value alone. To give a more precise
+          definition of the problem we might state that we cannot
+          employ Hindley-Milner style type inference in a dependently
+          typed settings as functions are not always uniquely invertable.
+

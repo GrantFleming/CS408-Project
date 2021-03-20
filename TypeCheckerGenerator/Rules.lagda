@@ -300,7 +300,16 @@ $T ∋ t$ we take T to be a trusted input and seek to establish trust
 in t. Our premise chain reflects this by using the input as its
 trusted pattern and seeking trust in the subject. Matching occurs on
 both the input and the subject and , if successful, returns a
-pair of environments. We may also use this rule to reverse engineer
+pair of environments.
+\begin{code}
+record ∋rule : Set where
+  field
+    subject  : Pattern 0
+    input    : Pattern 0
+    premises : Σ[ p' ∈ Pattern 0 ] Prems input subject p'
+open ∋rule
+\end{code}
+We may also use this rule to reverse engineer
 the type of any place in the subject, taking advantage of the fact that
 our premise chain can only establish trust in a place by ultimately making
 a statement either about its type, or about it being a type. This function
@@ -311,20 +320,12 @@ type of the corresponding part of the pattern. We could have even gone
 so far as to generalise what may be stored at places in patterns and
 teased out some applicative structure.
 \begin{code}
-record ∋rule : Set where
-  field
-    subject  : Pattern 0
-    input    : Pattern 0
-    premises : Σ[ p' ∈ Pattern 0 ] Prems input subject p'
-open ∋rule
-
 typeOf : (r : ∋rule)                   →
          (s : svar (γ ⊗ subject r) δ)  →
          (γ ⊗ input r) -Env            →
          ((γ ⊗ (subject r))  -Env)     →
          Const ((bind-count s) + γ)
 \end{code}
-\hl{TODO! - talk about typeof as we discuss it later in NBE}
 \hide{
 \begin{code}
 typeOf {γ = γ'} r v ienv senv =  helper v ienv senv (⊗premises γ' (proj₂ (premises r)))
@@ -373,7 +374,6 @@ match-∋rule rule ty tm
       just (tyenv , tmenv)
 \end{code}
 }
-
 Our rules for elimination work slightly differently from those which operate on
 constructions above. Eliminations use some \emph{eliminator} in order to eliminate
 some \emph{target}. An elimination rule, if it matches, is used in order to try

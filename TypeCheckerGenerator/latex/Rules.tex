@@ -1994,16 +1994,7 @@ $T ∋ t$ we take T to be a trusted input and seek to establish trust
 in t. Our premise chain reflects this by using the input as its
 trusted pattern and seeking trust in the subject. Matching occurs on
 both the input and the subject and , if successful, returns a
-pair of environments. We may also use this rule to reverse engineer
-the type of any place in the subject, taking advantage of the fact that
-our premise chain can only establish trust in a place by ultimately making
-a statement either about its type, or about it being a type. This function
-turned out to be non-trivial, and many proofs were required to convice
-Agda to accept the implementation. An alternative might have been to
-construct a pattern environment where each place corresponded to the
-type of the corresponding part of the pattern. We could have even gone
-so far as to generalise what may be stored at places in patterns and
-teased out some applicative structure.
+pair of environments.
 \begin{code}%
 \>[0]\AgdaKeyword{record}\AgdaSpace{}%
 \AgdaRecord{∋rule}\AgdaSpace{}%
@@ -2042,9 +2033,18 @@ teased out some applicative structure.
 \\
 \>[0]\AgdaKeyword{open}\AgdaSpace{}%
 \AgdaModule{∋rule}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
+\end{code}
+We may also use this rule to reverse engineer
+the type of any place in the subject, taking advantage of the fact that
+our premise chain can only establish trust in a place by ultimately making
+a statement either about its type, or about it being a type. This function
+turned out to be non-trivial, and many proofs were required to convice
+Agda to accept the implementation. An alternative might have been to
+construct a pattern environment where each place corresponded to the
+type of the corresponding part of the pattern. We could have even gone
+so far as to generalise what may be stored at places in patterns and
+teased out some applicative structure.
+\begin{code}%
 \>[0]\AgdaFunction{typeOf}\AgdaSpace{}%
 \AgdaSymbol{:}%
 \>[1407I]\AgdaSymbol{(}\AgdaBound{r}\AgdaSpace{}%
@@ -2086,7 +2086,6 @@ teased out some applicative structure.
 \AgdaOperator{\AgdaPrimitive{+}}\AgdaSpace{}%
 \AgdaGeneralizable{γ}\AgdaSymbol{)}\<%
 \end{code}
-\hl{TODO! - talk about typeof as we discuss it later in NBE}
 \hide{
 \begin{code}%
 \>[0]\AgdaFunction{typeOf}\AgdaSpace{}%
@@ -2684,7 +2683,6 @@ teased out some applicative structure.
 \AgdaBound{tmenv}\AgdaSymbol{)}\<%
 \end{code}
 }
-
 Our rules for elimination work slightly differently from those which operate on
 constructions above. Eliminations use some \emph{eliminator} in order to eliminate
 some \emph{target}. An elimination rule, if it matches, is used in order to try

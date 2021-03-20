@@ -1,21 +1,12 @@
 \begin{abstract}
-  Philip Wadler states that the Curry-Howard isomorphism is
-  "a double-barrelled name that ensures the existence of other
-  double-barrelled names" \cite{wadler2015}. By this he is of course
-  referring to the deep isomorphism between logic and programming languages.
-  
-  It seems that many programming-language type systems are
-  developed (or discovered depending on your school of thought) not
-  once, but twice: once by a logician and once by a computer
-  scientist. Unfortunately for the computer scientists, the logicians
-  seem to beat them to the punch more often than not.
+  Static analysis is an important part of all modern compilers.
+  In this project, we explore how much of the code used to
+  implement  type-checkers can be commonly abstracted across a
+  family of type systems.
 
-  It is with this in mind that we aim to shorten the
-  timeframe from the development of new type systems to their
-  implementation by doing what computer scientists do best:
-  automating. We will aim to create a generic type checker that is
-  able to check code according to a family of type-systems, so long as
-  the type system is described to it.
+  We will aim to create a generic type checker that is
+  able to type-check such code so long as the type system is described
+  to it. 
   
   We begin by performing a general type theory literature review:
   taking the reader on a whirlwind tour of the Simply Typed Lambda Calculus
@@ -25,7 +16,7 @@
   \cite{martinlof1980} (sometimes known as Martin L\"{o}f type
   theory). We will then review some select literature relevant to
   to the implementation of various type-checker components and some
-  meta-theory.
+  relevant meta-theory.
 
   Armed with our newly found knowledge we will develop a domain specific
   language (DSL) for describing type systems, paying special attention

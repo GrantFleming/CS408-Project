@@ -35,15 +35,16 @@ private
 
 Later we will show how we might fully normalize a term using a technique
 known as normalization by evaluation. In order to do this, we will find
-that we require the ability to perform $η$-expansion.
+that we require the ability to perform $η$-expansion and so we provide a
+rule to help us achieve this.
 
 In our η-rule, we store only the eliminator for each place in the pattern,
 then to generate the eta expanded form, we map the elimination of the target
 over this environment of eliminators to get the full eliminations that
 are destined for each place in the pattern. This is very straightforward
-as a concept but we have to fix-up out types a little in order to convince
+as a concept but we have to fix-up our types a little in order to convince
 Agda of the well-scopedness. We use a mapping function we defined, but did not
-mention, at an earlier stage in order to easy map over an the environment to
+mention, at an earlier stage in order to easily map over an the environment to
 build the eliminations from the eliminators.
 \begin{code}
 record η-Rule : Set where

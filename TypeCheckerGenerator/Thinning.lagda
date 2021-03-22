@@ -45,14 +45,15 @@ private
 }
 
 A key concept that will be used throughout this implementation is that
-of a Thinning. Thinnings describe embeddings between scopes and are
+of a thinning. Thinnings describe embeddings between scopes and are
 denoted $δ ⊑ γ$ where they are embed some scope $δ$ into another
 scope $γ$ and as such it must be that $δ \leq γ$.
 
-Thinnings can be represented as bit-vectors $γ$ digits long where each
-digit identifies what is 'new' in $γ$, or alternatively, for things scoped
-in $γ$, which of them existed in $δ$. Our implementation follows this
-intuition and also enforces the $δ \leq γ$ invariant by construction.
+Some thinning $δ ⊑ γ$ can be represented a a bit-vector $γ$ digits long where
+each digit identifies what is 'new' in $γ$. A thinning may also be interpreted
+as a selection from some scope $γ$, and we may use singleton thinnings in order
+to represent variables in this way. Our implementation maintains the $δ \leq γ$
+invariant by construction and is shown here.
 
 \begin{code}
 data _⊑_ : Scope → Scope → Set where
@@ -99,10 +100,7 @@ _++_ {δ} {γ} {suc δ'} {suc γ'} θ (ϕ I)
 γ ▹ suc δ  rewrite +-suc γ δ = (γ ▹ δ) I
 \end{code}
 }
-
-We can decide equality of thinnings and so we leverage the standard library
-to help us provide this functionality.
-
+\hide{
 \begin{code}
 _≟_ : DecidableEquality (δ ⊑ γ)
 ε     ≟  ε    = yes refl
@@ -115,7 +113,7 @@ _≟_ : DecidableEquality (δ ⊑ γ)
 ... | yes refl = yes refl
 ... | no p     = no (λ { refl → p refl})
 \end{code}
-
+}
 \hide{
 \begin{code}
 ++-identityʳ : (θ : δ ⊑ γ) → ε ++ θ ≡ θ
@@ -124,16 +122,14 @@ _≟_ : DecidableEquality (δ ⊑ γ)
 ++-identityʳ (θ I) = cong _I (++-identityʳ θ)
 \end{code}
 }
-
-It is also worth noting here that all variables can be represented as
-singleton thinnings where the thinning identifies the selection of a
-variable from the scope.
-
+\hide{
 \begin{code}
+-- Variables can be represented as singleton thinnings.
 ⟦_⟧var : Var γ → 1 ⊑ γ
 ⟦_⟧var {suc s} ze     = Ø I
 ⟦_⟧var {suc s} (su v) = ⟦ v ⟧var O
 \end{code}
+}
 
 There are various scoped entities on which it makes sense for thinnings
 to act by lifting the entity into a wider scope. To capture this commonly
@@ -151,22 +147,22 @@ Selectable X = ∀ {δ} {γ} → (δ ⊑ γ) → X γ → X δ
 
 There are many scoped entities that we will wish a thinning to act on,
 and so we adopt the convention that all functions detailing an action
-of thinnings take the form $⟨\mbox{some-entity}}$ with the exception of the
+of thinnings take the form begin with "⟨" with the exception of the
 action of a thinning on another thinning which equates to composition
-and so we use the more traditional $∘$ notation. We detail various
-thinning actions here that we will use later.
+and so we use the more traditional $∘$ notation.
 
 \begin{code}
 _∘_       : Thinnable (δ ⊑_)
 _⟨var_    : Thinnable Var
 _⟨term_   : Thinnable (Term d)
-_⟨var⊗_   : Thinnable (λ δ → Var (γ + δ))
-_⟨term⊗_  : Thinnable (λ δ → Term d (γ + δ))
-⟨sub      : Thinnable T → Thinnable (δ ⇒[ T ]_)
 \end{code}
 
 \hide{
 \begin{code}
+_⟨var⊗_   : Thinnable (λ δ → Var (γ + δ))
+_⟨term⊗_  : Thinnable (λ δ → Term d (γ + δ))
+⟨sub      : Thinnable T → Thinnable (δ ⇒[ T ]_)
+
 ε     ∘  ε    = ε
 θ     ∘ (ϕ O) = (θ ∘ ϕ) O
 (θ O) ∘ (ϕ I) = (θ ∘ ϕ) O
@@ -218,8 +214,8 @@ _!_ : Selectable (BwdVec X)
 
 A weakening is a special case of a thinning where the scope is extended by
 one at its most local position, for instance when passing under a binder.
-This concept is captured here, as well as the relavent type that detailing
-the action of a weakening. A function is provided to weaken anything Thinnable.
+This concept is captured here, as well as the relavent type that details
+the action of a weakening.
 
 \begin{code}
 ↑ : γ ⊑ (suc γ)
@@ -229,23 +225,24 @@ Weakenable : Scoped → Set
 Weakenable T = ∀ {γ} → T γ → T (suc γ)
 
 weaken : Thinnable T → Weakenable T
-weaken {T} ⟨ t = ⟨ t ↑
+weaken ⟨ t = ⟨ t ↑
 \end{code}
 
-When providing Weakenables, we adopt the naming convention of \^̂some-entity.
+When providing Weakenables, we adopt the naming convention of beginning their
+identifers with "\^̂".
 
-As a consequence of being able to easily weaken Thinnable entities, Weakenable
-implementations are often trivial. The types of some commonly used weakenings are detailed here.
 
 \begin{code}
 _^      : Weakenable (γ ⊑_)
 _^var   : Weakenable Var
 _^term  : Weakenable (Term d)
-^sub    : Thinnable T → Weakenable (δ ⇒[ T ]_)
 \end{code}
 
 \hide{
 \begin{code}
+-- a substitution is weakenable if the think it substitutes is
+^sub    : Thinnable T → Weakenable (δ ⇒[ T ]_)
+
 -- so for a start we can weaken thinnings themselves
 _^ = weaken _∘_
 

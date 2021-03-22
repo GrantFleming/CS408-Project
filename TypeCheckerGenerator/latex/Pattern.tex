@@ -158,25 +158,23 @@
 
 Key to implementing our generic type-checker, is the concept of a pattern. Our
 rules are defined not in terms of concrete pieces of syntax, but in terms of
-patterns of constructions, which we then match against concrete syntax.
+patterns, which we then match against concrete syntax.
 
 Our concept of a pattern is structurally identical to that of a construction,
 except that we exclude thunks, and introduce the notion of a \emph{place} which
-may stand for any arbitrary construction scoped in some $δ$ so long as we show
-how it might be thinned to the scope of the pattern.
+may stand for an arbitrary construction so long as we can fix up the scope.
 
 The dual concept of a pattern is that of an environment. It is structurally
 similar to a pattern except where a pattern may have a \emph{place}, an
-environment answers this call with a \emph{thing} that can fit in the place.
-As always, we must be careful to handle scope correctly in the case of $bind$
+environment answers this call with a \emph{thing} that fits in the place.
+As always, we are careful to handle scope correctly in the case of $bind$
 when constructing environments so that the underlying entity is defined in
 the weakened scope.
 
-Environments are indexed by a pattern so that we can ensure that it always
-matches exactly the pattern intended (in that it has an identical structure
-and a \emph{thing} for every \emph{place}). Consequently this allows us a
-non-failable operation to generate a term from from pattern $p$ and its
-associated $p\mbox{-Env}$
+Environments are indexed by a pattern so that we can ensure that they alway
+match exactly the pattern intended (they offer a a \emph{thing} for every
+\emph{place}). Consequently this allows us a non-failable operation to
+generate a term from from pattern $p$ and its associated $p\mbox{-Env}$
 
 \begin{code}%
 \>[0]\AgdaKeyword{data}\AgdaSpace{}%
@@ -339,37 +337,13 @@ associated $p\mbox{-Env}$
 \AgdaBound{θ}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaOperator{\AgdaDatatype{-Env}}\<%
 \end{code}
-
-We define the opening of a pattern by recursing structurally and opening
-the thinnings of the places in the matter described in section \ref{sec:Opening}.
-We also provide means to map a function on terms over an environment.
-
+We define the γ opening of a pattern by recursing structurally and prepending
+the thinning by the identity thinning length $γ$.
 \begin{code}%
 \>[0]\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}⊗\AgdaUnderscore{}}}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaFunction{Openable}\AgdaSpace{}%
 \AgdaDatatype{Pattern}\<%
-\\
-\>[0]\AgdaFunction{map}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaSymbol{(∀}\AgdaSpace{}%
-\AgdaSymbol{\{}\AgdaBound{δ}\AgdaSymbol{\}}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaDatatype{Const}\AgdaSpace{}%
-\AgdaBound{δ}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaDatatype{Const}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaGeneralizable{δ'}\AgdaSpace{}%
-\AgdaOperator{\AgdaPrimitive{+}}\AgdaSpace{}%
-\AgdaBound{δ}\AgdaSymbol{))}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaGeneralizable{p}\AgdaSpace{}%
-\AgdaOperator{\AgdaDatatype{-Env}}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaGeneralizable{δ'}\AgdaSpace{}%
-\AgdaOperator{\AgdaFunction{⊗}}\AgdaSpace{}%
-\AgdaGeneralizable{p}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaOperator{\AgdaDatatype{-Env}}\<%
 \end{code}
 \hide{
 \begin{code}%
@@ -426,6 +400,27 @@ We also provide means to map a function on terms over an environment.
 \\
 %
 \\[\AgdaEmptyExtraSkip]%
+\>[0]\AgdaFunction{map}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaSymbol{(∀}\AgdaSpace{}%
+\AgdaSymbol{\{}\AgdaBound{δ}\AgdaSymbol{\}}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaDatatype{Const}\AgdaSpace{}%
+\AgdaBound{δ}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaDatatype{Const}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaGeneralizable{δ'}\AgdaSpace{}%
+\AgdaOperator{\AgdaPrimitive{+}}\AgdaSpace{}%
+\AgdaBound{δ}\AgdaSymbol{))}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaGeneralizable{p}\AgdaSpace{}%
+\AgdaOperator{\AgdaDatatype{-Env}}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaGeneralizable{δ'}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{⊗}}\AgdaSpace{}%
+\AgdaGeneralizable{p}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaDatatype{-Env}}\<%
+\\
 \>[0]\AgdaFunction{map}\AgdaSpace{}%
 \AgdaBound{f}\AgdaSpace{}%
 \AgdaInductiveConstructor{`}%
@@ -1004,14 +999,10 @@ We also provide means to map a function on terms over an environment.
 }
 We now have the required machinery to define pattern matching. We do not
 define matching over some term and pattern scoped identially, but more 
-generally over some term that might be operating in some wider scope. This
+generally over some term that might be operating in a wider scope. This
 is crucial as a pattern is often defined in the empty scope so that we might
-not refer to arbirary free variables when defining formal rules. When
-type-checking, the terms we match against them may operate in a wider scope.
-If the matching then succeeds, it returns an environment for the \emph{opened}
-pattern. In practice, this is always taken with $γ = 0$ where we are matching
-some pattern defined in the empty scope.
-
+not refer to arbirary free variables when defining formal rules but these rules
+may then be applied in some non-empty scope. 
 \begin{code}%
 \>[0]\AgdaFunction{match}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
@@ -1047,8 +1038,8 @@ some pattern defined in the empty scope.
 \>[0]\AgdaSymbol{...}\AgdaSpace{}%
 \AgdaSymbol{|}\AgdaSpace{}%
 \AgdaInductiveConstructor{yes}\AgdaSpace{}%
-\AgdaInductiveConstructor{refl}\AgdaSpace{}%
-\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{refl}%
+\>[16]\AgdaSymbol{=}\AgdaSpace{}%
 \AgdaInductiveConstructor{just}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{thing}\AgdaSpace{}%
 \AgdaBound{t}\AgdaSymbol{)}\<%
@@ -1056,8 +1047,8 @@ some pattern defined in the empty scope.
 \>[0]\AgdaSymbol{...}\AgdaSpace{}%
 \AgdaSymbol{|}\AgdaSpace{}%
 \AgdaInductiveConstructor{no}%
-\>[13]\AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
-\AgdaSymbol{=}\AgdaSpace{}%
+\>[13]\AgdaSymbol{\AgdaUnderscore{}}%
+\>[16]\AgdaSymbol{=}\AgdaSpace{}%
 \AgdaInductiveConstructor{nothing}\<%
 \\
 \>[0]\AgdaFunction{match}\AgdaSpace{}%
@@ -1090,25 +1081,25 @@ some pattern defined in the empty scope.
 \AgdaSymbol{(}\AgdaBound{p}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{∙}}\AgdaSpace{}%
 \AgdaBound{q}\AgdaSymbol{)}%
-\>[24]\AgdaSymbol{=}%
-\>[717I]\AgdaKeyword{do}\<%
+\>[25]\AgdaSymbol{=}%
+\>[715I]\AgdaKeyword{do}\<%
 \\
-\>[717I][@{}l@{\AgdaIndent{0}}]%
-\>[28]\AgdaBound{x}\AgdaSpace{}%
+\>[715I][@{}l@{\AgdaIndent{0}}]%
+\>[29]\AgdaBound{x}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{←}}\AgdaSpace{}%
 \AgdaFunction{match}\AgdaSpace{}%
 \AgdaBound{s}\AgdaSpace{}%
 \AgdaBound{p}\<%
 \\
 %
-\>[28]\AgdaBound{y}\AgdaSpace{}%
+\>[29]\AgdaBound{y}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{←}}\AgdaSpace{}%
 \AgdaFunction{match}\AgdaSpace{}%
 \AgdaBound{t}\AgdaSpace{}%
 \AgdaBound{q}\<%
 \\
 %
-\>[28]\AgdaInductiveConstructor{just}\AgdaSpace{}%
+\>[29]\AgdaInductiveConstructor{just}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaBound{x}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{∙}}\AgdaSpace{}%
 \AgdaBound{y}\AgdaSymbol{)}\<%
@@ -1117,39 +1108,36 @@ some pattern defined in the empty scope.
 \AgdaSymbol{(}\AgdaInductiveConstructor{bind}\AgdaSpace{}%
 \AgdaBound{t}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{bind}\AgdaSpace{}%
-\AgdaBound{p}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaSymbol{=}%
-\>[734I]\AgdaKeyword{do}\<%
+\AgdaBound{p}\AgdaSymbol{)}%
+\>[25]\AgdaSymbol{=}%
+\>[731I]\AgdaKeyword{do}\<%
 \\
-\>[734I][@{}l@{\AgdaIndent{0}}]%
-\>[28]\AgdaBound{x}\AgdaSpace{}%
+\>[731I][@{}l@{\AgdaIndent{0}}]%
+\>[29]\AgdaBound{x}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{←}}\AgdaSpace{}%
 \AgdaFunction{match}\AgdaSpace{}%
 \AgdaBound{t}\AgdaSpace{}%
 \AgdaBound{p}\<%
 \\
 %
-\>[28]\AgdaInductiveConstructor{just}\AgdaSpace{}%
+\>[29]\AgdaInductiveConstructor{just}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{bind}\AgdaSpace{}%
 \AgdaBound{x}\AgdaSymbol{)}\<%
 \\
 \>[0]\AgdaCatchallClause{\AgdaFunction{match}}\AgdaSpace{}%
 \AgdaCatchallClause{\AgdaSymbol{\AgdaUnderscore{}}}\AgdaSpace{}%
 \AgdaCatchallClause{\AgdaSymbol{\AgdaUnderscore{}}}%
-\>[28]\AgdaSymbol{=}\AgdaSpace{}%
+\>[25]\AgdaSymbol{=}\AgdaSpace{}%
 \AgdaInductiveConstructor{nothing}\<%
 \end{code}
-
 When contructing formal rules, it is critical that we are able to refer
 to distinct places in a pattern. For this purpose we define a schematic
 variable. This variable is able to trace a path through the pattern that
-indexes it, terminating with a $⋆$ to mark the place we refer to. We
-construct this concept with care to ensure it is well-scoped by construction.
-
-Using a schematic variable, we are able to look up the term associated to
-a place by an environment by merely proceeding structually down the path
-described by the svar and extracting the term from the thing it points to.
-
+indexes it, terminating with a $⋆$ to mark the \emph{place} we are referring to. 
+Since environments follow the same structure as their pattern we might also 
+use schematic variables here in the same way. We index this type with the
+pattern in which it identifies a place and use the index to guarantee the
+validity of a schematic variable with regards to its pattern.
 \begin{code}%
 \>[0]\AgdaKeyword{data}\AgdaSpace{}%
 \AgdaDatatype{svar}\AgdaSpace{}%
@@ -1216,8 +1204,6 @@ described by the svar and extracting the term from the thing it points to.
 \\
 %
 \\[\AgdaEmptyExtraSkip]%
-%
-\\[\AgdaEmptyExtraSkip]%
 \>[0]\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}‼\AgdaUnderscore{}}}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaDatatype{svar}\AgdaSpace{}%
@@ -1273,15 +1259,11 @@ described by the svar and extracting the term from the thing it points to.
 \AgdaOperator{\AgdaFunction{‼}}\AgdaSpace{}%
 \AgdaBound{t}\<%
 \end{code}
-
 We define a few less interesting but critical utility functions for later
 use. We give a means to remove a place from a pattern, replacing it with
 a trivial atom. Similarly we extend the same functionality to environments.
-We  also define the usual spattering of openings and various other machinery
-we have already covered, using the naming conventions discussed so they are
-to be recognizable. In addition we provde here the type of the function that
-produces an actual term from some pattern together with some environment.
-
+We are also define how a term might be build from a pattern and some fitting
+environment.
 \begin{code}%
 \>[0]\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}-\AgdaUnderscore{}}}%
 \>[10]\AgdaSymbol{:}\AgdaSpace{}%
@@ -1887,11 +1869,9 @@ produces an actual term from some pattern together with some environment.
 \AgdaOperator{\AgdaFunction{\textasciicircum{}svar}}\AgdaSymbol{)}\<%
 \end{code}
 }
-
-In a minor spoiler of things to come, we introduce the concept of an
-svar-builder. We will later find it useful to traverse a pattern and build a
-potential svar on the way down so that when we get to a $place$ we have the svar
-that refers to it.
+We will later find it useful to traverse a pattern and build a potential svar
+'on the way down' so that when we get to a $place$ we have the svar
+that refers to it and so we construct a type to help us.
 
 The notion is that instead of encoding some path to a $place$ in the pattern,
 we instead encode some path between the pattern $p$ and some subpattern $q$. 
@@ -1899,11 +1879,7 @@ $X$ encodes an empty path between a pattern and itself, then we
 may extend it, say with "\_∙" or "∙\_" so that we now show the path between
 a pair, and one of the elements of that pair. We can continue in a similar fashion,
 building some path, and if we are lucky enough to have it end in a $place$, then
-we know we might convert it to the appropriate svar. This is normally used by
-selecting both $p$ and $q$ to be the pattern we are about to traverse, then 
-using the combinators as we traverse it to strip constructors off q while
-simultaniously encoding that stripped constructor in the path being constructed.
-
+we know we might convert it to the appropriate svar.
 \hide{
 \begin{code}%
 \>[0]\AgdaKeyword{private}\<%
@@ -1939,7 +1915,6 @@ simultaniously encoding that stripped constructor in the path being constructed.
 \AgdaGeneralizable{γ'}\<%
 \end{code}
 }
-
 \begin{code}%
 \>[0]\AgdaKeyword{data}\AgdaSpace{}%
 \AgdaDatatype{svar-builder}\AgdaSpace{}%
@@ -1998,12 +1973,11 @@ simultaniously encoding that stripped constructor in the path being constructed.
 \AgdaGeneralizable{p}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaGeneralizable{p'}\<%
 \end{code}
-
-The combinators are fairly trivial but there types are important in showing
-how we creating some distance between patterns in which we are charting some
-path, by structurally reducing the second pattern in the type, but encoding
-that information in the svar-builder we are creating so we remember exactly
-how it was deconstructed. We give the first combinator in full here as an example,
+We intend to use this concept by initially selecting both the indexed patterns
+to be the pattern we are about to traverse, then as we traverse the structure
+of the pattern we use the combinators defined below to strip constructors off
+the second index while simultaniously encoding the removed constructor in the 
+path being constructed. We give the first combinator in full here as an example,
 and the types of the other two.
 
 \begin{code}%
@@ -2140,21 +2114,19 @@ and the types of the other two.
 \AgdaBound{v}\AgdaSymbol{)}\<%
 \end{code}
 }
-
 Finally we are able to build and actual svar from a builder only if it shows
 the path in some pattern $p$ to some place in that pattern.
-
 \begin{code}%
 \>[0]\AgdaFunction{build}\AgdaSpace{}%
 \AgdaSymbol{:}%
-\>[1391I]\AgdaSymbol{\{}\AgdaBound{θ}\AgdaSpace{}%
+\>[1388I]\AgdaSymbol{\{}\AgdaBound{θ}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaGeneralizable{δ}\AgdaSpace{}%
 \AgdaOperator{\AgdaDatatype{⊑}}\AgdaSpace{}%
 \AgdaGeneralizable{γ'}\AgdaSymbol{\}}\AgdaSpace{}%
 \AgdaSymbol{→}\<%
 \\
-\>[.][@{}l@{}]\<[1391I]%
+\>[.][@{}l@{}]\<[1388I]%
 \>[8]\AgdaDatatype{svar-builder}\AgdaSpace{}%
 \AgdaGeneralizable{p}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{place}\AgdaSpace{}%
@@ -2195,7 +2167,6 @@ the path in some pattern $p$ to some place in that pattern.
 \AgdaSymbol{(}\AgdaFunction{build}\AgdaSpace{}%
 \AgdaBound{v}\AgdaSymbol{)}\<%
 \end{code}
-
 \hide{
 \begin{code}%
 \>[0]\AgdaFunction{bind-count-bl}\AgdaSpace{}%
@@ -2486,4 +2457,3 @@ the path in some pattern $p$ to some place in that pattern.
 \AgdaString{"⊥"}\<%
 \end{code}
 }
-

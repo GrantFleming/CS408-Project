@@ -26,20 +26,14 @@ private
     γ' : Scope
 \end{code}
 }
-
-Building on our definitions of substitution and thinning we are now
-able to describe our context.
-
-We take contexts to be substitutions of constructions. We ensure that the target
+We define contexts to be substitutions of constructions. We ensure that the target
 of the substitution is scoped identically to the things we will substitute,
 keeping our contexts in a pre-thinned state.This allows us to use terms
 directly from it without having to fix up the scope first.
-
 \begin{code}
 Context : Scope → Set
 Context γ = γ ⇒[ Const ] γ
 \end{code}
-
 \hide{
 \begin{code}
 
@@ -53,7 +47,6 @@ v ‼V Γ = lookup (Const) Γ v
 _^Γ = weaken _⟨Γ_
 \end{code}
 }
-
 We provide a special function to extend contexts which appends a new
 element to the context (making it no longer a context as $suc γ \neq γ$ in
 $(suc γ) ⇒[ \mbox{Const} ]\; γ$) before weakening the whole substitution
@@ -64,15 +57,10 @@ exerted here keeps our contexts in the previously explained pre-thinned state.
 _,_ : Context γ → Const γ → Context (suc γ)
 Γ , t = (Γ -, t) ^Γ
 \end{code}
-
-If we only ever use $ε$ and $\_ , \_$ to construct our contexts, we can be assured
-that they will always be valid and pre-thinned. No such assurances can
-be made if the raw vector appending data constructor $\_ -,\_$ is used.
-
-We will require the various machinery we have defined for previous types such
-as the action of thinnings, weakenings and substitutions however we will avoid
-listing these definitions for each new type we create.
-
+If we only ever use $ε$ (for creating an empty backwards vector) and $\_ , \_$
+to construct our contexts, we can be assured that they will always be valid and
+pre-thinned. No such assurances can be made if the raw vector appending data
+constructor $\_ -,\_$ is used.
 \hide{
 \begin{code}
 _/Γ_ : δ ⇒[ Const ] γ → γ ⇒ γ' → δ ⇒[ Const ] γ'

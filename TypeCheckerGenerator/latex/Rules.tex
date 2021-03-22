@@ -221,26 +221,19 @@
 }
 
 A key concept we will use when defining rules is that of a premise. We use
-premise in order to accumulate trust in some pattern, potentially discharging
-a place in the pattern. For our premise, $p$ is some pattern that identifies places
-that we already trust while $q$ is the pattern of untrusted places. The premise
-establishes trust in some $p'$ and shows what remains untrusted with $q'$.
+premises in order to accumulate trust in some pattern, potentially discharging
+a place in the pattern as 'trusted'. In our implementation of premise, $p$ is
+some pattern that identifies places that we already trust while $q$ is the
+pattern of untrusted places. The premise establishes trust in some $p'$ and
+shows what remains untrusted with $q'$. While we can encode various checks with
+our premise, only two increase the accumulated trust: either a statement that
+some \emph{place} is a type, or a statement that it is \emph{of} some type.
 
-The general form is to pick a place in q, identifying how it is that we trust it
-(via the data constructor used) and say that we have fresh trust in this place and so
-we give back q with this place removed (by replacing the place with a trivial atom).
-This is not the case for every premise as we also include premise that discharge no
-untrusted place from q such as equivalence and universe checks while also providing
-a constructor allowing us to represent a premise in an extended context. Regardless
-it is useful to think of a premise as an entity who's role is trust establishment.
-
-In the definition of formal rules, we do not have the luxury of referring to arbitrary
+In the definition of formal rules we cannot refer to arbitrary
 free variables and will give a chain of premises where the patterns are defined
 in the empty scope (unless we have ducked under the $\vdash$ premise). We will later
 require the ability to open such premises when using them to establish trust in
-an arbitrary scope and so we define such an opening function $⊗premise$, the type
-is also given here.
-Ty
+an arbitrary scope and so we define such an opening.
 \begin{code}%
 \>[0]\AgdaKeyword{data}\AgdaSpace{}%
 \AgdaDatatype{Prem}%
@@ -617,15 +610,10 @@ Ty
 \AgdaBound{prem}\<%
 \end{code}
 }
-
-We must now define a type that is structurally equivalent to patterns except
-for the absence of places. This type is indexed by the pattern that we are
-trying to represent. It is only possible to represent placeless patterns with
-this type. We write various mechanics using this new type that we will not detail
-here, including the ability to remove a place from a pattern given an svar, and
-thus for any pattern $p$ we have the ability to create some $(p\;-places) Placeless$.
-Placeless can be opened just as Patterns can be.
-
+We now take a slight detour so that we might present a definition we will shortly need.
+This definition is used to prove that a pattern contains no places. We index this type
+with the pattern in question, mandate that the type follows the pattern structurally
+but provide no way to encode a place.
 \begin{code}%
 \>[0]\AgdaKeyword{data}\AgdaSpace{}%
 \AgdaOperator{\AgdaDatatype{\AgdaUnderscore{}Placeless}}\AgdaSpace{}%
@@ -847,20 +835,17 @@ Placeless can be opened just as Patterns can be.
 \AgdaInductiveConstructor{⊥}\<%
 \end{code}
 }
-
 We now use these concepts to define a chain of premise that is guaranteed to
 establish complete trust in some pattern.
 
 We may string together premises, threading what is left to trust
-after each premises into what is still to trust in the next. A premise may
-establish whatever trust it does, and it \emph{asks} the rest of the chain
-to estrablish trust in the rest. We collect everything that we learn to
-trust along the way, allowing later premise to refer to entities whose
-trust was established by earlier premises.
+after each premises into what is still to trust in the next. We collect everything
+that we learn to trust along the way, allowing later premise to refer to entities
+whose trust was established by earlier premises.
 
 If we wish to end a chain of premise, we must show that there is nothing left
-that requires the establishment of trust by proving that the pattern the
-previous premise has asked us to trust contains no places.
+that requires trusting by proving that what we have been asked to trust is
+a pattern that contains no places.
 \begin{code}%
 \>[0]\AgdaKeyword{data}\AgdaSpace{}%
 \AgdaDatatype{Prems}\AgdaSpace{}%

@@ -67,12 +67,9 @@ data Com p γ where
   elim   : Com p γ → Con p γ → Com p γ
   _∷_    : Con p γ → Con p γ → Com p γ
 
-
 Expr p const γ = Con p γ
 Expr p compu γ = Com p γ
 \end{code}
-As is expected by now, we omit the usual smattering of thinnings, weakenings
-and openings.
 \hide{
 \begin{code}
 infixr 20 _∙_
@@ -142,30 +139,24 @@ map {d = compu} f (t ∷ T) = map f t ∷ map f T
 \end{code}
 }
 
-Finally we are able to generate a term from an expression and some opening
-of the appropriate environment. Most of the cases recurse structurally, while
-variables are simply opened to encompassing scope, however we can note here
-how it is that we process our svar instantiations
+We are able to generate a term from an expression and some opening
+of an environment for the trusted pattern. Most of the cases recurse
+structurally, while variables are simply opened to encompassing scope,
+however we can note here how it is that we process our svar instantiations
 
 \begin{code}
 toTerm  : (γ ⊗ p) -Env → Expr p d γ' → Term d (γ + γ')
--- ...
 toTerm {γ = γ} {d = const} {γ' = γ'} penv (ξ / σ)
   = let σ'     = map-toTerm σ penv  in
     let id-fv  = id ⟨σ (γ ◃ γ')     in
       (ξ ‼ penv) /term ((id-fv ++ σ'))
--- ...
 \end{code}
-
 That is to say, we first resolve the substitution of expressions to one of
 terms (here we must inline a specialisation of map in order to satisfy Agda's
 termination checker) before extending it with the identity substitution for
 all the free variables and finally performing the substitution on the term
-taken from the environment.
-
-In short, we substitute the bound variables in the term but ensure not to
-affect any free variables that may exist.
-
+taken from the environment. We substitute the bound variables in the term
+but ensure not to affect any free variables.
 \hide{
 \begin{code}
     where

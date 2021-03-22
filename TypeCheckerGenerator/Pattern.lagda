@@ -39,25 +39,23 @@ private
 
 Key to implementing our generic type-checker, is the concept of a pattern. Our
 rules are defined not in terms of concrete pieces of syntax, but in terms of
-patterns of constructions, which we then match against concrete syntax.
+patterns, which we then match against concrete syntax.
 
 Our concept of a pattern is structurally identical to that of a construction,
 except that we exclude thunks, and introduce the notion of a \emph{place} which
-may stand for any arbitrary construction scoped in some $δ$ so long as we show
-how it might be thinned to the scope of the pattern.
+may stand for an arbitrary construction so long as we can fix up the scope.
 
 The dual concept of a pattern is that of an environment. It is structurally
 similar to a pattern except where a pattern may have a \emph{place}, an
-environment answers this call with a \emph{thing} that can fit in the place.
-As always, we must be careful to handle scope correctly in the case of $bind$
+environment answers this call with a \emph{thing} that fits in the place.
+As always, we are careful to handle scope correctly in the case of $bind$
 when constructing environments so that the underlying entity is defined in
 the weakened scope.
 
-Environments are indexed by a pattern so that we can ensure that it always
-matches exactly the pattern intended (in that it has an identical structure
-and a \emph{thing} for every \emph{place}). Consequently this allows us a
-non-failable operation to generate a term from from pattern $p$ and its
-associated $p\mbox{-Env}$
+Environments are indexed by a pattern so that we can ensure that they alway
+match exactly the pattern intended (they offer a a \emph{thing} for every
+\emph{place}). Consequently this allows us a non-failable operation to
+generate a term from from pattern $p$ and its associated $p\mbox{-Env}$
 
 \begin{code}
 data Pattern (γ : Scope) : Set where
@@ -85,14 +83,10 @@ data _-Env {γ : Scope} : Pattern γ → Set where
   bind   : t -Env → (bind t) -Env
   thing  : {θ : δ ⊑ γ} → Const δ → (place θ) -Env
 \end{code}
-
-We define the opening of a pattern by recursing structurally and opening
-the thinnings of the places in the matter described in section \ref{sec:Opening}.
-We also provide means to map a function on terms over an environment.
-
+We define the γ opening of a pattern by recursing structurally and prepending
+the thinning by the identity thinning length $γ$.
 \begin{code}
 _⊗_ : Openable Pattern
-map : (∀ {δ} → Const δ → Const (δ' + δ)) → p -Env → (δ' ⊗ p) -Env
 \end{code}
 \hide{
 \begin{code}
@@ -103,6 +97,7 @@ map : (∀ {δ} → Const δ → Const (δ' + δ)) → p -Env → (δ' ⊗ p) -E
 γ ⊗ place θ  = place (ι {γ} ++ θ)
 _ ⊗ ⊥        = ⊥
 
+map : (∀ {δ} → Const δ → Const (δ' + δ)) → p -Env → (δ' ⊗ p) -Env
 map f `         = `
 map f (s ∙ t)   = map f s ∙ map f t
 map f (bind t)  = bind (map f t)
@@ -168,42 +163,35 @@ x /≟ y with x ≟ y
 }
 We now have the required machinery to define pattern matching. We do not
 define matching over some term and pattern scoped identially, but more 
-generally over some term that might be operating in some wider scope. This
+generally over some term that might be operating in a wider scope. This
 is crucial as a pattern is often defined in the empty scope so that we might
-not refer to arbirary free variables when defining formal rules. When
-type-checking, the terms we match against them may operate in a wider scope.
-If the matching then succeeds, it returns an environment for the \emph{opened}
-pattern. In practice, this is always taken with $γ = 0$ where we are matching
-some pattern defined in the empty scope.
-
+not refer to arbirary free variables when defining formal rules but these rules
+may then be applied in some non-empty scope. 
 \begin{code}
 match : Const (δ + γ) → (p : Pattern γ) → Maybe ((δ ⊗ p) -Env)
 match  {γ = γ} t   (place {δ'} θ) with γ ≟n δ'
-... | yes refl = just (thing t)
-... | no     _ = nothing
+... | yes refl  = just (thing t)
+... | no     _  = nothing
 match (` a) (` c) with a == c
 ... | true   =  just `
 ... | false  =  nothing
-match (s ∙ t) (p ∙ q)   = do
-                            x ← match s p
-                            y ← match t q
-                            just (x ∙ y)
-match (bind t) (bind p) = do
-                            x ← match t p
-                            just (bind x)
-match _ _                   = nothing
+match (s ∙ t) (p ∙ q)    = do
+                             x ← match s p
+                             y ← match t q
+                             just (x ∙ y)
+match (bind t) (bind p)  = do
+                             x ← match t p
+                             just (bind x)
+match _ _                = nothing
 \end{code}
-
 When contructing formal rules, it is critical that we are able to refer
 to distinct places in a pattern. For this purpose we define a schematic
 variable. This variable is able to trace a path through the pattern that
-indexes it, terminating with a $⋆$ to mark the place we refer to. We
-construct this concept with care to ensure it is well-scoped by construction.
-
-Using a schematic variable, we are able to look up the term associated to
-a place by an environment by merely proceeding structually down the path
-described by the svar and extracting the term from the thing it points to.
-
+indexes it, terminating with a $⋆$ to mark the \emph{place} we are referring to. 
+Since environments follow the same structure as their pattern we might also 
+use schematic variables here in the same way. We index this type with the
+pattern in which it identifies a place and use the index to guarantee the
+validity of a schematic variable with regards to its pattern.
 \begin{code}
 data svar : Pattern γ → Scope → Set where
   ⋆     : {θ : δ ⊑ γ} → svar (place θ) δ
@@ -211,22 +199,17 @@ data svar : Pattern γ → Scope → Set where
   ∙_    : svar q δ → svar (p ∙ q) δ
   bind  : svar q δ → svar (bind q) δ
 
-
 _‼_ : svar p δ → (γ' ⊗ p) -Env → Const (γ' + δ)
 ⋆       ‼ thing x  = x
 (v ∙)   ‼ (p ∙ q)  = v ‼ p
 (∙ v)   ‼ (p ∙ q)  = v ‼ q
 bind v  ‼ bind t   = v ‼ t
 \end{code}
-
 We define a few less interesting but critical utility functions for later
 use. We give a means to remove a place from a pattern, replacing it with
 a trivial atom. Similarly we extend the same functionality to environments.
-We  also define the usual spattering of openings and various other machinery
-we have already covered, using the naming conventions discussed so they are
-to be recognizable. In addition we provde here the type of the function that
-produces an actual term from some pattern together with some environment.
-
+We are also define how a term might be build from a pattern and some fitting
+environment.
 \begin{code}
 _-_       : (p : Pattern γ) → svar p δ → Pattern γ
 _-penv_   : p -Env → (ξ : svar p δ) → (p - ξ) -Env
@@ -297,11 +280,9 @@ _^svar : svar p γ → svar (p ^pat) γ
 bind v ^svar = bind (v ^svar)
 \end{code}
 }
-
-In a minor spoiler of things to come, we introduce the concept of an
-svar-builder. We will later find it useful to traverse a pattern and build a
-potential svar on the way down so that when we get to a $place$ we have the svar
-that refers to it.
+We will later find it useful to traverse a pattern and build a potential svar
+'on the way down' so that when we get to a $place$ we have the svar
+that refers to it and so we construct a type to help us.
 
 The notion is that instead of encoding some path to a $place$ in the pattern,
 we instead encode some path between the pattern $p$ and some subpattern $q$. 
@@ -309,11 +290,7 @@ $X$ encodes an empty path between a pattern and itself, then we
 may extend it, say with "\_∙" or "∙\_" so that we now show the path between
 a pair, and one of the elements of that pair. We can continue in a similar fashion,
 building some path, and if we are lucky enough to have it end in a $place$, then
-we know we might convert it to the appropriate svar. This is normally used by
-selecting both $p$ and $q$ to be the pattern we are about to traverse, then 
-using the combinators as we traverse it to strip constructors off q while
-simultaniously encoding that stripped constructor in the path being constructed.
-
+we know we might convert it to the appropriate svar.
 \hide{
 \begin{code}
 private
@@ -324,7 +301,6 @@ private
     θ : δ ⊑ γ'
 \end{code}
 }
-
 \begin{code}
 data svar-builder : Pattern γ → Pattern δ → Set where
   X     : svar-builder p p
@@ -332,12 +308,11 @@ data svar-builder : Pattern γ → Pattern δ → Set where
   ∙_    : svar-builder q p' → svar-builder (p ∙ q) p'
   bind  : svar-builder p p' → svar-builder (bind p) p'
 \end{code}
-
-The combinators are fairly trivial but there types are important in showing
-how we creating some distance between patterns in which we are charting some
-path, by structurally reducing the second pattern in the type, but encoding
-that information in the svar-builder we are creating so we remember exactly
-how it was deconstructed. We give the first combinator in full here as an example,
+We intend to use this concept by initially selecting both the indexed patterns
+to be the pattern we are about to traverse, then as we traverse the structure
+of the pattern we use the combinators defined below to strip constructors off
+the second index while simultaniously encoding the removed constructor in the 
+path being constructed. We give the first combinator in full here as an example,
 and the types of the other two.
 
 \begin{code}
@@ -363,10 +338,8 @@ and the types of the other two.
 ↳ (bind  v)  =  bind (↳ v)
 \end{code}
 }
-
 Finally we are able to build and actual svar from a builder only if it shows
 the path in some pattern $p$ to some place in that pattern.
-
 \begin{code}
 build : {θ : δ ⊑ γ'} → 
         svar-builder p (place θ) → 
@@ -376,7 +349,6 @@ build (v ∙)     = (build v) ∙
 build (∙ v)     = ∙ (build v)
 build (bind v)  = bind (build v)
 \end{code}
-
 \hide{
 \begin{code}
 bind-count-bl : svar-builder p q → ℕ
@@ -413,4 +385,3 @@ print-pat (place x)  = "PLACE"
 print-pat ⊥          = "⊥"
 \end{code}
 }
-

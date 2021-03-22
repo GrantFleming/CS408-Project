@@ -295,8 +295,6 @@ of its free  variables.
 \\
 %
 \\[\AgdaEmptyExtraSkip]%
-%
-\\[\AgdaEmptyExtraSkip]%
 \>[0]\AgdaFunction{Expr}\AgdaSpace{}%
 \AgdaBound{p}\AgdaSpace{}%
 \AgdaInductiveConstructor{const}\AgdaSpace{}%
@@ -315,8 +313,6 @@ of its free  variables.
 \AgdaBound{p}\AgdaSpace{}%
 \AgdaBound{γ}\<%
 \end{code}
-As is expected by now, we omit the usual smattering of thinnings, weakenings
-and openings.
 \hide{
 \begin{code}%
 \>[0]\AgdaKeyword{infixr}\AgdaSpace{}%
@@ -1010,10 +1006,10 @@ and openings.
 \end{code}
 }
 
-Finally we are able to generate a term from an expression and some opening
-of the appropriate environment. Most of the cases recurse structurally, while
-variables are simply opened to encompassing scope, however we can note here
-how it is that we process our svar instantiations
+We are able to generate a term from an expression and some opening
+of an environment for the trusted pattern. Most of the cases recurse
+structurally, while variables are simply opened to encompassing scope,
+however we can note here how it is that we process our svar instantiations
 
 \begin{code}%
 \>[0]\AgdaFunction{toTerm}%
@@ -1033,8 +1029,6 @@ how it is that we process our svar instantiations
 \AgdaSymbol{(}\AgdaGeneralizable{γ}\AgdaSpace{}%
 \AgdaOperator{\AgdaPrimitive{+}}\AgdaSpace{}%
 \AgdaGeneralizable{γ'}\AgdaSymbol{)}\<%
-\\
-\>[0]\AgdaComment{-- ...}\<%
 \\
 \>[0]\AgdaFunction{toTerm}\AgdaSpace{}%
 \AgdaSymbol{\{}\AgdaArgument{γ}\AgdaSpace{}%
@@ -1080,22 +1074,16 @@ how it is that we process our svar instantiations
 \AgdaSymbol{((}\AgdaBound{id-fv}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{++}}\AgdaSpace{}%
 \AgdaBound{σ'}\AgdaSymbol{))}\<%
-\\
-\>[0]\AgdaComment{-- ...}\<%
 \end{code}
-
 That is to say, we first resolve the substitution of expressions to one of
 terms (here we must inline a specialisation of map in order to satisfy Agda's
 termination checker) before extending it with the identity substitution for
 all the free variables and finally performing the substitution on the term
-taken from the environment.
-
-In short, we substitute the bound variables in the term but ensure not to
-affect any free variables that may exist.
-
+taken from the environment. We substitute the bound variables in the term
+but ensure not to affect any free variables.
 \hide{
 \begin{code}%
-\>[0][@{}l@{\AgdaIndent{1}}]%
+%
 \>[4]\AgdaKeyword{where}\<%
 \\
 \>[4][@{}l@{\AgdaIndent{0}}]%

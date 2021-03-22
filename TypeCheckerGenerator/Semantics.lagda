@@ -94,6 +94,10 @@ learned to trust. The $'$ version of this type is a similar story
 except it is a type constructor that accepts some scope and returns
 the type of something able to check premises that is pre-loaded with
 a context.
+
+Here we first encounter the failure handing monad that we will use to
+propagate errors. It works as one might expect, either \emph{succeed}ing
+with a value or \emph{fail}ing with an error message.
 \begin{code}
 PremsChecker =  ∀{δ} → Context δ         →
                 {p q p' : Pattern δ}     →

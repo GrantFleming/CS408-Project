@@ -650,15 +650,15 @@ itself a failable operation.
 \section{Normalisation by evaluation}
 \label{section-normalisation}
 
-We previously gave a type describing what a premise checker might look like, now
+We previously gave a type describing a premise-chain-checker, now
 we give similar types for things that will reduce for us, and things that might
 infer types. What is noticeably absent from these types is the existance of any kind
 of rules. Our normalisation procedure should be rule agnostic and so we achieve this
-by not talking about rules at all. We must, however, bear the rules in mind when
-we normalise. A concious decision was made here for this to be a non-failable
-operation. In a world of user-supplied typing rules we decide that flexibility
-is important and so when we encounter problems we take a "do as much as you can"
-approach to normalisation. 
+by taking great care in where we choose to mention them, and where we choose \emph{not}
+to. We must, however, bear the rules in mind when we normalise and so a concious
+decision is made here for normalisation to be a non-failable operation. In a world of
+user-supplied typing rules we decide that flexibility is important and so when we
+encounter problems we take a "do as much as you can" approach to normalisation. 
 \begin{code}%
 \>[0]\AgdaFunction{Reducer}%
 \>[9]\AgdaSymbol{=}%
@@ -713,13 +713,13 @@ approach to normalisation.
 In order to implement normalisation by evaluation, we must first define an evaluation
 function to reduce any eliminations. Most cases proceed as one might expect,
 traversing the structure of the term to find eliminations that we might hope to
-reduce. We make the decision to continue to reduce the target and eliminator in
-some elimination even if we fail to infer the type of the target (and so fail to
-reduce the elimination). This is to keep seperate the concerns of type-checking
-and normalisation and it is our opinion that this evaluation should not fail
-because of a type-error. Instead the process continues with some $unknown$ type
-placeholder, meaning that it will not match any rules that might produce erroneous
-results. The responsibility of type-checking the term falls to the caller.
+reduce. We reduce the target and eliminator in some elimination even if we fail
+to infer the type of the target (and so fail to reduce the elimination). This is
+to keep seperate the concerns of type-checking and normalisation and it is our
+opinion that this evaluation should not fail because of a type-error. Instead the
+process continues with some $unknown$ type placeholder, meaning that it will not
+match any rules that might produce erroneous results. The responsibility of type-checking
+the term falls to the caller.
 
 \hide{
 \begin{code}%
@@ -985,14 +985,14 @@ identifies it. This allows us to use to ∋ rule to get the type of that particu
 place which in turn facilitates the recursive call to qt to generate the head form
 at the nested place.
 
-This definition was interesting as in order to satify the well-scopedness of
-the subterms, we must maintain a proof that we are constructing a well scoped
-svar-builder. When we traverse under a binder in a head form pattern, we are forced
-to add such a binder to our svar-builder to maintain its well-scopedness. Our proof
-achieves this by maintaining the invariant that the scope of 'what is left' is
-always the original scope plus however many binders we have added when constructing
-the svar. As we learned the hard way, it is much easier to supply a trivial proof
-of this early on and maintain it than it is to build such a proof at the "leaf".
+In order to satify the well-scopedness of the subterms, we must maintain a proof
+that we are constructing a well scoped svar-builder. When we traverse under a binder
+in a head form pattern, we are forced to add such a binder to our svar-builder to
+maintain its well-scopedness. Our proof achieves this by maintaining the invariant
+that the scope of the subterm currently identified by the svar-builder is always the
+original scope plus however many binders we have added when constructing it.
+As we learned the hard way, it is much easier to supply a trivial proof of this early on
+and maintain it than it is to build such a proof at the "leaf".
 
 \begin{code}%
 \>[0]\AgdaFunction{qt}\AgdaSpace{}%
@@ -1086,7 +1086,7 @@ of this early on and maintain it than it is to build such a proof at the "leaf".
 \AgdaOperator{\AgdaFunction{⊗}}\AgdaSpace{}%
 \AgdaField{subject}\AgdaSpace{}%
 \AgdaFunction{∋rl}\AgdaSymbol{))}\AgdaOperator{\AgdaDatatype{-Env}}%
-\>[56]\AgdaSymbol{→}\<%
+\>[58]\AgdaSymbol{→}\<%
 \\
 %
 \>[13]\AgdaSymbol{(}\AgdaBound{v}\AgdaSpace{}%
@@ -1097,7 +1097,7 @@ of this early on and maintain it than it is to build such a proof at the "leaf".
 \AgdaField{subject}\AgdaSpace{}%
 \AgdaFunction{∋rl}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaBound{q}\AgdaSymbol{)}%
-\>[56]\AgdaSymbol{→}\<%
+\>[58]\AgdaSymbol{→}\<%
 \\
 %
 \>[13]\AgdaBound{γ'}\AgdaSpace{}%
@@ -1189,9 +1189,6 @@ of this early on and maintain it than it is to build such a proof at the "leaf".
 \\
 %
 \>[4]\AgdaFunction{helper}\AgdaSpace{}%
-\AgdaSymbol{\{}\AgdaArgument{γ'}\AgdaSpace{}%
-\AgdaSymbol{=}\AgdaSpace{}%
-\AgdaBound{γ'}\AgdaSymbol{\}}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{place}\AgdaSpace{}%
 \AgdaBound{θ}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaBound{i}\AgdaSpace{}%
@@ -1205,9 +1202,9 @@ of this early on and maintain it than it is to build such a proof at the "leaf".
 \>[4][@{}l@{\AgdaIndent{0}}]%
 \>[6]\AgdaSymbol{=}\AgdaSpace{}%
 \AgdaFunction{qt}%
-\>[695I]\AgdaBound{rs}\<%
+\>[692I]\AgdaBound{rs}\<%
 \\
-\>[.][@{}l@{}]\<[695I]%
+\>[.][@{}l@{}]\<[692I]%
 \>[11]\AgdaSymbol{(}\AgdaFunction{typeOf}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaField{checkRule}\AgdaSpace{}%
 \AgdaBound{r}\AgdaSymbol{)}\AgdaSpace{}%

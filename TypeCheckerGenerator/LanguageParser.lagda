@@ -34,21 +34,21 @@ open ElimRule using (eliminator)
 open import Data.Unit using (⊤; tt)
 \end{code}
 }
-We now want the user to be able to supply a term in the language for type-checking
-by supplying it in a text file, again as opposed to supplying it as an Agda code
-representation in our internal syntax.
+We now want the user to be able to supply a candidate for type checking by
+writing the term in a file as opposed to supplying it as an Agda code
+representation in our internal syntax and so we build a second parser for this
+purpose.
 
-We use the type rules and ∋ rules in order to detemin what a valid construction
-is in the language and use these rules to guide our parsing. We build a list of
-patterns that we consider to be valid constructions from these rules, however we
-first have a challenge to overcome.
+We use the patterns in our type rules and ∋ rules in order to detemine valid
+constructions in the language and then use these patterms to guide our parsing,
+however we must first overcome one major problem.
 
 A user is perfectly able to have some \emph{place} as the first part of a pattern.
 Attempting to parse this in a top-down manner may lead to infinite recursion in
-the same way that parsing a left-recursive grammar might. Due to time limitations
-we decide to tackle this not by implementing a more sophisticated parser, but by
-pre-processing the list of patterns to remove the left recusion problem from the
-patterns while parsing the same language.
+the same way that parsing a left-recursive grammar might. We can solve this problem
+in two ways, we could either implement a more sophisticated parser that is tolerant
+of such grammars or we could pre-process the patterns to create a right-recursive
+equivalent. We opt for the latter option due to time constraints.
 
 Since our objective is to synthesize some type, the top level parsable element here
 is a single \emph{computation}.
@@ -258,7 +258,7 @@ module LParsers (rules : Rules) where
 }
 \section{Putting it all together}
 We now have all the required components for our type-checker. A user runs the software
-with the command \begin{verbatim}type-check <spec-file> <term-file>\end{verbatim}We
+with the command \begin{verbatim}TypeCheck <spec-file> <term-file>\end{verbatim}We
 first read the whole of the spec-file as a string, and parse the rules from it with
 our DSL parser. Armed with the set of rules we can then parse a term in the language
 from the term-file, and then attempt to type the term with a simple call to 'infer'.

@@ -230,13 +230,7 @@ check-premise Γ rules penv qenv (x ⊢' prem)
   = do
       (p'env , q'env) ← check-premise (Γ -, toTerm penv x) rules penv qenv prem
       succeed ((bind p'env) , q'env)
-\end{code}
-}
-Checking a whole chain of premise proceeds as one might expect; each premise is
-checked in order. The environments for the things we trust accumulate while the
-environments for the things that remain to be trusted are whittled away. If the
-premise chain is empty, we simply return what it is that we already trust.
-\begin{code}
+
 check-premise-chain _ _ penv _ (ε _)
   = succeed penv
 check-premise-chain Γ rules penv qenv (prem ⇉ prems)
@@ -245,6 +239,12 @@ check-premise-chain Γ rules penv qenv (prem ⇉ prems)
       p''env ← check-premise-chain Γ rules (penv ∙ p'env) q'env prems
       succeed p''env
 \end{code}
+}
+Checking a whole chain of premise proceeds as one might expect; each premise is
+checked in order. The environments for the things we trust accumulate while the
+environments for the things that remain to be trusted are whittled away. If the
+premise chain is empty, we simply return what it is that we already trust.
+
 In direct correspondance to our initial three functions that check the
 various user defined rules, we provide three more, one for running each
 type of rule should such a matching rule be found. We make sure to address

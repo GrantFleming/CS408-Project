@@ -46,10 +46,8 @@ use our combinators to build parsers for patterns, expressions, premises and
 premise chains before assembling these to parse type rules, elimination rules
 and other such rules we will require before finally combining these to parse the
 overall description of a type. Parsing a specification file is then a matter
-of parsing one or more types (and we have a combinator for this).
-
-The result of parsing a specification file successfully is a set of rules
-which we can use to check the types of a term.
+of parsing one or more types. The result of parsing a specification file
+successfully is a set of rules.
 
 \hide{
 \begin{code}

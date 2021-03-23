@@ -958,13 +958,9 @@ variables before we delegate to $check$.
 \AgdaBound{p'env}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
 \AgdaBound{q'env}\AgdaSymbol{)}\<%
-\end{code}
-}
-Checking a whole chain of premise proceeds as one might expect; each premise is
-checked in order. The environments for the things we trust accumulate while the
-environments for the things that remain to be trusted are whittled away. If the
-premise chain is empty, we simply return what it is that we already trust.
-\begin{code}%
+\\
+%
+\\[\AgdaEmptyExtraSkip]%
 \>[0]\AgdaFunction{check-premise-chain}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
@@ -1019,6 +1015,12 @@ premise chain is empty, we simply return what it is that we already trust.
 \>[6]\AgdaInductiveConstructor{succeed}\AgdaSpace{}%
 \AgdaBound{p''env}\<%
 \end{code}
+}
+Checking a whole chain of premise proceeds as one might expect; each premise is
+checked in order. The environments for the things we trust accumulate while the
+environments for the things that remain to be trusted are whittled away. If the
+premise chain is empty, we simply return what it is that we already trust.
+
 In direct correspondance to our initial three functions that check the
 various user defined rules, we provide three more, one for running each
 type of rule should such a matching rule be found. We make sure to address
@@ -1217,18 +1219,13 @@ empty scope while allowing them to be applied in any scope.
 \>[6]\AgdaInductiveConstructor{succeed}\AgdaSpace{}%
 \AgdaBound{elim-ty}\<%
 \end{code}
-There are similar such functions for running other rules, they all involve
-checking the premise chain and occassionally other preconditions or
-postconditions.
-
 Our typechecking process is a highly mutually recursive process by nature. We can
 leverage Agda's termination checker to give us feedback which we might use to
 guarantee that the process terminates. We are unable to guarantee termination with
 in this case as we do not impose the required restrictions on user supplied rules. If
-a user supplies a rule that describes a circular dependency, then the type checking
+a user supplies a rule containing a circular check, then the type checking
 process will not halt. We talk more about this limitation later in our evaluation
 of the software.
-
 \hide{
 \begin{code}%
 \>[0]\AgdaFunction{run-univrule}\AgdaSpace{}%

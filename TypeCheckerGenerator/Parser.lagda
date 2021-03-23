@@ -46,8 +46,9 @@ We capitalise on the definitions in the Agda standard library and define
 a parser in terms of the State monad transformer. A parser is given a string
 as input, then it may fail or it may succeed and return something along with
 the rest of the string minus what was consumed during parsing. For convenience,
-we also provide a similar type that describes a parser of a list of characters
-and a way to plumb this into a real parser by making the appropriate conversions.
+we also provide a similar type that describes a parser operating on lists of
+characters and a way to plumb this into a 'real' parser by making the
+appropriate conversions.
 
 \begin{code}
 module Parser where

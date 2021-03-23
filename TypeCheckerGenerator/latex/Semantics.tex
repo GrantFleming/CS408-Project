@@ -219,17 +219,18 @@
 \AgdaOperator{\AgdaDatatype{-Env}}\AgdaSymbol{)}\<%
 \end{code}
 }
+When constructing our elimination typing rule, we noted that we did not
+require information about the syntax of the target itself, only its type.
+For $β$-reduction we now require this information and so we create a type
+that wraps an elimination typing rule but provides the extra information we
+need: some pattern for the target of elimination and some expression
+showing how we construct the reduced term.
 
-Given the way that we represent typing rules, our type for $β$-rules
-should not look unfamiliar. We match an $β$-rule by matching patterns
-for the target, and then matching some elimination rule using the
-target type and the eliminator. We then provide an expression that
-constructs the reduced term. Since we can work out the type of the
-reduced term using the included elimination rule, we have all we need
-to build a computation: either the reduced term is some thunk and
-we already have a computation under it, or it is not a thunk but we
-can use the type that we know to annotate it. This is the essence of
-the $↞↞$ operater that we introduced in section \ref{section-corelanguage}.
+Matching a $β$-rule involves matching the enclosed elimination rule and the
+pattern of the target, when such a rule is matched we might then appeal to
+$β$-reduce. We are guaranteed to be able to return a computation here since
+we have kept the required type information to hand and so we make use of the
+$↞↞$ operater that we introduced in section \ref{section-corelanguage}.
 
 \begin{code}%
 \>[0]\AgdaKeyword{record}\AgdaSpace{}%
@@ -405,57 +406,6 @@ the $↞↞$ operater that we introduced in section \ref{section-corelanguage}.
 \AgdaModule{β-rule}\<%
 \end{code}
 }
-We then define a function that will attempt a reduction with regards
-to a list of β-rules by trying to match and apply a rule. First, for
-convenience and readability, we create a type to represent something
-that checks the premises, the result of which is either failure, or
-success where success returns an environment for everything we have
-learned to trust. The $'$ version of this type is a similar story
-except it is a type constructor that accepts some scope and returns
-the type of something able to check premises that is pre-loaded with
-a context.
-
-Here we first encounter the failure handing monad that we will use to
-propagate errors. It works as one might expect, either \emph{succeed}ing
-with a value or \emph{fail}ing with an error message.
-\begin{code}%
-\>[0]\AgdaFunction{PremsChecker}\AgdaSpace{}%
-\AgdaSymbol{=}%
-\>[16]\AgdaSymbol{∀\{}\AgdaBound{δ}\AgdaSymbol{\}}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaFunction{Context}\AgdaSpace{}%
-\AgdaBound{δ}%
-\>[41]\AgdaSymbol{→}\<%
-\\
-%
-\>[16]\AgdaSymbol{\{}\AgdaBound{p}\AgdaSpace{}%
-\AgdaBound{q}\AgdaSpace{}%
-\AgdaBound{p'}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaDatatype{Pattern}\AgdaSpace{}%
-\AgdaBound{δ}\AgdaSymbol{\}}%
-\>[41]\AgdaSymbol{→}\<%
-\\
-%
-\>[16]\AgdaBound{p}\AgdaSpace{}%
-\AgdaOperator{\AgdaDatatype{-Env}}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaBound{q}\AgdaSpace{}%
-\AgdaOperator{\AgdaDatatype{-Env}}%
-\>[41]\AgdaSymbol{→}\<%
-\\
-%
-\>[16]\AgdaDatatype{Prems}\AgdaSpace{}%
-\AgdaBound{p}\AgdaSpace{}%
-\AgdaBound{q}\AgdaSpace{}%
-\AgdaBound{p'}%
-\>[41]\AgdaSymbol{→}\<%
-\\
-%
-\>[16]\AgdaDatatype{Failable}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaBound{p'}\AgdaSpace{}%
-\AgdaOperator{\AgdaDatatype{-Env}}\AgdaSymbol{)}\<%
-\end{code}
 \hide{
 \begin{code}%
 \>[0]\AgdaKeyword{open}\AgdaSpace{}%
@@ -465,20 +415,23 @@ with a value or \emph{fail}ing with an error message.
 \AgdaSymbol{(}\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}>>=\AgdaUnderscore{}}}\AgdaSymbol{)}\<%
 \end{code}
 }
-We not give the type of the function that is responsible for trying to
-return a matching βRule (and an environment for the various patterns so
-that we might use it) after which reduction involves finding some rule (where
-we here get some of the environment information we need) then checking the
-opened premise chain (where we get the rest of the environment information
-we need) before finally making a call to reduce with this information.
+We now have what is required to find a matching rule my matching the various
+patterns. We iterate over the list of rules and return the first match. We chose
+a 'first match' approach here for simplicity of implementation however it
+is acknowledged that other approaches are far more suitable. We discuss this
+later in our evaluation of the software.
+
+In this type we first encounter the failure handing monad that we will use to
+propagate errors. It works as one might expect, either succeeding with a value
+or failing with an error message.
 \begin{code}%
 \>[0]\AgdaFunction{findRule}\AgdaSpace{}%
 \AgdaSymbol{:}%
-\>[260I]\AgdaDatatype{List}\AgdaSpace{}%
+\>[242I]\AgdaDatatype{List}\AgdaSpace{}%
 \AgdaRecord{β-rule}\AgdaSpace{}%
 \AgdaSymbol{→}\<%
 \\
-\>[.][@{}l@{}]\<[260I]%
+\>[.][@{}l@{}]\<[242I]%
 \>[11]\AgdaSymbol{(}\AgdaBound{tar}\AgdaSpace{}%
 \AgdaBound{type}\AgdaSpace{}%
 \AgdaBound{elim}\AgdaSpace{}%
@@ -507,10 +460,10 @@ we need) before finally making a call to reduce with this information.
 \AgdaBound{e}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
 \AgdaInductiveConstructor{fail}%
-\>[282I]\AgdaSymbol{(}\AgdaString{"No matching β-rule found for "}\AgdaSpace{}%
+\>[264I]\AgdaSymbol{(}\AgdaString{"No matching β-rule found for "}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{++}}\<%
 \\
-\>[282I][@{}l@{\AgdaIndent{0}}]%
+\>[264I][@{}l@{\AgdaIndent{0}}]%
 \>[27]\AgdaFunction{print}\AgdaSpace{}%
 \AgdaBound{t}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{++}}\AgdaSpace{}%
@@ -561,6 +514,55 @@ we need) before finally making a call to reduce with this information.
 \AgdaBound{env}\AgdaSymbol{)}\<%
 \end{code}
 }
+To achieve reduction we will need to check the premise chain in the enclosed
+elimination in order to access the required environments. The mechanics of
+checking premise chains is not the business of $β$-reduction code and so we
+instead give a type to represent a function that can do this for us and insist
+that the caller provide it. We also provide a similar type appended with `
+which captures the same intuition except that it is "pre-loaded" with the
+context.
+\begin{code}%
+\>[0]\AgdaFunction{PremsChecker}\AgdaSpace{}%
+\AgdaSymbol{=}%
+\>[16]\AgdaSymbol{∀\{}\AgdaBound{δ}\AgdaSymbol{\}}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaFunction{Context}\AgdaSpace{}%
+\AgdaBound{δ}%
+\>[41]\AgdaSymbol{→}\<%
+\\
+%
+\>[16]\AgdaSymbol{\{}\AgdaBound{p}\AgdaSpace{}%
+\AgdaBound{q}\AgdaSpace{}%
+\AgdaBound{p'}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaDatatype{Pattern}\AgdaSpace{}%
+\AgdaBound{δ}\AgdaSymbol{\}}%
+\>[41]\AgdaSymbol{→}\<%
+\\
+%
+\>[16]\AgdaBound{p}\AgdaSpace{}%
+\AgdaOperator{\AgdaDatatype{-Env}}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaBound{q}\AgdaSpace{}%
+\AgdaOperator{\AgdaDatatype{-Env}}%
+\>[41]\AgdaSymbol{→}\<%
+\\
+%
+\>[16]\AgdaDatatype{Prems}\AgdaSpace{}%
+\AgdaBound{p}\AgdaSpace{}%
+\AgdaBound{q}\AgdaSpace{}%
+\AgdaBound{p'}%
+\>[41]\AgdaSymbol{→}\<%
+\\
+%
+\>[16]\AgdaDatatype{Failable}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{p'}\AgdaSpace{}%
+\AgdaOperator{\AgdaDatatype{-Env}}\AgdaSymbol{)}\<%
+\end{code}
+Reduction with regards to a list of rules can now be defined in three stages;
+we first attempt to find a matching rule, then if this succeeds we check
+the premise chain and finally if both the previous stages succeed then
+we make our call to $β$-reduce.
 \begin{code}%
 \>[0]\AgdaFunction{reduce}\AgdaSpace{}%
 \AgdaSymbol{:}%
@@ -641,9 +643,9 @@ we need) before finally making a call to reduce with this information.
 \AgdaKeyword{open}\AgdaSpace{}%
 \AgdaModule{ElimRule}\<%
 \end{code}
-One aspect worth noting here, is that β-reduction failure depends solely on the
-existance of the rule, and the successful checking of the premise chain. The call
-to β-reduce is not in itself a failable operation.
+β-reduction failure depends solely on the existance of the rule, and the
+successful checking of the premise chain. The call to β-reduce is not in
+itself a failable operation.
 
 \section{Normalisation by evaluation}
 \label{section-normalisation}

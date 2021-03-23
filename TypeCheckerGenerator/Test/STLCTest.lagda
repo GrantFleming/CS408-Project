@@ -28,7 +28,7 @@ _ = refl
 
 _ : infer rules ε (α ∷ (α ⇨ α))
     ≡
-    fail "failed ∋-check: α → α ∋ α"
+    fail "failed ∋-check: α → α is not the type of α"
 _ = refl
 
 -- should check applications are typed:
@@ -64,14 +64,14 @@ _ = refl
 
 _ : infer rules ε (app ((lam a) ∷ (α ⇨ β)) b)
     ≡
-    fail "failed ∋-check: β ∋ a"
+    fail "failed ∋-check: β is not the type of a"
 _ = refl
 
 -- if target of elimination passes typchecking, should check the eliminator:
 
 _ : infer rules ε (app (lam (thunk (var ze)) ∷ (α ⇨ α)) b)
     ≡
-    fail "failed ∋-check: α ∋ b"
+    fail "failed ∋-check: α is not the type of b"
 _ = refl
 
 -- should correctly type nested eliminations

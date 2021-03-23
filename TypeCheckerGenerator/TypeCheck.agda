@@ -41,16 +41,19 @@ module TypeCheck where
            just (rules@(rs tr ur ∋r er βr ηr) , rest) ← return (parse-spec desc)
              where nothing → putStrLn ("Failed to parse spec file")
            _ ← putStrLn ("Parsed:\n" ++ show (length tr) ++ " types\n" ++
-                                        show (length ∋r) ++ " introduction forms\n" ++
-                                        show (length er) ++ " elimination typing rules\n" ++
+                                        show (length ∋r) ++ " values\n" ++
+                                        show (length er) ++ " eliminations\n" ++
                                         show (length βr) ++ " β-rules\n")
-           _ ← putStrLn ("Parsing source file ...")
            just (term , rest) ← return (computation (tr , ∋r , er) empty src)
              where nothing → putStrLn ("Failed to parse source code file.")
-           _ ← putStrLn ("term parsed: " ++ print term)
-           _ ← putStrLn ("ignored: " ++ rest ++ "\n")
+           _ ← putStrLn ("Successfully parsed source code file.")           
+           _ ← putStrLn ("Term parsed: " ++ print term)
+           _ ← putStrLn ("Input ignored: " ++ rest ++ "\n")
            succeed type ← return (infer rules ε term)
-             where fail msg → putStrLn msg
-           _ ← putStrLn ("term: " ++ (print term) ++ "\ntype: " ++ print type)
+             where fail msg → (do
+                     _ ← putStrLn("Type checking failed.")
+                     putStrLn msg)
+           _ ← putStrLn ("Type checking succeeded.")             
+           _ ← putStrLn ("type: " ++ print type)
            return tt)
 

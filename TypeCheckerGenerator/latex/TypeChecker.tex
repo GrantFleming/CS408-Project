@@ -194,12 +194,13 @@
 \end{code}
 }
 
+
 We now have all of the required definitions to construct the process of
 typechecking. This process is a set of mutually recursive definitions which
 we will describe here.
 
 When we check types, it is convenient to collect all the rules together so
-that we might easily pass them around. We do so will the following type.
+that we might easily pass them around. We do so with the following type.
 
 \begin{code}%
 \>[0]\AgdaKeyword{data}\AgdaSpace{}%
@@ -244,38 +245,30 @@ that we might easily pass them around. We do so will the following type.
 \>[7]\AgdaDatatype{RuleSet}\<%
 \end{code}
 
-
-Firstly, we present four functions, one for checking each of the user
+Firstly, we present three functions, one for checking each of the user
 provided typing rules. Each definition proceeds in the same way,
 attempting to match an appropriate rule, if a match is found, the rule is
-run. We will explore what it means to run a rule later. If no rule is
-found to match, and there are no rules left to check, these functions
-fail with a descriptive error.
+run. If no rule is found to match, and there are no rules left to check,
+these functions fail with a descriptive error.
 
 \begin{code}%
 \>[0]\AgdaFunction{∋-check}%
 \>[12]\AgdaSymbol{:}%
 \>[15]\AgdaFunction{Context}\AgdaSpace{}%
 \AgdaGeneralizable{γ}%
-\>[36]\AgdaSymbol{→}\<%
+\>[38]\AgdaSymbol{→}\<%
 \\
 %
 \>[15]\AgdaDatatype{RuleSet}%
-\>[36]\AgdaSymbol{→}\<%
+\>[38]\AgdaSymbol{→}\<%
 \\
 %
-\>[15]\AgdaSymbol{(}\AgdaBound{subject}\AgdaSpace{}%
+\>[15]\AgdaSymbol{(}\AgdaBound{term}\AgdaSpace{}%
+\AgdaBound{type}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaDatatype{Const}\AgdaSpace{}%
 \AgdaGeneralizable{γ}\AgdaSymbol{)}%
-\>[36]\AgdaSymbol{→}\<%
-\\
-%
-\>[15]\AgdaSymbol{(}\AgdaBound{input}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaDatatype{Const}\AgdaSpace{}%
-\AgdaGeneralizable{γ}\AgdaSymbol{)}%
-\>[36]\AgdaSymbol{→}\<%
+\>[38]\AgdaSymbol{→}\<%
 \\
 %
 \>[15]\AgdaDatatype{Failable}\AgdaSpace{}%
@@ -287,25 +280,50 @@ fail with a descriptive error.
 \>[12]\AgdaSymbol{:}%
 \>[15]\AgdaFunction{Context}\AgdaSpace{}%
 \AgdaGeneralizable{γ}%
-\>[36]\AgdaSymbol{→}\<%
+\>[34]\AgdaSymbol{→}\<%
 \\
 %
 \>[15]\AgdaDatatype{RuleSet}%
-\>[36]\AgdaSymbol{→}\<%
+\>[34]\AgdaSymbol{→}\<%
 \\
 %
-\>[15]\AgdaSymbol{(}\AgdaBound{subject}\AgdaSpace{}%
+\>[15]\AgdaSymbol{(}\AgdaBound{type}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaDatatype{Const}\AgdaSpace{}%
 \AgdaGeneralizable{γ}\AgdaSymbol{)}%
-\>[36]\AgdaSymbol{→}\<%
+\>[34]\AgdaSymbol{→}\<%
 \\
 %
 \>[15]\AgdaDatatype{Failable}\AgdaSpace{}%
 \AgdaRecord{⊤}\<%
 \\
-\>[0]\<%
+%
+\\[\AgdaEmptyExtraSkip]%
+\>[0]\AgdaFunction{elim-synth}\AgdaSpace{}%
+\AgdaSymbol{:}%
+\>[132I]\AgdaFunction{Context}\AgdaSpace{}%
+\AgdaGeneralizable{γ}%
+\>[49]\AgdaSymbol{→}\<%
 \\
+\>[.][@{}l@{}]\<[132I]%
+\>[13]\AgdaDatatype{RuleSet}%
+\>[49]\AgdaSymbol{→}\<%
+\\
+%
+\>[13]\AgdaSymbol{(}\AgdaBound{target-type}\AgdaSpace{}%
+\AgdaBound{eliminator}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaDatatype{Const}\AgdaSpace{}%
+\AgdaGeneralizable{γ}\AgdaSymbol{)}%
+\>[49]\AgdaSymbol{→}\<%
+\\
+%
+\>[13]\AgdaDatatype{Failable}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaDatatype{Const}\AgdaSpace{}%
+\AgdaGeneralizable{γ}\AgdaSymbol{)}\<%
+\end{code}
+\hide{
+\begin{code}%
 \>[0]\AgdaFunction{univ-check}%
 \>[12]\AgdaSymbol{:}%
 \>[15]\AgdaFunction{Context}\AgdaSpace{}%
@@ -326,45 +344,13 @@ fail with a descriptive error.
 %
 \>[15]\AgdaDatatype{Failable}\AgdaSpace{}%
 \AgdaRecord{⊤}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaFunction{elim-synth}\AgdaSpace{}%
-\AgdaSymbol{:}%
-\>[139I]\AgdaFunction{Context}\AgdaSpace{}%
-\AgdaGeneralizable{γ}%
-\>[37]\AgdaSymbol{→}\<%
-\\
-\>[.][@{}l@{}]\<[139I]%
-\>[13]\AgdaDatatype{RuleSet}%
-\>[37]\AgdaSymbol{→}\<%
-\\
-%
-\>[13]\AgdaSymbol{(}\AgdaBound{synth-type}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaDatatype{Const}\AgdaSpace{}%
-\AgdaGeneralizable{γ}\AgdaSymbol{)}%
-\>[37]\AgdaSymbol{→}\<%
-\\
-%
-\>[13]\AgdaSymbol{(}\AgdaBound{eliminator}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaDatatype{Const}\AgdaSpace{}%
-\AgdaGeneralizable{γ}\AgdaSymbol{)}%
-\>[37]\AgdaSymbol{→}\<%
-\\
-%
-\>[13]\AgdaDatatype{Failable}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaDatatype{Const}\AgdaSpace{}%
-\AgdaGeneralizable{γ}\AgdaSymbol{)}\<%
 \end{code}
+}
 
-We define a notion of equivalence of terms that we will need in order
-to embed inferrable terms into checkable terms. This process involves
-synthesizing a type for a term before ascertaining if it is equivalent
-to the type we are checking the term at. This is a purely syntactic action.
-If terms are to have their normal forms compared then they must be
-normalized before checking their equivalence here.
+We define a notion of term equivalence that we will need later in order
+to check the type of computations embedded in constructions. This is a
+purely syntactic action. If terms are to have their normal forms compared
+then they must be normalized before checking their equivalence here.
 
 \begin{code}%
 \>[0]\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}≡v\AgdaUnderscore{}}}\AgdaSpace{}%
@@ -473,9 +459,9 @@ normalized before checking their equivalence here.
 \AgdaOperator{\AgdaInductiveConstructor{∙}}\AgdaSpace{}%
 \AgdaBound{x₃}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaSymbol{=}%
-\>[219I]\AgdaKeyword{do}\<%
+\>[215I]\AgdaKeyword{do}\<%
 \\
-\>[219I][@{}l@{\AgdaIndent{0}}]%
+\>[215I][@{}l@{\AgdaIndent{0}}]%
 \>[36]\AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{←}}\AgdaSpace{}%
 \AgdaBound{x}%
@@ -537,9 +523,9 @@ normalized before checking their equivalence here.
 \AgdaBound{e'}\AgdaSpace{}%
 \AgdaBound{s'}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaSymbol{=}%
-\>[259I]\AgdaKeyword{do}\<%
+\>[255I]\AgdaKeyword{do}\<%
 \\
-\>[259I][@{}l@{\AgdaIndent{0}}]%
+\>[255I][@{}l@{\AgdaIndent{0}}]%
 \>[40]\AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{←}}\AgdaSpace{}%
 \AgdaBound{e}\AgdaSpace{}%
@@ -566,9 +552,9 @@ normalized before checking their equivalence here.
 \AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
 \AgdaBound{T'}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaSymbol{=}%
-\>[277I]\AgdaKeyword{do}\<%
+\>[273I]\AgdaKeyword{do}\<%
 \\
-\>[277I][@{}l@{\AgdaIndent{0}}]%
+\>[273I][@{}l@{\AgdaIndent{0}}]%
 \>[35]\AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{←}}\AgdaSpace{}%
 \AgdaBound{t}\AgdaSpace{}%
@@ -597,26 +583,26 @@ normalized before checking their equivalence here.
 }
 
 The high level functionality of our type checker is given by two functions,
-check and infer. In general, we check constructions and infer computations,
-however since we can embed inferrable terms in checkable terms we may accept
-a call to check the type of any term.
+check and infer. We check the type of constructions and infer the type of
+computations, however since we can embed computations in constructions using
+$thunk$ we may accept a call to check the type of any term.
 
-When checking constructions, we only make the distinction of two cases,
+When checking constructions, we make a distinction between two cases,
 either we duck under a thunk to check the computation beneath it, or we
-call to \emph{∋-check} otherwise. When checking computations, we always start
-by synthesizing the type with a call to \emph{infer} safe in the knowledge that
-if it succeeds, we are guaranteed that what is given is a type. We then check
-equivalence between what was inferred, and the type we are checking as
-described above.
+delegate immediately to \emph{∋-check}. When checking computations under a thunk,
+we always start by synthesizing the type with a call to \emph{infer} safe in the
+knowledge that if it succeeds, we are guaranteed that what is given is a type.
+We then check equivalence between what was inferred, and the type we are checking
+after normalising each of them.
 
-When inferring computations, the type of variables are looked up in the
-context. We check to ensure that what we got from the context was indeed
-a type before returning it. Terms with type annotations have their
-type checked against their annotation, the annotation is verified as being
-a type in this process, and the annotation is returned. Eliminations are
-checked by synthesizing the type of the target before delegating to \emph{elim-synth}
-so that it might check the elimination rules. Any term given back in this
-process is checked to be a type before $infer$ returns it.
+When inferring the type of computations, there are three cases that we consider
+seperately. The types of variables are looked up in the context. Terms with type
+annotations are checked to determine that the annotation is indeed the type of
+the term and if this is so then the normalised annotation is returned. Lastly,
+the types of eliminations are inferred by synthesizing the type of the target
+before delegating to \emph{elim-synth} so that it might determine to the appropriate
+elimination typing rule to run. Any term given back in this process is checked to
+be a type before $infer$ returns it.
 
 \begin{code}%
 \>[0]\AgdaFunction{check}%
@@ -673,21 +659,18 @@ process is checked to be a type before $infer$ returns it.
 \AgdaGeneralizable{γ}\AgdaSymbol{)}\<%
 \end{code}
 
-Before we discuss the running of rule instances, we first discuss how
-we check a premise chain. The result of
-matching against a given rule provides us with the necessary environments
-in which we can get concrete terms from the schematic variables and
-expressions in our premise. In our implementation checking the premise
+Before we discuss the running of rule instances, we must first describe how
+to check a premise chain. The result of matching against a given rule provides
+us with the necessary environments for us to resolve the schematic variables
+thay might exist in a premise. In our implementation checking the premises
 turns out to be mostly trivial, if verbose. Each data constructor of a Premise
-maps nicely to functionality we have already provided - such as \emph{type-check},
-\emph{univ-check} and \emph{\_≡ᵗ\_}. We provide just the definition for the
-∈ premise by way of example here.
+resolves to a calling a single function that we have already provided (such as 
+\emph{type-check}, \emph{check} or \emph{\_≡ᵗ\_}) before building the required
+environments for what what is newly trusted and what remains to be trused.
 
-Here we delegate to check, creating a concrete type to check from the
-expression $T$, and looking up the term we are checking using the schematic
-variable $ξ$, thinning it appropriately. A successful checking of a premise
-results in environments for the patterns determining what is newly
-trusted and what is left to be trusted.
+We provide just the definition for the '∈' premise by way of example here so that
+might see how the concrete terms are realised from expressions and schematic
+variables before we delegate to $check$.
 \hide{
 \begin{code}%
 \>[0]\AgdaFunction{check-premise-chain}%
@@ -735,23 +718,21 @@ trusted and what is left to be trusted.
 \begin{code}%
 \>[0]\AgdaFunction{check-premise}\AgdaSpace{}%
 \AgdaSymbol{:}%
-\>[329I]\AgdaFunction{Context}\AgdaSpace{}%
+\>[325I]\AgdaFunction{Context}\AgdaSpace{}%
 \AgdaGeneralizable{γ}%
-\>[28]\AgdaSymbol{→}\<%
+\>[34]\AgdaSymbol{→}\<%
 \\
-\>[.][@{}l@{}]\<[329I]%
+\>[.][@{}l@{}]\<[325I]%
 \>[16]\AgdaDatatype{RuleSet}%
-\>[30]\AgdaSymbol{→}\<%
+\>[34]\AgdaSymbol{→}\<%
 \\
 %
 \>[16]\AgdaGeneralizable{p}\AgdaSpace{}%
+\AgdaOperator{\AgdaDatatype{-Env}}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaGeneralizable{q}\AgdaSpace{}%
 \AgdaOperator{\AgdaDatatype{-Env}}%
-\>[28]\AgdaSymbol{→}\<%
-\\
-%
-\>[16]\AgdaGeneralizable{q}\AgdaSpace{}%
-\AgdaOperator{\AgdaDatatype{-Env}}%
-\>[28]\AgdaSymbol{→}\<%
+\>[34]\AgdaSymbol{→}\<%
 \\
 %
 \>[16]\AgdaDatatype{Prem}\AgdaSpace{}%
@@ -770,8 +751,8 @@ trusted and what is left to be trusted.
 \AgdaGeneralizable{q'}\AgdaSpace{}%
 \AgdaOperator{\AgdaDatatype{-Env}}\AgdaSymbol{)}\<%
 \\
-\>[0]\AgdaComment{--...}\<%
-\\
+%
+\\[\AgdaEmptyExtraSkip]%
 \>[0]\AgdaFunction{check-premise}\AgdaSpace{}%
 \AgdaBound{Γ}\AgdaSpace{}%
 \AgdaBound{rules}\AgdaSpace{}%
@@ -786,9 +767,9 @@ trusted and what is left to be trusted.
 \\
 \>[0][@{}l@{\AgdaIndent{0}}]%
 \>[2]\AgdaSymbol{=}%
-\>[353I]\AgdaKeyword{do}\<%
+\>[351I]\AgdaKeyword{do}\<%
 \\
-\>[353I][@{}l@{\AgdaIndent{0}}]%
+\>[351I][@{}l@{\AgdaIndent{0}}]%
 \>[6]\AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{←}}\AgdaSpace{}%
 \AgdaFunction{check}\AgdaSpace{}%
@@ -813,14 +794,7 @@ trusted and what is left to be trusted.
 \AgdaSymbol{(}\AgdaBound{qenv}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{-penv}}\AgdaSpace{}%
 \AgdaBound{ξ}\AgdaSymbol{))}\<%
-\\
-\>[0]\AgdaComment{--...}\<%
 \end{code}
-The checking of a whole chain of premise proceeds as one might expect and so
-we do not give the code here. Each premise is checked in order. The environments
-for the things we trust accumulate while the environments for the things that
-remain to be trusted are whittled away. The result of checking a chain of premises
-is an environment for everything that we now trust.
 \hide{
 \begin{code}%
 \>[0]\AgdaFunction{check-premise}\AgdaSpace{}%
@@ -834,9 +808,9 @@ is an environment for everything that we now trust.
 \\
 \>[0][@{}l@{\AgdaIndent{0}}]%
 \>[2]\AgdaSymbol{=}%
-\>[381I]\AgdaKeyword{do}\<%
+\>[379I]\AgdaKeyword{do}\<%
 \\
-\>[.][@{}l@{}]\<[381I]%
+\>[.][@{}l@{}]\<[379I]%
 \>[4]\AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{←}}\AgdaSpace{}%
 \AgdaFunction{type-check}%
@@ -876,11 +850,11 @@ is an environment for everything that we now trust.
 \\
 \>[0][@{}l@{\AgdaIndent{0}}]%
 \>[2]\AgdaSymbol{=}%
-\>[411I]\AgdaKeyword{do}\<%
+\>[409I]\AgdaKeyword{do}\<%
 \\
-\>[411I][@{}l@{\AgdaIndent{0}}]%
+\>[409I][@{}l@{\AgdaIndent{0}}]%
 \>[6]\AgdaSymbol{\AgdaUnderscore{}}%
-\>[412I]\AgdaOperator{\AgdaFunction{←}}\AgdaSpace{}%
+\>[410I]\AgdaOperator{\AgdaFunction{←}}\AgdaSpace{}%
 \AgdaFunction{normalize}\AgdaSpace{}%
 \AgdaBound{η}\AgdaSpace{}%
 \AgdaBound{β}\AgdaSpace{}%
@@ -896,7 +870,7 @@ is an environment for everything that we now trust.
 \AgdaBound{penv}\AgdaSpace{}%
 \AgdaBound{x}\AgdaSymbol{)}\<%
 \\
-\>[.][@{}l@{}]\<[412I]%
+\>[.][@{}l@{}]\<[410I]%
 \>[8]\AgdaOperator{\AgdaFunction{≡ᵗ}}\<%
 \\
 %
@@ -931,9 +905,9 @@ is an environment for everything that we now trust.
 \\
 \>[0][@{}l@{\AgdaIndent{0}}]%
 \>[2]\AgdaSymbol{=}%
-\>[449I]\AgdaKeyword{do}\<%
+\>[447I]\AgdaKeyword{do}\<%
 \\
-\>[449I][@{}l@{\AgdaIndent{0}}]%
+\>[447I][@{}l@{\AgdaIndent{0}}]%
 \>[6]\AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{←}}\AgdaSpace{}%
 \AgdaFunction{univ-check}\AgdaSpace{}%
@@ -960,9 +934,9 @@ is an environment for everything that we now trust.
 \\
 \>[0][@{}l@{\AgdaIndent{0}}]%
 \>[2]\AgdaSymbol{=}%
-\>[467I]\AgdaKeyword{do}\<%
+\>[465I]\AgdaKeyword{do}\<%
 \\
-\>[467I][@{}l@{\AgdaIndent{0}}]%
+\>[465I][@{}l@{\AgdaIndent{0}}]%
 \>[6]\AgdaSymbol{(}\AgdaBound{p'env}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
 \AgdaBound{q'env}\AgdaSymbol{)}\AgdaSpace{}%
@@ -986,16 +960,21 @@ is an environment for everything that we now trust.
 \AgdaBound{q'env}\AgdaSymbol{)}\<%
 \end{code}
 }
-\hide{
+Checking a whole chain of premise proceeds as one might expect; each premise is
+checked in order. The environments for the things we trust accumulate while the
+environments for the things that remain to be trusted are whittled away. If the
+premise chain is empty, we simply return what it is that we already trust.
 \begin{code}%
 \>[0]\AgdaFunction{check-premise-chain}\AgdaSpace{}%
-\AgdaBound{Γ}\AgdaSpace{}%
-\AgdaBound{rules}\AgdaSpace{}%
+\AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
+\AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
 \AgdaBound{penv}\AgdaSpace{}%
-\AgdaBound{qenv}\AgdaSpace{}%
+\AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{ε}\AgdaSpace{}%
-\AgdaBound{x}\AgdaSymbol{)}%
-\>[50]\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaSymbol{\AgdaUnderscore{})}\<%
+\\
+\>[0][@{}l@{\AgdaIndent{0}}]%
+\>[2]\AgdaSymbol{=}\AgdaSpace{}%
 \AgdaInductiveConstructor{succeed}\AgdaSpace{}%
 \AgdaBound{penv}\<%
 \\
@@ -1009,13 +988,13 @@ is an environment for everything that we now trust.
 \AgdaBound{prems}\AgdaSymbol{)}\<%
 \\
 \>[0][@{}l@{\AgdaIndent{0}}]%
-\>[1]\AgdaSymbol{=}%
-\>[500I]\AgdaKeyword{do}\<%
+\>[2]\AgdaSymbol{=}%
+\>[498I]\AgdaKeyword{do}\<%
 \\
-\>[500I][@{}l@{\AgdaIndent{0}}]%
-\>[5]\AgdaSymbol{(}\AgdaBound{p'env}\AgdaSpace{}%
+\>[498I][@{}l@{\AgdaIndent{0}}]%
+\>[6]\AgdaSymbol{(}\AgdaBound{p'env}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
-\AgdaBound{q₁env}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaBound{q'env}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{←}}\AgdaSpace{}%
 \AgdaFunction{check-premise}\AgdaSpace{}%
 \AgdaBound{rules}\AgdaSpace{}%
@@ -1025,7 +1004,7 @@ is an environment for everything that we now trust.
 \AgdaBound{prem}\<%
 \\
 %
-\>[5]\AgdaBound{p''env}\AgdaSpace{}%
+\>[6]\AgdaBound{p''env}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{←}}\AgdaSpace{}%
 \AgdaFunction{check-premise-chain}\AgdaSpace{}%
 \AgdaBound{Γ}\AgdaSpace{}%
@@ -1033,17 +1012,15 @@ is an environment for everything that we now trust.
 \AgdaSymbol{(}\AgdaBound{penv}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{∙}}\AgdaSpace{}%
 \AgdaBound{p'env}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaBound{q₁env}\AgdaSpace{}%
+\AgdaBound{q'env}\AgdaSpace{}%
 \AgdaBound{prems}\<%
 \\
 %
-\>[5]\AgdaInductiveConstructor{succeed}\AgdaSpace{}%
+\>[6]\AgdaInductiveConstructor{succeed}\AgdaSpace{}%
 \AgdaBound{p''env}\<%
 \end{code}
-}
-
-In direct correspondance to our initial four functions that check the
-various user defined rules, we provide four more, one for running each
+In direct correspondance to our initial three functions that check the
+various user defined rules, we provide three more, one for running each
 type of rule should such a matching rule be found. We make sure to address
 the appropriate conditions here, such as checking that the type in a $∋$
 rule is indeed a type.
@@ -1052,18 +1029,11 @@ We give two examples here, that of running a $∋$ rule and one of running
 an elimination rule. The first merely tries to succeed, the second must
 return the synthesized type.
 
-There are several things worth noting here. Firstly that we do not take
-environments for the Patterns in a rule, but for their opening into
-the current scope. Similarly when we retrieve the premise chain from
-the rule, we open this to the current scope before checking. This method
-allows us to mandate that rules are defined in the empty scope but can
-be applied in any scope.
-
-We may also see here how it is that we build concrete terms from
-expressions in the rules using $toTerm$ and from patterns and
-environments using $termFrom$. The latter allows us to construct
-the $T$ in $T ∋ t$ while the former is responsible for constructing
-the output of running the elimination rule.
+We do not request environments for the exact patterns in a rule, but instead
+for their opening into the current scope. Similarly when we retrieve the
+premise chain from a rule, we open this to the current scope before
+checking it. This method allows us to mandate that rules are defined in the
+empty scope while allowing them to be applied in any scope.
 
 \begin{code}%
 \>[0]\AgdaFunction{run-∋rule}%
@@ -1105,50 +1075,54 @@ the output of running the elimination rule.
 \>[0]\AgdaFunction{run-∋rule}\AgdaSpace{}%
 \AgdaSymbol{\{}\AgdaBound{γ}\AgdaSymbol{\}}\AgdaSpace{}%
 \AgdaBound{Γ}\AgdaSpace{}%
-\AgdaBound{rules}\AgdaSymbol{@(}\AgdaInductiveConstructor{rs}\AgdaSpace{}%
-\AgdaBound{t}\AgdaSpace{}%
-\AgdaBound{u}\AgdaSpace{}%
-\AgdaBound{∋}\AgdaSpace{}%
-\AgdaBound{e}\AgdaSpace{}%
-\AgdaBound{β}\AgdaSpace{}%
-\AgdaBound{η}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaBound{rule}\AgdaSpace{}%
-\AgdaBound{ienv}\AgdaSpace{}%
-\AgdaBound{senv}\<%
+\AgdaBound{rules}\AgdaSpace{}%
+\AgdaBound{∋-rule}\AgdaSpace{}%
+\AgdaBound{input-env}\AgdaSpace{}%
+\AgdaBound{subject-env}\<%
 \\
 \>[0][@{}l@{\AgdaIndent{0}}]%
 \>[2]\AgdaSymbol{=}%
-\>[544I]\AgdaKeyword{do}\<%
+\>[536I]\AgdaKeyword{do}\<%
 \\
-\>[544I][@{}l@{\AgdaIndent{0}}]%
-\>[5]\AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
+\>[536I][@{}l@{\AgdaIndent{0}}]%
+\>[6]\AgdaBound{ty}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{←}}\AgdaSpace{}%
+\AgdaFunction{return}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaFunction{termFrom}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaField{input}\AgdaSpace{}%
+\AgdaBound{∋-rule}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaBound{input-env}\AgdaSymbol{)}\<%
+\\
+%
+\>[6]\AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{←}}\AgdaSpace{}%
 \AgdaFunction{type-check}\AgdaSpace{}%
 \AgdaBound{Γ}\AgdaSpace{}%
 \AgdaBound{rules}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaFunction{termFrom}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaField{input}\AgdaSpace{}%
-\AgdaBound{rule}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaBound{ienv}\AgdaSymbol{)}\<%
+\AgdaBound{ty}\<%
 \\
 %
-\>[5]\AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
-\AgdaOperator{\AgdaFunction{←}}%
-\>[554I]\AgdaFunction{check-premise-chain}%
-\>[30]\AgdaBound{rules}\AgdaSpace{}%
-\AgdaBound{Γ}\AgdaSpace{}%
-\AgdaBound{ienv}\AgdaSpace{}%
-\AgdaBound{senv}\<%
-\\
-\>[554I][@{}l@{\AgdaIndent{0}}]%
-\>[20]\AgdaSymbol{(}\AgdaFunction{⊗premises}\AgdaSpace{}%
+\>[6]\AgdaBound{chain}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{←}}\AgdaSpace{}%
+\AgdaFunction{return}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaFunction{⊗premises}\AgdaSpace{}%
 \AgdaBound{γ}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaField{proj₂}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaField{premises}\AgdaSpace{}%
-\AgdaBound{rule}\AgdaSymbol{)))}\<%
+\AgdaBound{∋-rule}\AgdaSymbol{)))}\<%
 \\
 %
-\>[5]\AgdaInductiveConstructor{succeed}\AgdaSpace{}%
+\>[6]\AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{←}}\AgdaSpace{}%
+\AgdaFunction{check-premise-chain}\AgdaSpace{}%
+\AgdaBound{rules}\AgdaSpace{}%
+\AgdaBound{Γ}\AgdaSpace{}%
+\AgdaBound{input-env}\AgdaSpace{}%
+\AgdaBound{subject-env}\AgdaSpace{}%
+\AgdaBound{chain}\<%
+\\
+%
+\>[6]\AgdaInductiveConstructor{succeed}\AgdaSpace{}%
 \AgdaInductiveConstructor{tt}\<%
 \\
 %
@@ -1157,33 +1131,33 @@ the output of running the elimination rule.
 \AgdaSymbol{:}%
 \>[564I]\AgdaFunction{Context}\AgdaSpace{}%
 \AgdaGeneralizable{γ}%
-\>[44]\AgdaSymbol{→}\<%
+\>[40]\AgdaSymbol{→}\<%
 \\
 \>[.][@{}l@{}]\<[564I]%
 \>[12]\AgdaDatatype{RuleSet}%
-\>[46]\AgdaSymbol{→}\<%
+\>[40]\AgdaSymbol{→}\<%
 \\
 %
 \>[12]\AgdaSymbol{(}\AgdaBound{rule}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaRecord{ElimRule}\AgdaSymbol{)}%
-\>[44]\AgdaSymbol{→}\<%
+\>[40]\AgdaSymbol{→}\<%
 \\
 %
 \>[12]\AgdaSymbol{(}\AgdaGeneralizable{γ}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{⊗}}\AgdaSpace{}%
 \AgdaField{targetPat}\AgdaSpace{}%
 \AgdaBound{rule}\AgdaSymbol{)}%
-\>[34]\AgdaOperator{\AgdaDatatype{-Env}}\AgdaSpace{}%
-\AgdaSymbol{→}\<%
+\>[34]\AgdaOperator{\AgdaDatatype{-Env}}%
+\>[40]\AgdaSymbol{→}\<%
 \\
 %
 \>[12]\AgdaSymbol{(}\AgdaGeneralizable{γ}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{⊗}}\AgdaSpace{}%
 \AgdaField{eliminator}\AgdaSpace{}%
 \AgdaBound{rule}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaOperator{\AgdaDatatype{-Env}}\AgdaSpace{}%
-\AgdaSymbol{→}\<%
+\AgdaOperator{\AgdaDatatype{-Env}}%
+\>[40]\AgdaSymbol{→}\<%
 \\
 %
 \>[12]\AgdaDatatype{Failable}\AgdaSpace{}%
@@ -1194,45 +1168,66 @@ the output of running the elimination rule.
 \AgdaSymbol{\{}\AgdaBound{γ}\AgdaSymbol{\}}\AgdaSpace{}%
 \AgdaBound{Γ}\AgdaSpace{}%
 \AgdaBound{rules}\AgdaSpace{}%
-\AgdaBound{rule}\AgdaSpace{}%
-\AgdaBound{T-env}\AgdaSpace{}%
-\AgdaBound{s-env}\<%
+\AgdaBound{elim-rule}\AgdaSpace{}%
+\AgdaBound{input-env}\AgdaSpace{}%
+\AgdaBound{subject-env}\<%
 \\
 \>[0][@{}l@{\AgdaIndent{0}}]%
 \>[2]\AgdaSymbol{=}%
-\>[585I]\AgdaKeyword{do}\<%
+\>[583I]\AgdaKeyword{do}\<%
 \\
-\>[585I][@{}l@{\AgdaIndent{0}}]%
-\>[6]\AgdaBound{p'env}\AgdaSpace{}%
-\AgdaOperator{\AgdaFunction{←}}%
-\>[587I]\AgdaFunction{check-premise-chain}\AgdaSpace{}%
-\AgdaBound{rules}\AgdaSpace{}%
-\AgdaBound{Γ}\AgdaSpace{}%
-\AgdaBound{T-env}\AgdaSpace{}%
-\AgdaBound{s-env}\<%
-\\
-\>[587I][@{}l@{\AgdaIndent{0}}]%
-\>[20]\AgdaSymbol{(}\AgdaFunction{⊗premises}\AgdaSpace{}%
+\>[583I][@{}l@{\AgdaIndent{0}}]%
+\>[6]\AgdaBound{chain}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{←}}\AgdaSpace{}%
+\AgdaFunction{return}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaFunction{⊗premises}\AgdaSpace{}%
 \AgdaBound{γ}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaField{proj₂}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaField{premises}\AgdaSpace{}%
-\AgdaBound{rule}\AgdaSymbol{)))}\<%
+\AgdaBound{elim-rule}\AgdaSymbol{)))}\<%
 \\
 %
-\>[6]\AgdaInductiveConstructor{succeed}\AgdaSpace{}%
+\>[6]\AgdaBound{p'env}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{←}}\AgdaSpace{}%
+\AgdaFunction{check-premise-chain}\AgdaSpace{}%
+\AgdaBound{rules}\AgdaSpace{}%
+\AgdaBound{Γ}\AgdaSpace{}%
+\AgdaBound{input-env}\AgdaSpace{}%
+\AgdaBound{subject-env}\AgdaSpace{}%
+\AgdaBound{chain}\<%
+\\
+%
+\>[6]\AgdaBound{elim-ty}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{←}}\AgdaSpace{}%
+\AgdaFunction{return}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaFunction{toTerm}\AgdaSpace{}%
 \AgdaBound{p'env}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaField{output}\AgdaSpace{}%
-\AgdaBound{rule}\AgdaSymbol{))}\<%
+\AgdaBound{elim-rule}\AgdaSymbol{))}\<%
+\\
+%
+\>[6]\AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{←}}\AgdaSpace{}%
+\AgdaFunction{type-check}\AgdaSpace{}%
+\AgdaBound{Γ}\AgdaSpace{}%
+\AgdaBound{rules}\AgdaSpace{}%
+\AgdaBound{elim-ty}\<%
+\\
+%
+\>[6]\AgdaInductiveConstructor{succeed}\AgdaSpace{}%
+\AgdaBound{elim-ty}\<%
 \end{code}
-
 There are similar such functions for running other rules, they all involve
-checking the premise chain and occassionally other preconditions. Post-conditions
-are not checked by these rules but are the responsibility of the caller.
+checking the premise chain and occassionally other preconditions or
+postconditions.
 
-This process is a highly mutually recursive process by nature. Agda's termination
-checker allows us to be assured that we have not gotten ourselves into trouble
-while constructing this system of functions.
+Our typechecking process is a highly mutually recursive process by nature. We can
+leverage Agda's termination checker to give us feedback which we might use to
+guarantee that the process terminates. We are unable to guarantee termination with
+in this case as we do not impose the required restrictions on user supplied rules. If
+a user supplies a rule that describes a circular dependency, then the type checking
+process will not halt. We talk more about this limitation later in our evaluation
+of the software.
 
 \hide{
 \begin{code}%
@@ -1273,9 +1268,9 @@ while constructing this system of functions.
 \\
 \>[0][@{}l@{\AgdaIndent{0}}]%
 \>[2]\AgdaSymbol{=}%
-\>[631I]\AgdaKeyword{do}\<%
+\>[641I]\AgdaKeyword{do}\<%
 \\
-\>[631I][@{}l@{\AgdaIndent{0}}]%
+\>[641I][@{}l@{\AgdaIndent{0}}]%
 \>[5]\AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{←}}\AgdaSpace{}%
 \AgdaFunction{type-check}\AgdaSpace{}%
@@ -1335,9 +1330,9 @@ while constructing this system of functions.
 \\
 \>[0][@{}l@{\AgdaIndent{0}}]%
 \>[2]\AgdaSymbol{=}%
-\>[675I]\AgdaKeyword{do}\<%
+\>[685I]\AgdaKeyword{do}\<%
 \\
-\>[675I][@{}l@{\AgdaIndent{0}}]%
+\>[685I][@{}l@{\AgdaIndent{0}}]%
 \>[6]\AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{←}}\AgdaSpace{}%
 \AgdaFunction{check-premise-chain}\AgdaSpace{}%
@@ -1445,9 +1440,9 @@ while constructing this system of functions.
 \\
 \>[0][@{}l@{\AgdaIndent{0}}]%
 \>[2]\AgdaSymbol{=}%
-\>[740I]\AgdaKeyword{do}\<%
+\>[750I]\AgdaKeyword{do}\<%
 \\
-\>[740I][@{}l@{\AgdaIndent{0}}]%
+\>[750I][@{}l@{\AgdaIndent{0}}]%
 \>[6]\AgdaBound{ty}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{←}}\AgdaSpace{}%
 \AgdaFunction{infer}\AgdaSpace{}%
@@ -1494,7 +1489,7 @@ while constructing this system of functions.
 \>[4][@{}l@{\AgdaIndent{0}}]%
 \>[6]\AgdaSymbol{=}\AgdaSpace{}%
 \AgdaInductiveConstructor{fail}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaString{"type-check: "}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaString{"failed type-check: "}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{++}}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaFunction{print}\AgdaSpace{}%
 \AgdaBound{ms}\AgdaSymbol{)}\AgdaSpace{}%
@@ -1586,7 +1581,7 @@ while constructing this system of functions.
 \AgdaSymbol{(}\AgdaFunction{print}\AgdaSpace{}%
 \AgdaBound{inp}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{++}}\AgdaSpace{}%
-\AgdaString{" ∋ "}\AgdaSpace{}%
+\AgdaString{" is not the type of "}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{++}}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaFunction{print}\AgdaSpace{}%
 \AgdaBound{sub}\AgdaSymbol{))}\<%
@@ -1723,13 +1718,13 @@ while constructing this system of functions.
 \AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
 \AgdaBound{β}\AgdaSpace{}%
 \AgdaBound{η}\AgdaSymbol{)}%
-\>[920I]\AgdaBound{Γ}\AgdaSpace{}%
+\>[930I]\AgdaBound{Γ}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{var}\AgdaSpace{}%
 \AgdaBound{x}\AgdaSymbol{)}%
 \>[42]\AgdaSymbol{=}\AgdaSpace{}%
 \AgdaKeyword{do}\<%
 \\
-\>[.][@{}l@{}]\<[920I]%
+\>[.][@{}l@{}]\<[930I]%
 \>[29]\AgdaBound{ty}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{←}}\AgdaSpace{}%
 \AgdaFunction{return}\AgdaSpace{}%
@@ -1774,14 +1769,14 @@ while constructing this system of functions.
 \AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
 \AgdaBound{β}\AgdaSpace{}%
 \AgdaBound{η}\AgdaSymbol{)}%
-\>[956I]\AgdaBound{Γ}\AgdaSpace{}%
+\>[966I]\AgdaBound{Γ}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{elim}\AgdaSpace{}%
 \AgdaBound{e}\AgdaSpace{}%
 \AgdaBound{s}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
 \AgdaKeyword{do}\<%
 \\
-\>[.][@{}l@{}]\<[956I]%
+\>[.][@{}l@{}]\<[966I]%
 \>[29]\AgdaBound{T}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{←}}\AgdaSpace{}%
 \AgdaFunction{infer}\AgdaSpace{}%
@@ -1816,21 +1811,13 @@ while constructing this system of functions.
 \AgdaBound{S}\AgdaSymbol{)}\<%
 \\
 %
-\>[29]\AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
-\AgdaOperator{\AgdaFunction{←}}\AgdaSpace{}%
-\AgdaFunction{type-check}\AgdaSpace{}%
-\AgdaBound{Γ}\AgdaSpace{}%
-\AgdaBound{rules}\AgdaSpace{}%
-\AgdaBound{Sn}\<%
-\\
-%
 \>[29]\AgdaInductiveConstructor{succeed}\AgdaSpace{}%
 \AgdaBound{Sn}\<%
 \\
 \>[0]\AgdaFunction{infer}\AgdaSpace{}%
 \AgdaBound{rules}\AgdaSymbol{@(}\AgdaInductiveConstructor{rs}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}}%
-\>[995I]\AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
+\>[1000I]\AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}}%
 \>[25]\AgdaBound{β}\AgdaSpace{}%
@@ -1842,7 +1829,7 @@ while constructing this system of functions.
 \>[41]\AgdaSymbol{=}\AgdaSpace{}%
 \AgdaKeyword{do}\<%
 \\
-\>[995I][@{}l@{\AgdaIndent{0}}]%
+\>[1000I][@{}l@{\AgdaIndent{0}}]%
 \>[19]\AgdaBound{Tn}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{←}}\AgdaSpace{}%
 \AgdaFunction{return}\AgdaSpace{}%
@@ -1930,7 +1917,7 @@ while constructing this system of functions.
 \AgdaCatchallClause{\AgdaSymbol{\{\AgdaUnderscore{}\}}}\AgdaSpace{}%
 \AgdaCatchallClause{\AgdaSymbol{\{}}\AgdaCatchallClause{\AgdaInductiveConstructor{compu}}\AgdaCatchallClause{\AgdaSymbol{\}}}\AgdaSpace{}%
 \AgdaCatchallClause{\AgdaBound{rules}}\AgdaCatchallClause{\AgdaSymbol{@(}}\AgdaCatchallClause{\AgdaInductiveConstructor{rs}}%
-\>[1068I]\AgdaCatchallClause{\AgdaSymbol{\AgdaUnderscore{}}}\AgdaSpace{}%
+\>[1073I]\AgdaCatchallClause{\AgdaSymbol{\AgdaUnderscore{}}}\AgdaSpace{}%
 \AgdaCatchallClause{\AgdaSymbol{\AgdaUnderscore{}}}\AgdaSpace{}%
 \AgdaCatchallClause{\AgdaSymbol{\AgdaUnderscore{}}}\AgdaSpace{}%
 \AgdaCatchallClause{\AgdaSymbol{\AgdaUnderscore{}}}\AgdaSpace{}%
@@ -1942,7 +1929,7 @@ while constructing this system of functions.
 \AgdaSymbol{=}\AgdaSpace{}%
 \AgdaKeyword{do}\<%
 \\
-\>[.][@{}l@{}]\<[1068I]%
+\>[.][@{}l@{}]\<[1073I]%
 \>[28]\AgdaBound{S}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{←}}\AgdaSpace{}%
 \AgdaFunction{infer}\AgdaSpace{}%
@@ -1982,4 +1969,5 @@ while constructing this system of functions.
 \AgdaBound{T}\<%
 \end{code}
 }
+\usebox{\rules}
 

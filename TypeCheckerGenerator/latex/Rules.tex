@@ -2015,10 +2015,13 @@ environments.
 \AgdaField{input}\AgdaSpace{}%
 \AgdaField{subject}\AgdaSpace{}%
 \AgdaBound{p'}\<%
-\\
+\end{code}
+\hide{
+\begin{code}%
 \>[0]\AgdaKeyword{open}\AgdaSpace{}%
 \AgdaModule{∋rule}\<%
 \end{code}
+}
 We may also use this rule to reverse engineer
 the type of any place in the subject, taking advantage of the fact that
 our premise chain can only establish trust in a place by ultimately making
@@ -2725,12 +2728,12 @@ matching both the target pattern and the eliminator.
 \AgdaField{premises}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaInductiveConstructor{const}\AgdaSpace{}%
 \AgdaNumber{0}\<%
-\\
-\>[0]\AgdaKeyword{open}\AgdaSpace{}%
-\AgdaModule{ElimRule}\<%
 \end{code}
 \hide{
 \begin{code}%
+\>[0]\AgdaKeyword{open}\AgdaSpace{}%
+\AgdaModule{ElimRule}\<%
+\\
 \>[0]\AgdaFunction{ERuleEnv}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaSymbol{∀\{}\AgdaBound{γ}\AgdaSymbol{\}}\AgdaSpace{}%

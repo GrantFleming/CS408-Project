@@ -290,8 +290,12 @@ record ∋rule : Set where
     subject  : Pattern 0
     input    : Pattern 0
     premises : Σ[ p' ∈ Pattern 0 ] Prems input subject p'
+\end{code}
+\hide{
+\begin{code}
 open ∋rule
 \end{code}
+}
 We may also use this rule to reverse engineer
 the type of any place in the subject, taking advantage of the fact that
 our premise chain can only establish trust in a place by ultimately making
@@ -377,10 +381,10 @@ record ElimRule : Set where
     eliminator  :  Pattern 0
     premises    :  Σ[ p' ∈ Pattern 0 ] Prems targetPat eliminator p'
     output      :  Expr (proj₁ premises) const 0
-open ElimRule
 \end{code}
 \hide{
 \begin{code}
+open ElimRule
 ERuleEnv : ∀{γ} → ElimRule → Set
 ERuleEnv {γ} rule = ((γ ⊗ (targetPat rule)) -Env)
                         ×

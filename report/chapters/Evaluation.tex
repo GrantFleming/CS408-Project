@@ -101,7 +101,7 @@ We have described in chapter \ref{chapter-testing} the test cases that
 evidence our efforts in meeting the third acceptance criterion.
 
 Finally, appendix \ref{appendix:examplespecifications} shows the
-specifications that we used to test our system describe both
+specifications that we used to test our system supports both
 non-dependant and dependent types discharging our final acceptance
 criterion.
 
@@ -110,6 +110,11 @@ transation of various areas of meta-theory to Agda code. We manage to
 capture many useful invariants in our careful use of types as
 discussed in the previous chapter. This helped to ensure consistent
 code quality throughout the lifetime of the project.
+
+There are several areas that we identify that contain room for
+improvements and we now give details 
+
+\subsection{Forced explicit type information}
 
 Although there are a variety of languages we are able to type-check
 using this software, there are also certain notable limitations. We
@@ -124,22 +129,60 @@ the elimination itself is type-annotated and so we might be able to
 make appeals to 'magic' in order provide in this missing type
 information.
 
-There are also areas of the project where we might find ways to
-improve the quality of the code. Particularly in sections
-\ref{section-normalisation} and \ref{section-checking-types} we notice
-that many functions take long lists of arguments which is certainly
-indicative of a particular 'code smell'. There are improvements to be
-had by revisiting some sections of the code and collecting commonly
-associated information under some sensible type, and perhaps more
-generally reconsidering where some of these definitons life in order
-to remove the need for so many arguments. For example, the function
-for running a particular rule would be better defined inside the
-record type of the rule itself. Another concrete example to be had is
-that of the Context and Ruleset frequency being supplied together in
-function defintions, it may have been easier to collect this
-information under some type.
+\subsection{Limited DSL validation}
 
-Finally, we believe there are key areas where we missed opportunities
+There are areas where we conduct sensible checks when parsing the DSL
+in order to protect the user from their own errors. We make sure that
+when a user supplies some pattern that we only use it in particular
+rules if the premises establish complete trust. However, there are
+other areas where we do not conduct checks and this leaves room for
+mischief in our DSL.
+
+Most notably, users are able to construct types that lead to circular
+checks and therefore lead to a type-checking process that we cannot
+guarantee to terminate. The following description is perfectly legal
+in our DSL and our software will parse and attempt to use such
+information.
+
+\begin{verbatim}
+type: A
+  if:
+    type A
+\end{verbatim}
+
+Further testing with this example specification exposes another
+limitation of our system which we will explore.
+
+\subsection{Rule matching depends on rule declaration order}
+
+When we collect together rules of a certain type, we make no checks to
+ensure that some syntax can only match zero or one of the rules. We
+will discuss this further when we explore missed opportunities for
+mathematical structure however what we expose here is that where there
+are multiple rules that might match, the rule we use is the one that
+is declared first. As a result, having some mistaken, but very
+generic, entity declared early in the file might "catch" matches
+before they reach their intended rules and such a problem could be
+difficult to debug.
+
+A fundamental decision that led to this problem was that of storing
+the collections of rules as a list. The arbitrary ordering of rules in
+a list does not admit any stucture as to make an alternative method of
+processing obvious.
+
+In hindsight we propose a tree-like structure where rules are stored
+at leaves and nodes store the most specific pattern that matches all
+the rules stored in its subtrees. A node might either yield children
+for all sub-patterns giving rise to a collection of more specific
+patterns, or a \emph{single} leaf containing a rule that matches on the
+pattern. In this way we might eliminate the problem that some syntax
+might match multiple patterns (since a node cannot contain both a leaf
+and a set of child nodes) while also eliminating the arbitrary
+dependency of matching on the order that certain elements are declared.
+
+\subsection{Missed opportunities for mathematical structure}
+
+We missed several opportunities
 to capitalize on mathematical structure when writing our
 code. We noted previously that we might have altered 
 our definition of \emph{Pattern} to expose some applicative functor
@@ -170,6 +213,71 @@ any $\bot$s.
 There are also areas where we might have used this structure to help
 us in parsing the source code as we rely heavily on parsing according
 to patterns.
+
+\subsection{Single universe limitation}
+
+In an effort to simplify the late stage implementation of the
+software, we decided that all languages described would consist of a
+single universe of types. We call this universe "set" in our syntax
+and we may use the universe in any place where a type might be
+expected.
+
+While there exists some parts of the implementation that we wrote
+while intending for a user to describe the universes in our DSL too,
+this was not a feature we ended up carrying through to the final
+system due to time constraints in the late stages of implementation.
+
+We might have thought to include the ability for the user to at least
+choose the name of the universe, this might have been easier to
+implement and could have been a welcome addition to the functionality
+we have provided.
+
+\subsection{Code quality}
+
+There are areas of the project where we might find ways to
+improve the quality of the code. Particularly in sections
+\ref{section-normalisation} and \ref{section-checking-types} we notice
+that many functions take long lists of arguments which is certainly
+indicative of a particular 'code smell'. There are improvements to be
+had by revisiting some sections of the code and collecting commonly
+associated information under some sensible type, and perhaps more
+generally reconsidering where some of these definitons life in order
+to remove the need for so many arguments. For example, the function
+for running a particular rule would be better defined inside the
+record type of the rule itself. Another concrete example to be had is
+that of the Context and Ruleset frequency being supplied together in
+function defintions, it may have been easier to collect this
+information under some type.
+
+\subsection{Documentation}
+
+We addressed our approach to documentation early in the planning stage
+of the project, conveying our use of literate Agda files to produce
+documented source code files as we work on our implemenation. While we
+still believe this was a sensible choice for this project there are
+downsides to having the documentation stuctured in this way.
+
+Firstly, if particular information is required from the documentation
+this is not readily available since the documentation is not available
+pre-compiled and indexed in a particular format. As a result, finding
+information would be a slow process unless the person was familiar
+with the code base. Secondly, because of the amount of documentation
+interspersed with code in the same file, the maintainence of these
+files could become cumbersome. When making any alterations to the code
+we must also make sure that we update the documentation otherwise we
+might end up with a file that contains information that is out of date
+even with regards to itself! This is as opposed to the scenario where a
+seperate document might end up slightly behind the most up-to-date
+versions of the source code, here the problem is lessened since we
+might be able to determine its worthiness by cross checking the date
+of the latest revision of each document.
+
+The benefit of choosing this style of documentation regardless of
+these problems is that we have a more 'lightweight' development
+process that is more suited to smaller projects and shorter
+timeframes, especially where we are not concerned that someone else
+may have to maintain this code in future.
+
 
 \section{Personal Performance Evaluation}
 

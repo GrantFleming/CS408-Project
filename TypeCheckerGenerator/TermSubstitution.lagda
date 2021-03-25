@@ -1,4 +1,4 @@
-\section{Term Substitution}
+\section{Term substitution}
 
 \hide{
 \begin{code}

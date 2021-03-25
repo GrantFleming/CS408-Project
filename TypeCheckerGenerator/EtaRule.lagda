@@ -1,4 +1,4 @@
-\section{η-Rules}
+\section{η rules}
 \label{section-etarules}
 \hide{
 \begin{code}

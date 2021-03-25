@@ -1,4 +1,4 @@
-\section{Checking Types}
+\section{Checking types}
 \label{section-checking-types}
 
 \hide{

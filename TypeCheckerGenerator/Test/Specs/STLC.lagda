@@ -1,5 +1,3 @@
-\section{A STLC Example}
-
 \hide{
 \begin{code}
 module Test.Specs.STLC where
@@ -11,7 +9,8 @@ open import CoreLanguage
 open import Data.Nat using (suc)
 open import Pattern using (Pattern; `; place; bind; _∙_;  ⋆; _∙; ∙_; svar)
 open import Expression using (_/_; `; _∙_; _∷_)
-open import Rules using (ElimRule; TypeRule; UnivRule; ∋rule; ε; _placeless; type; _⇉_; _⊢'_; _∋'_[_]; `)
+open import Rules using (ElimRule; TypeRule; UnivRule; ∋rule; ε; _placeless; type;
+                         _⇉_; _⊢'_; _∋'_[_]; `)
 open import Thinning using (Ø; _O; ι)
 open import BwdVec using (ε)
 open import Data.Product using (_,_)
@@ -150,23 +149,6 @@ input    lam-rule = ⇛
 premises lam-rule = input lam-rule ∙ bind (place ι) , (((⋆ ∙) / ε) ⊢' (((∙ ∙ ⋆) / ε) ∋' ∙ bind ⋆ [ ι ]))
                                                       ⇉ ε ((` "λ" ∙ bind (` "⊤")) placeless)
 
-{-
-open import Rules using (match-∋rule; typeOf)
-open combinators using (_⇨_)
-open import Data.Maybe
-open import Data.Product
-open import Pattern using (_-Env)
-open import Data.Nat using (_+_)
-
-tryathing : Maybe ((∋rule.input lam-rule -Env) × (∋rule.subject lam-rule -Env))
-tryathing = match-∋rule lam-rule (` "α" ⇨ ` "β") (` "λ" ∙ bind (` "b"))
-
-test : Maybe (Σ[ m ∈ Scope ] Const (m + 0))
-test = do
-         (i , s) ← tryathing
-         just (typeOf lam-rule (∙ bind ⋆) i s)
--}
-
 -- and we can type lam elimination
 app-rule : ElimRule
 targetPat  app-rule = ⇛
@@ -195,13 +177,13 @@ eliminators lam-ηrule = ` ∙ (bind (Pattern.thing (thunk (var ze))))
 open import Data.List using (List; []; _∷_)
 
 typerules : List TypeRule
-typerules = U-type ∷ α-rule ∷ ⇛-rule ∷ β-rule ∷ [] -- add β-rule
+typerules = U-type ∷ α-rule ∷ ⇛-rule ∷ β-rule ∷ []
 
 univrules : List UnivRule
-univrules = U-univ  ∷ [] -- add
+univrules = U-univ  ∷ []
 
 ∋rules : List ∋rule
-∋rules = lam-rule ∷ α-inuniv ∷ a-rule ∷ ⇛-inuniv ∷ b-rule ∷ [] -- add b-rules
+∋rules = lam-rule ∷ α-inuniv ∷ a-rule ∷ ⇛-inuniv ∷ b-rule ∷ []
 
 elimrules : List ElimRule
 elimrules = app-rule ∷ []
@@ -212,7 +194,6 @@ betarules = app-βrule ∷ []
 etarules : List η-Rule
 etarules = lam-ηrule ∷ []
 
-open import undefined
 rules : RuleSet
 rules =  rs typerules univrules ∋rules elimrules betarules etarules
 \end{code}

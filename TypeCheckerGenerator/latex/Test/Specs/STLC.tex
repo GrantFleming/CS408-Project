@@ -1,5 +1,3 @@
-\section{A STLC Example}
-
 \hide{
 \begin{code}%
 \>[0]\AgdaKeyword{module}\AgdaSpace{}%
@@ -45,15 +43,17 @@
 \>[0]\AgdaKeyword{open}\AgdaSpace{}%
 \AgdaKeyword{import}\AgdaSpace{}%
 \AgdaModule{Rules}\AgdaSpace{}%
-\AgdaKeyword{using}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaRecord{ElimRule}\AgdaSymbol{;}\AgdaSpace{}%
+\AgdaKeyword{using}%
+\>[29I]\AgdaSymbol{(}\AgdaRecord{ElimRule}\AgdaSymbol{;}\AgdaSpace{}%
 \AgdaRecord{TypeRule}\AgdaSymbol{;}\AgdaSpace{}%
 \AgdaRecord{UnivRule}\AgdaSymbol{;}\AgdaSpace{}%
 \AgdaRecord{∋rule}\AgdaSymbol{;}\AgdaSpace{}%
 \AgdaInductiveConstructor{ε}\AgdaSymbol{;}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{\AgdaUnderscore{}placeless}}\AgdaSymbol{;}\AgdaSpace{}%
-\AgdaInductiveConstructor{type}\AgdaSymbol{;}\AgdaSpace{}%
-\AgdaOperator{\AgdaInductiveConstructor{\AgdaUnderscore{}⇉\AgdaUnderscore{}}}\AgdaSymbol{;}\AgdaSpace{}%
+\AgdaInductiveConstructor{type}\AgdaSymbol{;}\<%
+\\
+\>[29I][@{}l@{\AgdaIndent{0}}]%
+\>[25]\AgdaOperator{\AgdaInductiveConstructor{\AgdaUnderscore{}⇉\AgdaUnderscore{}}}\AgdaSymbol{;}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{\AgdaUnderscore{}⊢'\AgdaUnderscore{}}}\AgdaSymbol{;}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{\AgdaUnderscore{}∋'\AgdaUnderscore{}[\AgdaUnderscore{}]}}\AgdaSymbol{;}\AgdaSpace{}%
 \AgdaInductiveConstructor{`}\AgdaSymbol{)}\<%
@@ -95,6 +95,12 @@
 \\
 \>[0]\AgdaKeyword{open}\AgdaSpace{}%
 \AgdaKeyword{import}\AgdaSpace{}%
+\AgdaModule{EtaRule}\AgdaSpace{}%
+\AgdaKeyword{using}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaRecord{η-Rule}\AgdaSymbol{)}\<%
+\\
+\>[0]\AgdaKeyword{open}\AgdaSpace{}%
+\AgdaKeyword{import}\AgdaSpace{}%
 \AgdaModule{BwdVec}\<%
 \\
 \>[0]\AgdaKeyword{open}\AgdaSpace{}%
@@ -111,6 +117,9 @@
 \\
 \>[0]\AgdaKeyword{open}\AgdaSpace{}%
 \AgdaModule{∋rule}\<%
+\\
+\>[0]\AgdaKeyword{open}\AgdaSpace{}%
+\AgdaModule{η-Rule}\<%
 \end{code}
 
 We begin by introducing some combinators to construct our language terms
@@ -613,13 +622,13 @@ as creating these terms directly in our internal language can be tedious.
 \AgdaInductiveConstructor{place}\AgdaSpace{}%
 \AgdaFunction{ι}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}%
-\>[347I]\AgdaSymbol{((}\AgdaInductiveConstructor{type}\AgdaSpace{}%
+\>[351I]\AgdaSymbol{((}\AgdaInductiveConstructor{type}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{⋆}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{∙}}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaFunction{ι}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{⇉}}\<%
 \\
-\>[347I][@{}l@{\AgdaIndent{0}}]%
+\>[351I][@{}l@{\AgdaIndent{0}}]%
 \>[52]\AgdaInductiveConstructor{type}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaOperator{\AgdaInductiveConstructor{∙}}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{∙}}\AgdaSpace{}%
@@ -659,13 +668,13 @@ as creating these terms directly in our internal language can be tedious.
 \AgdaInductiveConstructor{place}\AgdaSpace{}%
 \AgdaFunction{ι}\AgdaSymbol{))}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}%
-\>[375I]\AgdaSymbol{((}\AgdaInductiveConstructor{type}\AgdaSpace{}%
+\>[379I]\AgdaSymbol{((}\AgdaInductiveConstructor{type}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{⋆}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{∙}}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaFunction{ι}%
 \>[66]\AgdaOperator{\AgdaInductiveConstructor{⇉}}\<%
 \\
-\>[375I][@{}l@{\AgdaIndent{0}}]%
+\>[379I][@{}l@{\AgdaIndent{0}}]%
 \>[52]\AgdaInductiveConstructor{type}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaOperator{\AgdaInductiveConstructor{∙}}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{∙}}\AgdaSpace{}%
@@ -724,7 +733,7 @@ as creating these terms directly in our internal language can be tedious.
 \AgdaSymbol{(}\AgdaInductiveConstructor{place}\AgdaSpace{}%
 \AgdaFunction{ι}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}%
-\>[411I]\AgdaSymbol{(((}\AgdaInductiveConstructor{⋆}\AgdaSpace{}%
+\>[415I]\AgdaSymbol{(((}\AgdaInductiveConstructor{⋆}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{∙}}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{/}}\AgdaSpace{}%
 \AgdaInductiveConstructor{ε}\AgdaSymbol{)}\AgdaSpace{}%
@@ -742,7 +751,7 @@ as creating these terms directly in our internal language can be tedious.
 \AgdaFunction{ι}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{]}}\AgdaSymbol{))}\<%
 \\
-\>[.][@{}l@{}]\<[411I]%
+\>[.][@{}l@{}]\<[415I]%
 \>[54]\AgdaOperator{\AgdaInductiveConstructor{⇉}}\AgdaSpace{}%
 \AgdaInductiveConstructor{ε}\AgdaSpace{}%
 \AgdaSymbol{((}\AgdaInductiveConstructor{`}\AgdaSpace{}%
@@ -753,8 +762,8 @@ as creating these terms directly in our internal language can be tedious.
 \AgdaString{"⊤"}\AgdaSymbol{))}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{placeless}}\AgdaSymbol{)}\<%
 \\
-\>[0]\<%
-\\
+%
+\\[\AgdaEmptyExtraSkip]%
 \>[0]\AgdaComment{-- and we can type lam elimination}\<%
 \\
 \>[0]\AgdaFunction{app-rule}\AgdaSpace{}%
@@ -775,14 +784,14 @@ as creating these terms directly in our internal language can be tedious.
 \>[0]\AgdaField{premises}%
 \>[11]\AgdaFunction{app-rule}\AgdaSpace{}%
 \AgdaSymbol{=}%
-\>[445I]\AgdaField{targetPat}\AgdaSpace{}%
+\>[449I]\AgdaField{targetPat}\AgdaSpace{}%
 \AgdaFunction{app-rule}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{∙}}\AgdaSpace{}%
 \AgdaInductiveConstructor{place}\AgdaSpace{}%
 \AgdaFunction{ι}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\<%
 \\
-\>[.][@{}l@{}]\<[445I]%
+\>[.][@{}l@{}]\<[449I]%
 \>[22]\AgdaSymbol{(((}\AgdaInductiveConstructor{⋆}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{∙}}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{/}}\AgdaSpace{}%
@@ -830,17 +839,10 @@ as creating these terms directly in our internal language can be tedious.
 \AgdaSymbol{(}\AgdaInductiveConstructor{place}\AgdaSpace{}%
 \AgdaFunction{ι}\AgdaSymbol{)}\<%
 \\
-\>[0]\AgdaField{targetType}%
+\>[0]\AgdaField{erule}%
 \>[12]\AgdaFunction{app-βrule}%
 \>[23]\AgdaSymbol{=}%
-\>[26]\AgdaField{targetPat}\AgdaSpace{}%
-\AgdaFunction{app-rule}\<%
-\\
-\>[0]\AgdaField{eliminator}%
-\>[12]\AgdaFunction{app-βrule}%
-\>[23]\AgdaSymbol{=}%
-\>[26]\AgdaInductiveConstructor{place}\AgdaSpace{}%
-\AgdaFunction{ι}\<%
+\>[26]\AgdaFunction{app-rule}\<%
 \\
 \>[0]\AgdaField{redTerm}%
 \>[12]\AgdaFunction{app-βrule}%
@@ -865,16 +867,33 @@ as creating these terms directly in our internal language can be tedious.
 \AgdaOperator{\AgdaInductiveConstructor{/}}\AgdaSpace{}%
 \AgdaInductiveConstructor{ε}\AgdaSymbol{)))}\<%
 \\
-\>[0]\AgdaField{redType}%
-\>[12]\AgdaFunction{app-βrule}%
-\>[23]\AgdaSymbol{=}%
-\>[26]\AgdaSymbol{(}\AgdaOperator{\AgdaInductiveConstructor{∙}}\AgdaSpace{}%
-\AgdaSymbol{((}\AgdaOperator{\AgdaInductiveConstructor{∙}}\AgdaSpace{}%
+%
+\\[\AgdaEmptyExtraSkip]%
+%
+\\[\AgdaEmptyExtraSkip]%
+\>[0]\AgdaComment{-- η rules}\<%
+\\
+%
+\\[\AgdaEmptyExtraSkip]%
+\>[0]\AgdaFunction{lam-ηrule}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaRecord{η-Rule}\<%
+\\
+\>[0]\AgdaField{checkRule}\AgdaSpace{}%
+\AgdaFunction{lam-ηrule}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaFunction{lam-rule}\<%
+\\
+\>[0]\AgdaField{eliminators}\AgdaSpace{}%
+\AgdaFunction{lam-ηrule}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{`}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{∙}}\AgdaSpace{}%
-\AgdaInductiveConstructor{⋆}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaOperator{\AgdaInductiveConstructor{∙}}\AgdaSymbol{))}\AgdaSpace{}%
-\AgdaOperator{\AgdaInductiveConstructor{/}}\AgdaSpace{}%
-\AgdaInductiveConstructor{ε}\<%
+\AgdaSymbol{(}\AgdaInductiveConstructor{bind}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{Pattern.thing}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{thunk}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{var}\AgdaSpace{}%
+\AgdaInductiveConstructor{ze}\AgdaSymbol{))))}\<%
 \\
 %
 \\[\AgdaEmptyExtraSkip]%
@@ -907,8 +926,7 @@ as creating these terms directly in our internal language can be tedious.
 \AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
 \AgdaFunction{β-rule}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
-\AgdaInductiveConstructor{[]}\AgdaSpace{}%
-\AgdaComment{-- add β-rule}\<%
+\AgdaInductiveConstructor{[]}\<%
 \\
 %
 \\[\AgdaEmptyExtraSkip]%
@@ -921,8 +939,7 @@ as creating these terms directly in our internal language can be tedious.
 \AgdaSymbol{=}\AgdaSpace{}%
 \AgdaFunction{U-univ}%
 \>[20]\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
-\AgdaInductiveConstructor{[]}\AgdaSpace{}%
-\AgdaComment{-- add}\<%
+\AgdaInductiveConstructor{[]}\<%
 \\
 %
 \\[\AgdaEmptyExtraSkip]%
@@ -943,8 +960,7 @@ as creating these terms directly in our internal language can be tedious.
 \AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
 \AgdaFunction{b-rule}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
-\AgdaInductiveConstructor{[]}\AgdaSpace{}%
-\AgdaComment{-- add b-rules}\<%
+\AgdaInductiveConstructor{[]}\<%
 \\
 %
 \\[\AgdaEmptyExtraSkip]%
@@ -974,10 +990,19 @@ as creating these terms directly in our internal language can be tedious.
 \\
 %
 \\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaKeyword{open}\AgdaSpace{}%
-\AgdaKeyword{import}\AgdaSpace{}%
-\AgdaModule{undefined}\<%
+\>[0]\AgdaFunction{etarules}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaDatatype{List}\AgdaSpace{}%
+\AgdaRecord{η-Rule}\<%
 \\
+\>[0]\AgdaFunction{etarules}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaFunction{lam-ηrule}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaInductiveConstructor{[]}\<%
+\\
+%
+\\[\AgdaEmptyExtraSkip]%
 \>[0]\AgdaFunction{rules}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaDatatype{RuleSet}\<%
@@ -989,5 +1014,6 @@ as creating these terms directly in our internal language can be tedious.
 \AgdaFunction{univrules}\AgdaSpace{}%
 \AgdaFunction{∋rules}\AgdaSpace{}%
 \AgdaFunction{elimrules}\AgdaSpace{}%
-\AgdaFunction{betarules}\<%
+\AgdaFunction{betarules}\AgdaSpace{}%
+\AgdaFunction{etarules}\<%
 \end{code}

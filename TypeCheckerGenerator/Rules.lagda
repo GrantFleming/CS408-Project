@@ -153,7 +153,7 @@ infixr 20 _⇉_
 ⊗premises δ (ε x)           = ε (x ⊗pl δ)
 ⊗premises δ (prem ⇉ prems)  = ⊗premise δ prem ⇉ ⊗premises δ prems
 \end{code}}
-\section{Typing Rules}
+\section{Typing rules}
 \label{section-rules}
 
 A TypeRule is used to establish the conditions under which a piece

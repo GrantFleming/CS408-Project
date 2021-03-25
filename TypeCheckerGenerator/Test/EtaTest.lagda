@@ -27,10 +27,14 @@ test1 = lam a
 test1type : Const 0
 test1type = α ⇨ α
 
-_ : η-match lam-ηrule test1type ≡ succeed ((thing α) ∙ (` ∙ (thing α)))
+_ : η-match lam-ηrule test1type
+            ≡
+     succeed ((thing α) ∙ (` ∙ (thing α)))
 _ = refl
 
-_ : η-expand lam-ηrule test1type test1 ≡ lam (thunk (elim ((test1 ^term) ∷ (test1type ^term)) (~ ze)))
+_ : η-expand lam-ηrule test1type test1
+             ≡
+     lam (thunk (elim ((test1 ^term) ∷ (test1type ^term)) (~ ze)))
 _ = refl
 
 
@@ -45,10 +49,14 @@ test2 = thunk (elim (lam (lam (~ (su ze))) ∷ (β ⇨ α ⇨ β)) b)
 test2type : Const 0
 test2type = α ⇨ β
 
-_ : η-match lam-ηrule test2type ≡ succeed ((thing α) ∙ (` ∙ (thing β)))
+_ : η-match lam-ηrule test2type
+            ≡
+     succeed ((thing α) ∙ (` ∙ (thing β)))
 _ = refl
 
-_ : η-expand lam-ηrule test2type test2 ≡ lam (thunk (elim (↞↞ (test2 ^term) (test2type ^term)) (~ ze)))
+_ : η-expand lam-ηrule test2type test2
+             ≡
+     lam (thunk (elim (↞↞ (test2 ^term) (test2type ^term)) (~ ze)))
 _ = refl
 
 \end{code}

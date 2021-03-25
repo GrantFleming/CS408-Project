@@ -1,4 +1,4 @@
-\section{A Core Language}
+\section{A core language}
 \label{section-corelanguage}
 
 \hide{

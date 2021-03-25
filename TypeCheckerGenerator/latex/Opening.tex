@@ -1,4 +1,4 @@
-\section{Opening}
+\section{Openings}
 \label{sec:Opening}
 
 \hide{

@@ -1,4 +1,4 @@
-\section{Parser Combinators}
+\section{Parser combinators}
 
 \hide{
 \begin{code}

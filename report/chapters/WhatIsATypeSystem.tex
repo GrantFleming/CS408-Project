@@ -1,26 +1,26 @@
 \chapter{What is a type system?}
 
-From a computer science perspective, a type is piece of information
+From a computer science perspective, a type is a piece of information
 that we attach to terms or other constructs of a programming language
 so that we might verify the validity of their use or otherwise reason
 about the meaning of the program. The classic example of checking such
-a validity is that of attaching a type to a function that identifies
+validity is that of attaching a type to a function that identifies
 the type of the term it expects as input, and thus being able to later
 check that any input supplied conforms to this type.
 
-Type systems use the types assigned to terms in order to help the
+Type systems use the types assigned to terms to help the
 programmer avoid certain classes of errors by checking that terms of
-various types are combined in ways which are valid according to a
+various types are combined in ways which are valid according to
 their types and the rules of the type system. Exactly when these
 checks take place can vary, sometimes occurring before compilation,
-known as static type checking, and sometimes occuring after
+known as static type checking, and sometimes occurring after
 compilation during the running of the program, known as dynamic type
 checking.
 
 We often talk about type constructors as parameterised entities that
 we use to construct types. When these constructors require no
 parameters, they are somewhat synonymous with types. In many languages
-we have the ability to supply other types as parameters to certain
+we can supply other types as parameters to type
 constructors, allowing us to represent data such as typed lists. When
 we are allowed to supply arbitrary terms in the language as
 parameters to type constructors, the language is said to be
@@ -34,10 +34,10 @@ checking \cite{Abel_2004}. In some applications, the type system even
 takes an interactive role in the production of code as is the case
 with some theorem provers and dependently typed programming languages. 
 
-Type systems are often described in literature by a collection of
+Type systems are often described in the literature by a collection of
 inductive rules that describe aspects of the system such as when we
-are able to assign some type or when we might consider types
-equivalent. In the case of dependent types we also need to provide
+can assign some type or when we might consider types
+equivalent. In the case of dependent types, we also need to provide
 some semantics so that we might make sense of arbitrary terms in the
-type, in this case the type checking process might need to appeal to
-reduction in order to perform some check.
+type, in this case, the type checking process might need to appeal to
+reduction to perform some check.

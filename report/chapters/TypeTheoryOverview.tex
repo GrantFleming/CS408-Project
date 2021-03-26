@@ -8,7 +8,7 @@
           underlying logic. 
       
           Although originally proposed by Bertrand Russell in 1902 to
-          resolve a paradox he himself had discovered in a formalization of
+          resolve a paradox he had discovered in a formalization of
           Gottlob Frege's naive set theory in 1901 \cite{Russell1901}, much
           introductory material on type theory from a computer science
           perspective begins with Alonzo Church and his simply typed
@@ -18,28 +18,28 @@
           previously defined system of logic, the lambda calculus,
           consistent. In 1940 he published his seminal paper that outlined a
           type system and added extra criteria to which a term must
-          conform in order to be considered well-formed - it must be typeable.
+          conform to be considered well-formed - it must be typeable.
       
           A concrete, if informal, summation of Church's work here is that
           in this new system, if a lambda abstraction is applied to a term,
-          the type of the term must be the same type as the binder in the
-          abstraction. As a consequence, previously well formed terms which
-          caused inconsistencies in the logic, such as
-          $ (\lambda x.xx)(\lambda x.xx)  $
-          were no longer well formed under the new system.
-      
+          the type of the term must be the same as the expected type
+          of the binder in the abstraction. As a consequence,
+          previously well-formed terms which caused inconsistencies in
+          the logic, such as $ (\lambda x.xx)(\lambda x.xx) $ were no
+          longer well-formed under the new system.
+          
           As the field of computer science developed in sophistication in
           the late 1960s and 1970s, prominent logicians and computer
           scientists started to develop the notion of parametric
           polymorphism. It was noted that some functions had common
-          behaviour over differing types, and that the behaviour of these
+          behaviour over differing types and that the behaviour of these
           functions did not depend on the types themselves. This lead to
           redundant definitions, such as having to define a function with the
           same behaviour multiple times, once for each type you wish to
           operate over. Under type systems akin to the simply typed lambda
           calculus, the \emph{id} function given by the term $\lambda
-          x_{\mathbb{N}}.x $ is only ever applicable to natural numbers. It
-          is clear that there was immense benefit in being able to define
+          x_{\mathbb{N}}.x $ is only ever applicable to natural
+          numbers. There was an immense benefit in being able to define 
           functions such as \emph{id} once and have them operate over any type.
       
           One such solution to this problem came to be known as System F
@@ -57,7 +57,7 @@
           types. In this system, terms of the form $\Lambda t.M$ denotes a
           function that takes as its first argument some type and returns a
           term with all references to t replaced by that type. This function
-          has type $\Delta t.M^{t}$ where $M^t$ is is the type of $M$.
+          has type $\Delta t.M^{t}$ where $M^t$ is the type of $M$.
       
           Under this system, we may write the \emph{id} function as $\Lambda t
           . \lambda x_t . x$ and thus have it operate over any type t,
@@ -78,7 +78,7 @@
             Hindley introduced a system of \textit{type-schemes}
             \cite{hindley1969} (types that may contain quantified type
             variables) and defined a type as being a type-scheme that
-            contains no such variables. Milner refered to these
+            contains no such variables. Milner referred to these
             concepts as polytypes and monotypes respectively
             \cite{milner1978}. 
             
@@ -96,7 +96,7 @@
             up to \textit{trivial instances} and introduces an
             algorithm to accomplish this type inference - Algorithm W.
 
-            As a consequence of this system there is no need for us to
+            As a consequence of this system, there is no need for us to
             annotate the definitions in our code with type
             information since we can always infer the p.t.s (most
             general type-scheme) of our terms. This can result
@@ -109,12 +109,12 @@
             system is also instrumental in the way types are checked.
             
             In a system like System F, whenever a polymorphic
-            function is applied, it must first be provided the type
-            parameter before being provided
+            function is applied, it must first be provided with the type
+            parameter before being provided with
             the value parameter so that the value may be
             type-checked. With Hindley-Milner, as a direct consequence
             of its type inference features, this is not
-            necessary. Instead the
+            necessary. Instead, the
             most general type of the function can be inferred, and it
             is then possible to check that the type of the supplied
             value parameter is some instance of the input type of the function.
@@ -180,7 +180,7 @@
             \end{array} \]
             
             In system F, this deduces the only type for $\Lambda t . \lambda x_t
-            \cdot x$ (up to the renaming of bound variables) however note that
+            \cdot x$ (up to the renaming of bound variables) however, note that
             in Hindley-Milner we may also deduce other type (schemes)
             for $\lambda x \cdot x$: 
             
@@ -203,7 +203,7 @@
             need to create a new term $\Lambda t_1 . \Lambda t_2 . \lambda x_{t_1
               \to t_2} \cdot x$
             
-            A full list of the typing rules of both languages are available in
+            A full list of the typing rules of both languages is available in
             appendices \ref{appendix:sysFrules} and
             \ref{appendix:HMrules}. 
                     
@@ -216,7 +216,7 @@
           Martin-Löf was motivated, in part, by what we now call the
           Curry-Howard isomorphism: the idea that statements in logic can be
           thought of as types, and a proof of a logical statement can
-          be thought of as a program (consequently simplification of
+          be thought of as a program (consequently, simplification of
           proofs correspond to the execution of a program)
           \cite{wadler2015}. He noted that despite this isomorphism,
           computer scientists often developed their own
@@ -225,8 +225,8 @@
           designed to have practical uses as both a logic and
           programming language.
 
-          While the Curry-Howard isomorphism clearly had an existing
-          foothold, relating function types to implication for
+          While the Curry-Howard isomorphism had an existing
+          foothold, relating function types to implication, for
           instance, Martin-Löf was the first to extend this to
           predicate logic by having his types depend on values,
           using dependent functions and dependent pairs to encode
@@ -238,7 +238,7 @@
           and powerful type systems such as Agda \cite{norell}.
 
           Although Martin-Löf describes many types in this system,
-          there are that a few that are of particular importance which we will
+          there are a few that are of particular importance which we will
           briefly describe here: 
 
           \begin{itemize}
@@ -249,10 +249,10 @@
             dependent pairs, where the type $B(x)$ of the second
             element of the pair depends on the \emph{value} $x$ of the
             first element.
-          \item Type of the form $A + B$ represent the disjoint union
+          \item Types of the form $A + B$ represent the disjoint union
             of two types $A$ and $B$.
           \item Types of the form $\mathbb{N}_n$ describe types
-            with finite numbers of values. For instance we could take
+            with finite numbers of values. For instance, we could take
             $\mathbb{N}_1$ to be unit, $\mathbb{N}_2$ to be booleans
             etc.
           \item Types of the form $I (A , a , b)$ encode propositional
@@ -262,8 +262,8 @@
             $( W x \in A ) B(x)$ and represent \emph{wellorderings} (a
             somewhat more intuitive explanation is that they represent
             well-founded trees). This type allows us to define types
-            with complex structures that are inductive in nature. In fact,
-            some of the types that Martin-Löf includes in his
+            with complex structures that are inductive in nature.
+            Some of the types that Martin-Löf includes in his
             type-theory, such as that of Lists or $\mathbb{N}$ can be
             defined as W-types.
           \item Universes are the type of types, allowing
@@ -273,7 +273,7 @@
             theory.
           \end{itemize}
 
-          One of the consequence of this, more powerful, type system,
+          One of the consequences of this, more powerful, type system,
           is that unlike Hindley-Milner, we can no longer infer the
           most general type of any term.
 
@@ -287,5 +287,5 @@
           deduce $B$ from the value alone. To give a more precise
           definition of the problem we might state that we cannot
           employ Hindley-Milner style type inference in a dependently
-          typed settings as functions are not always uniquely invertable.
+          typed setting as functions are not always uniquely invertible.
 

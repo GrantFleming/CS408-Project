@@ -7,7 +7,7 @@ type-checker-generator.
 
 \section{Contexts and type inference}
 
-Gundry, McBride and McKinna present research detailing an
+Gundry, McBride and McKinna present research detailing a
 novel way of implementing unification and
 type-inference \cite{TypeInferenceInContext}. An area of
 particular interest is in their approach to the
@@ -24,12 +24,12 @@ solve unification constraints.
 
 This leads to an interesting consequence in their approach to
 generalization in let expressions. Now that type variables
-can exist in the context, we are able to instantiate a type
+can exist in the context, we can instantiate a type
 scheme by introducing a new type variable to the context,
 and removing the necessary $\forall$ quantifier in the
 scheme. Consequently, to generalize, we can remove these
-type-variables from the context and introduce and
-appropriate $\forall$ quantifier. The authors explicily
+type-variables from the context and introduce an
+appropriate $\forall$ quantifier. The authors explicitly
 place a third element into the context, a marker that delimits
 generalization to an appropriate scope.
 
@@ -37,7 +37,7 @@ generalization to an appropriate scope.
 
 The concept of a syntactic universe was first introduced by
 the author's supervisor, Conor McBride, and further general
-material on universe constructions was obtained when covered
+material on universe construction was obtained when covered
 as a topic in an Advanced Functional Programming class, taught
 by Fredrik Nordvall Forsberg.
 
@@ -51,34 +51,35 @@ the actual entity they are describing.
 
 This idea is explored in more depth when we
 explore work detailing how we might build a universe of
-syntaxes that are both scope and type safe and abstractly
+syntaxes that are both scope and type-safe and abstractly
 define common semantics such as substitution (which is defined in this
-paper to work over arbitrary descriptions) and type-checking (which is
+paper to work over arbitrary descriptions) and type-checking (that is
 defined in this paper to work over a specific description only).
 \cite{DBLP:journals/corr/abs-2001-11001}.
 
-In this paper, the authors detail a universe of type and scope safe
-syntaxes. First they formalise the concept of well scoped entities by
-way of a family of types and provide useful combinators and the required machinery
-for representing environments. They also introduce the idea of a
-generic notion of semanitics for a language and demonstrate its use by
-defining several operations in terms of this generic semantics.
+In this paper, the authors detail a universe of type and scope-safe
+syntaxes. First they formalise the concept of well-scoped entities
+using a family of types and detail useful combinators for handling
+scope as well as providing the required machinery for representing
+environments. They also introduce the idea of a general notion of
+semantics for a language and demonstrate its use by defining several
+operations in terms of this generic semantics.
 
 After priming the reader on previous work in creating a universe of
 data types \cite{DBLP:conf/icfp/ChapmanDMM10} they then go on to
-modify the \emph{descriptions} defined in this work in order to be instead
+modify the \emph{descriptions} defined in this work to instead
 describe a universe of scope safe and well-kinded syntaxes.
 
 With this concept of descriptions in place, the previous notion of
 semantics is replaced by a more generic notion which is not
 syntax-specific and can be used to represent a semantics for any
-language that we might \emph{describe}. With these mechanics
-in place they are able to show true syntax-generic programming by
-forming functionality as semantics over a generic description.
+language that we might \emph{describe}. The authors are able to show
+true syntax-generic programming by forming functionality as semantics
+over a generic description.
 
 Later in this paper, the authors broach the subject of type-checking
 and elaboration. In particular, their section on elaboration provides
-a concrete example of creating an elaborator as a semantics over a
+a concrete example of creating an elaborator as semantics over a
 description of bidirectional lambda calculus.
 
 \section{Bi-directional dependent type theory}
@@ -102,7 +103,7 @@ rules and determines a method for approaching the \emph{schematic
 rules.
 
 It is from this work we notice that by paying
-careful attention to the construction the individual components used to
+careful attention to the construction of the individual components used to
 describe a type theory, we may minimize the amount of information
 the user is required to give, and better validate the information that
 they do give to ensure the resulting system has desirable

@@ -7,7 +7,7 @@
   Writing type-checkers for compilers is a key task in the
   development and evolution of programming languages.
 
-  Despite huge variety in the kinds of languages in existence,
+  Despite the huge variety in the kinds of languages in existence,
   type-systems can often be described using the same kinds of
   basic elements such as typing rules. The descriptions have become
   standardised enough for us to recognise common syntax for
@@ -23,12 +23,12 @@
   
   \subsection{Goal}
 
-  To design a domain specific language (DSL) capable of describing type systems and to
+  To design a domain-specific language (DSL) capable of describing type systems and to
   write a piece of software that, given one of these
-  descriptions, is able to type-check code in the language
+  descriptions, can type-check code in the language
   it describes.
 
-  \subsection{Artifacts}
+  \subsection{Artefacts}
   \label{section-artifacts}
 
   At a minimum, the finished project will consist of:
@@ -47,7 +47,7 @@
 
   \begin{center}
   \begin{tabular}{p{20em}|p{18em}}
-    \large In Scope & \large Not In Scope \\ \hline \hline
+    \large In-Scope & \large Not In-Scope \\ \hline \hline
     Notification on whether the type-checking succeeds
     or fails
     & Detailed feedback from the type-checking process \\ \hline
@@ -58,7 +58,7 @@
     & Example specifications and code for large 'real world' languages \\ \hline
     Single usable feature of 'running' the generator on a
     specification and piece of source code
-    & Quality of life / usability features or other niceties \\ \hline
+    & Quality of life/usability features or other niceties \\ \hline
   \end{tabular}            
   \end{center}        
   
@@ -66,7 +66,7 @@
   \label{section-milestones}
 
   \begin{enumerate}
-  \item A DSL that we are able to use to write \emph{specifications}
+  \item A DSL that we can use to write \emph{specifications}
     of type systems
   \item A type-checker able to check types for a generic syntax
     using a \emph{fixed} set of typing rules where the checkable
@@ -81,12 +81,12 @@
   \label{sec-acceptance}
 
   \begin{enumerate}
-  \item The software can be ran from the command-line by
+  \item The software can be run from the command-line by
     giving a simple command such as: $$\mbox{TypeCheck} \;
     <\emph{specification-file}> \;
     <\emph{source-code-file}>$$
   \item The software either succeeds with a simple indication
-    message, or fails with one of two kinds of error:
+    message or fails with one of two kinds of error:
     \begin{itemize}
     \item Failure to parse specification
     \item Failure to successfully type-check source code
@@ -102,12 +102,12 @@
 
 The following timeline assigns provisional deadlines to key stages in
 the project. We will use this information later when we retroactively
-evaluate our personal performance. 
+evaluate our performance. 
 
 \begin{center}
 \begin{vtimeline}[description={text width=11cm}, 
  row sep=3em]
-16/11/2020 & Complete initial readings on type-theory. \endlr
+16/11/2020 & Complete initial readings on type theory. \endlr
 30/11/2020 & Complete specific readings relating to the design and
   implementation of various type systems and components thereof.\endlr
 07/12/2020 & Identify all elements needed to fully and
@@ -127,13 +127,13 @@ software.\endlr
 
 The process of creating documentation for the project is intertwined
 with the process of developing the code. We plan to create the source
-code in literate Agda files, where source files are actually latex
-files interespersed with areas identified as code.
+code in literate Agda files, where source files are latex
+files interspersed with areas identified as code.
 
 By developing the code in this manner, we somewhat blur the lines
 between implementation, documentation and reporting as we develop
-aspects of all three simultaniously resulting in code that is self
-documented. We do not consider a user-guide as necessary since running
+aspects of all three simultaneously resulting in code that is
+self-documented. We do not consider a user-guide as necessary since running
 the software consists of running a binary and supplying paths to some
 specification file and some source code file. We will ensure the
 software provides appropriate feedback if such files are not

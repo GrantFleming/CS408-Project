@@ -13,11 +13,11 @@ Firstly we note that we are explicit about scope throughout the
 code. We formalise the notion of something being \emph{Scoped} early
 on and make liberal use of this type throughout. Variables are defined
 to be well-scoped by construction allowing 
-us to ensure that the scoped entites that use such variables (like
-terms and expressions) are guaranteed to be well scoped and as such we
+us to ensure that the scoped entities that use such variables (like
+terms and expressions) are guaranteed to be well-scoped and as such we
 manage to eliminate a huge testing space where various functions would
 have otherwise had to deal with potential "out of scope"
-errors. Similarly we can use scope to mandate that we are given a
+errors. Similarly, we can use scope to mandate that we are given a
 context sufficient for use with a particular scoped term and more
 generally ensure that we are explicit about the scope that we expect,
 that the scope that we choose to return.
@@ -25,8 +25,8 @@ that the scope that we choose to return.
 Another area where we make careful use of types is that of patterns
 and environments. The way that an environment is
 constructed relative to some pattern that indexes it ensures that it
-is well formed according to the pattern in question. This also gives
-us the power to request such a well formed environment, simultaniously
+is well-formed according to the pattern in question. This also gives
+us the power to request such a well-formed environment, simultaneously
 excluding the need to test for behaviour on ill-formed environments
 while having the effect of guaranteeing a sensible output where we
 might otherwise have had to employ a Maybe result. Schematic variables
@@ -34,7 +34,7 @@ get similar treatment here allowing us to provide a function to look
 up the term referred to by these variables in a manner that cannot
 fail. 
 
-The benefits of the careful use of types here has far reaching
+The benefit of the careful use of types here has far-reaching
 consequences in our software. By way of example let us look at the
 type of our \emph{toTerm} function which builds a term from an expression.
 
@@ -42,12 +42,12 @@ type of our \emph{toTerm} function which builds a term from an expression.
 toTerm : (γ ⊗ p) -Env → Expr p d γ’ → Term d (γ + γ’)
 \end{verbatim}
 
-First note how we are able to ensure that we get the correct kind of
+First, note how we can ensure that we get the correct kind of
 environment for the expression by sharing the same pattern \emph{p} in
 the environment and expression types. We ensure we get the correct
 kind of term, either a construction or a computation by sharing the
 same directionality \emph{d} between the expression type and term
-type. Finally we manage the scope explicitly, ensuring that for an
+type. Finally, we manage the scope explicitly, ensuring that for an
 expression in some scope \emph{γ'} and some pattern (in the empty
 scope although you cannot see that explicitly in the type here) which
 has been opened in \emph{γ} results in a term scoped in (γ + γ'). We
@@ -56,10 +56,10 @@ to capitalize on this throughout.
 
 Another example where could expose our type-led verification is in
 that of premise chains described in section \ref{section-premises}. We
-give a type \emph{Placeless} which is indexed by a pattern and is able
-to encode the information in the pattern if and only if the pattern
+give a type, \emph{Placeless}, which is indexed by a pattern and can
+encode the information in the pattern if and only if the pattern
 contains no places. We then ensure that the only way to end a chain of
-premise is to give some proof of the placelessness of what is left to
+premises is to give some proof of the placelessness of what is left to
 trust. This eliminates a vast amount of potential validation code and
 associated tests. It allows us to enforce this aspect of the
 well-formedness at the type level rather than having to test how the
@@ -88,7 +88,7 @@ primary method of ensuring a good level of correctness.
 \section{Where type-led verification is insufficient}
 
 What we certainly need to test is aspects of the system that depend on
-user supplied instantiations of the concepts and rules we have
+user-supplied instantiations of the concepts and rules we have
 defined. Especially where the results depend on several parts of the
 system working together. Using the type system to verify software is
 more suited to checking the software at a lower level by verifying

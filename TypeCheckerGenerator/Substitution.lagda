@@ -26,7 +26,7 @@ private
 }
 
 Substitutions are defined as backward vectors, vectors that grow by appending
-elements to the right hand side as opposed to the left. A substitution is
+elements to the right-hand side as opposed to the left. A substitution is
 defined in terms of two scopes, the scope of the target of substitution, and
 the scope of the entities we will substitute into the target.
 
@@ -37,7 +37,7 @@ _⇒[_]_ : Scope → Scoped → Scope → Set
 
 We are able to look up individual variables in a substitution, in section
 \ref{section-thinnings} we explained that this is just a special case of
-using a thinning to select from a subsitution. We also capture a key notion
+using a thinning to select from a substitution. We also capture a key notion
 that there is a type that describes scoped things on which we may perform
 substitutions.
 \hide{

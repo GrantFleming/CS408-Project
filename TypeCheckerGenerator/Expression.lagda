@@ -43,7 +43,7 @@ is showing how one might build the required term as the output of some
 type-synthesis rule for elimination, what is trusted might be the type of the
 target and whatever we learn to trust in the premises. These trusted patterns
 contain places that sculpt out component parts in a piece of matched syntax
-and allow us to use these component parts in constructing a new term.
+and allow us to use these parts in constructing a new term.
 
 Expressions mirror the structure of terms except that they include the option
 to reference some place in a pattern and instantiate it with some substitution
@@ -152,7 +152,7 @@ toTerm {γ = γ} {d = const} {γ' = γ'} penv (ξ / σ)
       (ξ ‼ penv) /term ((id-fv ++ σ'))
 \end{code}
 That is to say, we first resolve the substitution of expressions to one of
-terms (here we must inline a specialisation of map in order to satisfy Agda's
+terms (here we must inline a specialisation of map to satisfy Agda's
 termination checker) before extending it with the identity substitution for
 all the free variables and finally performing the substitution on the term
 taken from the environment. We substitute the bound variables in the term

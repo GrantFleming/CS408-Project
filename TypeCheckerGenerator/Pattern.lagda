@@ -37,12 +37,13 @@ private
 \end{code}
 }
 
-Key to implementing our generic type-checker, is the concept of a pattern. Our
+A key concept we will need to implement our generic type-checker is that of a
+pattern. Our
 rules are defined not in terms of concrete pieces of syntax, but in terms of
 patterns, which we then match against concrete syntax.
 
 Our concept of a pattern is structurally identical to that of a construction,
-except that we exclude thunks, and introduce the notion of a \emph{place} which
+except that we exclude thunks and introduce the notion of a \emph{place} that
 may stand for an arbitrary construction so long as we can fix up the scope.
 
 The dual concept of a pattern is that of an environment. It is structurally
@@ -52,10 +53,10 @@ As always, we are careful to handle scope correctly in the case of $bind$
 when constructing environments so that the underlying entity is defined in
 the weakened scope.
 
-Environments are indexed by a pattern so that we can ensure that they alway
-match exactly the pattern intended (they offer a a \emph{thing} for every
-\emph{place}). Consequently this allows us a non-failable operation to
-generate a term from from pattern $p$ and its associated $p\mbox{-Env}$
+Environments are indexed by a pattern so that we can ensure that they always
+match exactly the pattern intended (they offer a \emph{thing} for every
+\emph{place}). Consequently, this allows us a non-failable operation to
+generate a term from pattern $p$ and its associated $p\mbox{-Env}$
 
 \begin{code}
 data Pattern (γ : Scope) : Set where
@@ -84,7 +85,7 @@ data _-Env {γ : Scope} : Pattern γ → Set where
   thing  : {θ : δ ⊑ γ} → Const δ → (place θ) -Env
 \end{code}
 We define the γ opening of a pattern by recursing structurally until we reach
-some \emph{palce} and prepending the thinning by the identity thinning length 
+some \emph{place} and prepending the thinning by the identity thinning length 
 $γ$.
 \begin{code}
 _⊗_ : Openable Pattern
@@ -163,10 +164,10 @@ x /≟ y with x ≟ y
 \end{code}
 }
 We now have the required machinery to define pattern matching. We do not
-define matching over some term and pattern scoped identially, but more 
+define matching over some term and pattern scoped identically, but more 
 generally over some term that might be operating in a wider scope. This
 is crucial as a pattern is often defined in the empty scope so that we might
-not refer to arbirary free variables when defining formal rules but these rules
+not refer to arbitrary free variables when defining formal rules but these rules
 may then be applied in some non-empty scope. 
 \begin{code}
 match : Const (δ + γ) → (p : Pattern γ) → Maybe ((δ ⊗ p) -Env)
@@ -185,8 +186,8 @@ match (bind t) (bind p)  = do
                              just (bind x)
 match _ _                = nothing
 \end{code}
-When contructing formal rules, it is critical that we are able to refer
-to distinct places in a pattern. For this purpose we define a schematic
+When constructing formal rules, it is critical that we are able to refer
+to distinct places in a pattern. For this purpose, we define a schematic
 variable. This variable is able to trace a path through the pattern that
 indexes it, terminating with a $⋆$ to mark the \emph{place} we are referring to. 
 Since environments follow the same structure as their pattern we might also 
@@ -207,8 +208,8 @@ _‼_ : svar p δ → (γ' ⊗ p) -Env → Const (γ' + δ)
 bind v  ‼ bind t   = v ‼ t
 \end{code}
 We define a few less interesting but critical utility functions for later
-use. We give a means to remove a place from a pattern, replacing it with
-a trivial atom. Similarly we extend the same functionality to environments.
+use. We give the means to remove a place from a pattern, replacing it with
+a trivial atom. Similarly, we extend the same functionality to environments.
 We also provide the means to build a term from a pattern and some appropriate
 environment.
 \begin{code}
@@ -312,7 +313,7 @@ data svar-builder : Pattern γ → Pattern δ → Set where
 We intend to use this concept by initially selecting both the indexed patterns
 to be the pattern we are about to traverse, then as we traverse the structure
 of the pattern we use the combinators defined below to strip constructors off
-the second index while simultaniously encoding the removed constructor in the 
+the second index while simultaneously encoding the removed constructor in the 
 path being constructed. We give the first combinator in full here as an example,
 and the types of the other two.
 
@@ -339,8 +340,8 @@ and the types of the other two.
 ↳ (bind  v)  =  bind (↳ v)
 \end{code}
 }
-Finally we are able to build and actual svar from a builder only if it shows
-the path in some pattern $p$ to some place in that pattern.
+Finally, we are able to build an actual svar from a builder only if it encodes
+a path in some pattern $p$ that leads to a place in $p$.
 \begin{code}
 build : {θ : δ ⊑ γ'} → 
         svar-builder p (place θ) → 

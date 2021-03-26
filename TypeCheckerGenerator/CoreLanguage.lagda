@@ -15,11 +15,11 @@ open import Function using (id)
 \end{code}
 }
 
-First we introduce the concept of scope and what it means to be
-scoped. In our system, all variables are de-bruijn indexed and our
+First, we introduce the concept of scope and what it means to be
+scoped. In our system, all variables are de Bruijn indexed and our
 scope can be represented by a single natural number. We take 0 to
 mean nothing in scope, 1 to mean a single thing in scope and so on. A
-scoped entity is one which is defined in terms of a scope.
+scoped entity is one that is defined in terms of a scope.
 
 \begin{code}
 Scope  = ℕ
@@ -98,7 +98,7 @@ guarantees that we are able to check it.
 Note that blindly embedding synthesizable terms with 'thunk' is
 not always the best course of action, in the case of an annotated
 term, we already have a suitable construction under the annotation.
-For convenience we provide a function to perform this embedding and
+For convenience, we provide a function to perform this embedding and
 hence a function to take \emph{any} computation to a construction and
 another to take any term to a construction. We also prove the opposite
 functionality, allowing us to take any term to a computation, however in

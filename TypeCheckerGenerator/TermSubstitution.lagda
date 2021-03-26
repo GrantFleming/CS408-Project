@@ -28,7 +28,7 @@ private
 }
 
 Following our generic notion of substitution, we now specialise our
-our definiton to substitute computations. We supply the usual thinning
+definition to substitute computations. We supply the usual thinning
 and weakening mechanics that we rely on as well as defining the identity
 substitution.
 \begin{code}

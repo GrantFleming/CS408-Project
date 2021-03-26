@@ -46,10 +46,10 @@ private
 
 A key concept that will be used throughout this implementation is that
 of a thinning. Thinnings describe embeddings between scopes and are
-denoted $δ ⊑ γ$ where they are embed some scope $δ$ into another
+denoted $δ ⊑ γ$ where they embed some scope $δ$ into another
 scope $γ$ and as such it must be that $δ \leq γ$.
 
-Some thinning $δ ⊑ γ$ can be represented a a bit-vector $γ$ digits long where
+Some thinning $δ ⊑ γ$ can be represented a bit-vector $γ$ digits long where
 each digit might be $0$ indicating that the variable is new in $γ$ or $I$
 indicating that it previously existed in $δ$. A thinning may also be interpreted
 as a selection from some scope $γ$, and we may use singleton thinnings in
@@ -215,7 +215,7 @@ _!_ : Selectable (BwdVec X)
 
 A weakening is a special case of a thinning where the scope is extended by
 one at its most local position, for instance when passing under a binder.
-This concept is captured here, as well as the relavent type that details
+This concept is captured here, as well as the relevant type that details
 the action of a weakening.
 
 \begin{code}
@@ -230,7 +230,7 @@ weaken ⟨ t = ⟨ t ↑
 \end{code}
 
 When providing Weakenables, we adopt the naming convention of beginning their
-identifers with "\^̂".
+identifiers with "\^̂".
 
 
 \begin{code}

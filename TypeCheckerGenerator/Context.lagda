@@ -28,7 +28,7 @@ private
 }
 We define contexts to be substitutions of constructions. We ensure that the target
 of the substitution is scoped identically to the things we will substitute,
-keeping our contexts in a pre-thinned state.This allows us to use terms
+keeping our contexts in a pre-thinned state. This allows us to use terms
 directly from it without having to fix up the scope first.
 \begin{code}
 Context : Scope → Set

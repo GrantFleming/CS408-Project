@@ -221,15 +221,15 @@
 }
 
 A key concept we will use when defining rules is that of a premise. We use
-premises in order to accumulate trust in some pattern, potentially discharging
+premises to accumulate trust in some pattern, potentially discharging
 a place in the pattern as 'trusted'. In our implementation of premise, $p$ is
 some pattern that identifies places that we already trust while $q$ is the
 pattern of untrusted places. The premise establishes trust in some $p'$ and
 shows what remains untrusted with $q'$. While we can encode various checks with
 our premises, only two increase the accumulated trust: either a statement that
-some \emph{place} is a type, or a statement that it is \emph{of} some type.
+some \emph{place} is a type or a statement that it is \emph{of} some type.
 
-In the definition of formal rules we cannot refer to arbitrary
+In the definition of formal rules, we cannot refer to arbitrary
 free variables and will give a chain of premises where the patterns are defined
 in the empty scope (unless we have ducked under the $\vdash$ premise). We will later
 require the ability to open such premises when using them to establish trust in
@@ -835,15 +835,15 @@ but provide no way to encode a place.
 \AgdaInductiveConstructor{⊥}\<%
 \end{code}
 }
-We now use these concepts to define a chain of premise that is guaranteed to
+We now use these concepts to define a chain of premises that is guaranteed to
 establish complete trust in some pattern.
 
 We may string together premises, threading what is left to trust
 after each premises into what is still to trust in the next. We collect everything
-that we learn to trust along the way, allowing later premise to refer to entities
+that we learn to trust along the way, allowing later premises to refer to entities
 whose trust was established by earlier premises.
 
-If we wish to end a chain of premise, we must show that there is nothing left
+If we wish to end a chain of premises, we must show that there is nothing left
 that requires trusting by proving that what we have been asked to trust is
 a pattern that contains no places.
 \begin{code}%
@@ -959,9 +959,9 @@ a pattern that contains no places.
 
 A TypeRule is used to establish the conditions under which a piece
 of syntax, the subject, is determined to be a type. The rule
-must contain a premise chain which establishes complete trust in
+must contain a premise chain that establishes complete trust in
 this subject from no prior trusted knowledge. Matching this rule is
-matching a piece of syntax agains the subject and results in some
+matching a piece of syntax against the subject and results in some
 environment for the subject.
 
 \begin{code}%
@@ -2025,11 +2025,11 @@ environments.
 We may also use this rule to reverse engineer
 the type of any place in the subject, taking advantage of the fact that
 our premise chain can only establish trust in a place by ultimately making
-a statement either about its type, or about it being a type. This function
-turned out to be non-trivial, and many proofs were required to convice
+a statement either about its type or about it being a type. This function
+turned out to be non-trivial, and many proofs were required to convince
 Agda to accept the implementation. An alternative approach might have been to
 construct a pattern environment where each \emph{thing} corresponded to the
-type of the corresponding \emph{place} the pattern. We could have even gone
+type of the corresponding \emph{place} in the pattern. We could have even gone
 so far as to generalise what may be stored at places in patterns and
 teased out some applicative structure.
 \begin{code}%
@@ -2671,16 +2671,16 @@ teased out some applicative structure.
 \AgdaBound{tmenv}\AgdaSymbol{)}\<%
 \end{code}
 }
-Our rules for elimination work slightly differently from those which operate on
-constructions above. Eliminations use some \emph{eliminator} in order to eliminate
-some \emph{target}. An elimination rule, if it matches, is used in order to try
+Our elimination typing rules work slightly differently from those which operate on
+constructions above. Eliminations use some \emph{eliminator} to eliminate
+some \emph{target}. An elimination rule, if it matches, is used to try
 and \emph{supply} us with the type of the resulting term.
 
-In order to build the output, it is not necessary for us to hold any description
+To build the output, we don't need to hold any description
 of the target term whatsoever, it is enough that we describe what type we require
-it to be. In our elimination typing rules we take a pattern that we might use to
+it to be. In our elimination typing rules, we take a pattern that we might use to
 match against the type of the target, one that we might match against the $eliminator$,
-and seek to establish trust in $eliminator$ under the assumption that we trust the
+and seek to establish trust in the $eliminator$ under the assumption that we trust the
 target type. We use an Expression to build the type of the elimination from everything
 in which the premise chain has established trust. Matching an elimination rule requires
 matching both the target pattern and the eliminator.

@@ -3,32 +3,32 @@
 Now that a user has the means of describing a type system, we will
 discuss how the generic type-checking software is constructed.
 
-We will describe key definitions and types in order to communicate a
-high level understanding of how the software works,
-however we will often omit implmentation details in areas where the
-code is less important, tedius or verbose.
+We will describe key definitions and types to communicate a
+high-level understanding of how the software works,
+however, we will often omit implementation details in areas where the
+code is less important, tedious or verbose.
 
 The general tactic for type-checking some generic syntax will be to
 parse the required typing, $\beta$ and $\eta$ rules from the
 descriptions provided using our DSL. Using this information we can
-then parse user source code and represent it in a fairly language
-agnostic interal object syntax before using the rules to type-check
-our internal syntax.
+then parse user source code and represent it in a fairly
+language-agnostic internal object syntax before using the rules
+to type-check our internal syntax.
 
 We will begin by describing the internal syntax, talk about how we
-might represent the various tools and rules that we need in order to
+might represent the various tools and rules that we need to
 type check this syntax and define the type checking process before
-breifly covering our approach to parsing this information from the
-user supplied input files. We purposely keep our parsing conversations
-brief to prioritize the presentation of challanges in other areas.
+briefly covering our approach to parsing this information from the
+user-supplied input files. We purposely keep our parsing conversations
+brief to prioritize the presentation of challenges in other areas.
 
 Our approach in this section is heavily influenced by the work of
 Conor McBride in \emph{The types who say 'ni'} \cite{TypesWhoSayNi} -
 although the code we provide is strictly our own in all cases, there
-are certainly areas where this code is a near direct translation of
+are some areas where this code is a near-direct translation of
 the mathematics in this paper. As we pointed out in the previous
-chapter: patterns, expressions and and the treatment of premises are
-all concepts that we take from this work. In addition our internal
+chapter: patterns, expressions and the treatment of premises are
+all concepts that we take from this work. In addition, our internal
 syntax is very like that described in the paper and we use the same
 approach for thinnings, substitution, contexts and much of our
 treatment of scope.

@@ -230,7 +230,7 @@ Matching a $β$-rule involves matching the enclosed elimination rule and the
 pattern of the target, when such a rule is matched we might then appeal to
 $β$-reduce. We are guaranteed to be able to return a computation here since
 we have kept the required type information to hand and so we make use of the
-$↞↞$ operater that we introduced in section \ref{section-corelanguage}.
+$↞↞$ operator that we introduced in section \ref{section-corelanguage}.
 
 \begin{code}%
 \>[0]\AgdaKeyword{record}\AgdaSpace{}%
@@ -421,7 +421,7 @@ first match. We chose a 'first match' approach here for simplicity of
 implementation however it is acknowledged that other approaches are far more
 suitable. We discuss this later in our evaluation of the software.
 
-In this type we first encounter the failure handing monad that we will use to
+In this type, we first encounter the failure handing monad that we will use to
 propagate errors. It works as one might expect, either succeeding with a value
 or failing with an error message.
 \begin{code}%
@@ -515,7 +515,7 @@ or failing with an error message.
 \end{code}
 }
 To achieve reduction we will need to check the premise chain in the enclosed
-elimination in order to access the required environments. The mechanics of
+elimination to access the required environments. The mechanics of
 checking premise chains is not the business of $β$-reduction code and so we
 instead give a type to represent a function that can do this for us and insist
 that the caller provide it. We also provide a similar type appended with `
@@ -643,7 +643,7 @@ we make our call to $β$-reduce.
 \AgdaKeyword{open}\AgdaSpace{}%
 \AgdaModule{ElimRule}\<%
 \end{code}
-β-reduction failure depends solely on the existance of the rule, and the
+β-reduction failure depends solely on the existence of the rule, and the
 successful checking of the premise chain. The call to β-reduce is not in
 itself a failable operation.
 
@@ -652,12 +652,12 @@ itself a failable operation.
 
 We previously gave a type describing a premise-chain-checker, now
 we give similar types for things that will reduce for us, and things that might
-infer types. What is noticeably absent from these types is the existance of any kind
-of rules. Our normalisation procedure should be rule agnostic and so we achieve this
+infer types. What is noticeably absent from these types is the existence of any kind
+of rules. Our normalisation procedure should be rule-agnostic and so we achieve this
 by taking great care in where we choose to mention them, and where we choose \emph{not}
-to. We must, however, bear the rules in mind when we normalise and so a concious
+to. We must, however, bear the rules in mind when we normalise and so a conscious
 decision is made here for normalisation to be a non-failable operation. In a world of
-user-supplied typing rules we decide that flexibility is important and so when we
+user-supplied typing rules, we decide that flexibility is important and so when we
 encounter problems we take a "do as much as you can" approach to normalisation. 
 \begin{code}%
 \>[0]\AgdaFunction{Reducer}%
@@ -710,13 +710,13 @@ encounter problems we take a "do as much as you can" approach to normalisation.
 \AgdaInductiveConstructor{const}\AgdaSpace{}%
 \AgdaBound{γ}\AgdaSymbol{)}\<%
 \end{code}
-In order to implement normalisation by evaluation, we must first define an evaluation
+To implement normalisation by evaluation, we must first define an evaluation
 function to reduce any eliminations. Most cases proceed as one might expect,
 traversing the structure of the term to find eliminations that we might hope to
 reduce. We reduce the target and eliminator in some elimination even if we fail
 to infer the type of the target (and so fail to reduce the elimination). This is
-to keep seperate the concerns of type-checking and normalisation and it is our
-opinion that this evaluation should not fail because of a type-error. Instead the
+to keep separate the concerns of type-checking and normalisation and it is our
+opinion that this evaluation should not fail because of a type-error. Instead, the
 process continues with some $unknown$ type placeholder, meaning that it will not
 match any rules that might produce erroneous results. The responsibility of type-checking
 the term falls to the caller.
@@ -981,12 +981,12 @@ Here we match some η-rule giving us the pattern for the head form, and also the
 eliminations that will occur at each place in that pattern. We then navigate down
 through the structure of the head pattern in our helper function so that we
 get to each place in the pattern, and when we do, we have built the svar that
-identifies it. This allows us to use to ∋ rule to get the type of that particular
+identifies it. This allows us to use the ∋ rule to get the type of that particular
 place which in turn facilitates the recursive call to qt to generate the head form
 at the nested place.
 
-In order to satify the well-scopedness of the subterms, we must maintain a proof
-that we are constructing a well scoped svar-builder. When we traverse under a binder
+To satisfy the well-scopedness of the subterms, we must maintain a proof
+that we are constructing a well-scoped svar-builder. When we traverse under a binder
 in a head form pattern, we are forced to add such a binder to our svar-builder to
 maintain its well-scopedness. Our proof achieves this by maintaining the invariant
 that the scope of the subterm currently identified by the svar-builder is always the

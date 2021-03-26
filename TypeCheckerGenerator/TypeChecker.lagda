@@ -49,7 +49,7 @@ open ElimRule
 
 
 We now have all of the required definitions to construct the process of
-typechecking. This process is a set of mutually recursive definitions which
+type checking. This process is a set of mutually recursive definitions which
 we will describe here.
 
 When we check types, it is convenient to collect all the rules together so
@@ -68,8 +68,8 @@ data RuleSet : Set where
        RuleSet
 \end{code}
 
-Firstly, we present three functions, one for checking each of the user
-provided typing rules. Each definition proceeds in the same way,
+Firstly, we present three functions, one for checking each of the user-provided
+typing rules. Each definition proceeds in the same way,
 attempting to match an appropriate rule, if a match is found, the rule is
 run. If no rule is found to match, and there are no rules left to check,
 these functions fail with a descriptive error.
@@ -99,7 +99,7 @@ univ-check  :  Context γ            →
 \end{code}
 }
 
-We define a notion of term equivalence that we will need later in order
+We define a notion of term equivalence that we will need later
 to check the type of computations embedded in constructions. This is a
 purely syntactic action. If terms are to have their normal forms compared
 then they must be normalized before checking their equivalence here.
@@ -143,7 +143,7 @@ _≡ᵗ_ {compu} (t ∷ T) (t' ∷ T') = do
 \end{code}
 }
 
-The high level functionality of our type checker is given by two functions,
+The high-level functionality of our type checker is given by two functions,
 check and infer. We check the type of constructions and infer the type of
 computations, however since we can embed computations in constructions using
 $thunk$ we may accept a call to check the type of any term.
@@ -157,7 +157,7 @@ We then check equivalence between what was inferred, and the type we are checkin
 after normalising each of them.
 
 When inferring the type of computations, there are three cases that we consider
-seperately. The types of variables are looked up in the context. Terms with type
+separately. The types of variables are looked up in the context. Terms with type
 annotations are checked to determine that the annotation is indeed the type of
 the term and if this is so then the normalised annotation is returned. Lastly,
 the types of eliminations are inferred by synthesizing the type of the target
@@ -183,9 +183,9 @@ to check a premise chain. The result of matching against a given rule provides
 us with the necessary environments for us to resolve the schematic variables
 that might exist in a premise. In our implementation, checking the premises
 turns out to be mostly trivial, if verbose. Each data constructor of a Premise
-resolves to a calling a single function that we have already provided (such as 
+resolves to calling a single function that we have already provided (such as 
 \emph{type-check}, \emph{check} or \emph{\_≡ᵗ\_}) before building the required
-environments for what what is newly trusted and what remains to be trused.
+environments for what is newly trusted and what remains to be trusted.
 
 We provide just the definition for the '∈' premise by way of example here to
 illustrate how the concrete terms are realised from expressions and schematic
@@ -247,8 +247,8 @@ checked in order. The environments for the things we trust accumulate while the
 environments for the things that remain to be trusted are whittled away. If the
 premise chain is empty, we simply return what it is that we already trust.
 
-In direct correspondance to our initial three functions that check the
-various user defined rules, we provide three more, one for running each
+In direct correspondence to our initial three functions that check the
+various user-defined rules, we provide three more, one for running each
 type of rule should such a matching rule be found. We make sure to address
 the appropriate conditions here, such as checking that the type in a $∋$
 rule is indeed a type.
@@ -258,7 +258,7 @@ an elimination rule. The first merely tries to succeed, the second must
 return the synthesized type.
 
 We do not request environments for the exact patterns in a rule, but instead
-for their opening into the current scope. Similarly when we retrieve the
+for their opening into the current scope. Similarly, when we retrieve the
 premise chain from a rule, we open this to the current scope before
 checking it. This method allows us to mandate that rules are defined in the
 empty scope while allowing them to be applied in any scope.
@@ -292,10 +292,10 @@ run-erule {γ} Γ rules elim-rule input-env subject-env
       _ ← type-check Γ rules elim-ty
       succeed elim-ty
 \end{code}
-Our typechecking process is a highly mutually recursive process by nature. We can
+Our type checking process is a highly mutually recursive process by nature. We can
 leverage Agda's termination checker to give us feedback which we might use to
-guarantee that the process terminates. We are unable to guarantee termination in
-in this case as we do not impose the required restrictions on user supplied rules. If
+guarantee that the process terminates. We are unable to guarantee termination
+in this case as we do not impose the required restrictions on user-supplied rules. If
 a user supplies a rule containing a circular check, then the type checking
 process will not halt. We talk more about this limitation later in our evaluation
 of the software.

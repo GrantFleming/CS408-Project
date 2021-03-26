@@ -208,9 +208,9 @@ writing the term in a file as opposed to supplying it as an Agda code
 representation in our internal syntax and so we build a second parser for this
 purpose.
 
-We use the patterns in our type rules and ∋ rules in order to detemine valid
+We use the patterns in our type rules and ∋ rules to determine valid
 constructions in the language and then use these patterns to guide our parsing,
-however we must first overcome one major problem.
+however, we must first overcome one major problem.
 
 A user is perfectly able to have some \emph{place} as the first part of a pattern.
 Attempting to parse this in a top-down manner may lead to infinite recursion in
@@ -219,7 +219,7 @@ in two ways, we could either implement a more sophisticated parser that is toler
 of such grammars or we could pre-process the patterns to create a right-recursive
 equivalent. We opt for the latter option due to time constraints.
 
-Since our objective is to synthesize some type, the top level parsable element here
+Since our objective is to synthesize some type, the top-level parsable element here
 is a single \emph{computation}.
 \hide{
 \begin{code}%

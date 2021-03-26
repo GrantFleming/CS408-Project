@@ -38,7 +38,7 @@ private
 }
 
 We acknowledge that parsing is an entire field of study in its own right
-and that it is certainly not the focus of this project. However, in order
+and that it is certainly not the focus of this project. However,
 to have the user describe the type system in our DSL rather than in Agda
 code, we will require a parser to make sense of this input.
 

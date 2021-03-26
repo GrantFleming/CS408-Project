@@ -11,8 +11,8 @@
           resolve a paradox he himself had discovered in a formalization of
           Gottlob Frege's naive set theory in 1901 \cite{Russell1901}, much
           introductory material on type theory from a computer science
-          perspective begins with Alonzo Church and his Simply Typed
-          Lambda Calculus \cite{church1940}.
+          perspective begins with Alonzo Church and his simply typed
+          lambda calculus \cite{church1940}.
           
           Like Russell, Church was searching for a way to make his
           previously defined system of logic, the lambda calculus,
@@ -203,7 +203,7 @@
             need to create a new term $\Lambda t_1 . \Lambda t_2 . \lambda x_{t_1
               \to t_2} \cdot x$
             
-            A full list of the typing rules are available in
+            A full list of the typing rules of both languages are available in
             appendices \ref{appendix:sysFrules} and
             \ref{appendix:HMrules}. 
                     
@@ -233,7 +233,7 @@
           universal and existential quantification respectively.
 
           It was this introduction of `dependent types` that made this
-          theory different from previous type theories and allowing
+          theory different from previous type theories and allowed
           the development of dependently typed languages with flexible
           and powerful type systems such as Agda \cite{norell}.
 
@@ -266,7 +266,7 @@
             some of the types that Martin-Löf includes in his
             type-theory, such as that of Lists or $\mathbb{N}$ can be
             defined as W-types.
-          \item Universes are introduces as a type of types, allowing
+          \item Universes are the type of types, allowing
             the transfinite types needed to talk about a "sets of
             sets", Martin-Löf recognised the need for such types when
             reasoning about certain areas of maths such as category
@@ -275,7 +275,7 @@
 
           One of the consequence of this, more powerful, type system,
           is that unlike Hindley-Milner, we can no longer infer the
-          most general type of any expression.
+          most general type of any term.
 
           Take, for example, a value of some dependent pair $(2 , [a :: b
             :: nil])$ perhaps the type of the second element is

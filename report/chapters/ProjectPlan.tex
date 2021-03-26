@@ -9,16 +9,17 @@
 
   Despite huge variety in the kinds of languages in existence,
   type-systems can often be described using the same kinds of
-  things such as typing rules. The descriptions are becoming
-  standardized enough for us to recognize common syntax for
+  basic elements such as typing rules. The descriptions have become
+  standardised enough for us to recognise common syntax for
   describing these aspects in literature.
 
   This project seeks to capitalize on this by abstracting
-  enough common elements and leaving only what is necessary
-  for describing a type-system up to a user. Given any
+  the common elements and asking the user to provide only what is
+  specific to the type system they seek to represent. Given any
   description of a type-system in a specified format, a
   type-checker-generator should be able to generate a
-  type-checker for the type system.
+  type-checker for the type system and use it to type-check provided
+  source code.
   
   \subsection{Goal}
 
@@ -65,13 +66,13 @@
   \label{section-milestones}
 
   \begin{enumerate}
-  \item A DSL that we are able to use to describe existing
-    type checkers, used to write \emph{specifications} of type systems.
+  \item A DSL that we are able to use to write \emph{specifications}
+    of type systems
   \item A type-checker able to check types for a generic syntax
-    in a syntactic universe under a \emph{fixed} set of typing rules
-    where syntaxes and checkable source code is supplied hard-coded.
-  \item A type-checker able to check types when full specifications
-    and checkable source code is hard-coded.
+    using a \emph{fixed} set of typing rules where the checkable
+    source code is supplied hard-coded.
+  \item A type-checker able to check types when full type-system
+    specifications and checkable source code is hard-coded.
   \item A type-checker  that checks types, reading
     the specification and source code from files.
   \end{enumerate}
@@ -79,9 +80,9 @@
   \subsection{Acceptance criteria}
   \label{sec-acceptance}
 
-  \begin{itemize}
+  \begin{enumerate}
   \item The software can be ran from the command-line by
-    giving a simple command such as: $$\mbox{type-check} \;
+    giving a simple command such as: $$\mbox{TypeCheck} \;
     <\emph{specification-file}> \;
     <\emph{source-code-file}>$$
   \item The software either succeeds with a simple indication
@@ -95,12 +96,12 @@
     appropriate errors as detailed in the test cases.
   \item The software can generate type-checkers capable of
     checking both non-dependent and dependent types.
-  \end{itemize}
+  \end{enumerate}
 
 \section{Timeline}
 
 The following timeline assigns provisional deadlines to key stages in
-the project. We use this information later when we retroactively
+the project. We will use this information later when we retroactively
 evaluate our personal performance. 
 
 \begin{center}

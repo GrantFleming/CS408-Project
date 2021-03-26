@@ -4,18 +4,18 @@
 
 \section{What needs to be described}
 
-In order to build a type checker for the language, the user must have
+In order to build a type checker for a language, the user must have
 means to provide the following information:
 
 \begin{itemize}
   \item Types
   \item Language constructs for each type, defining the 'shape' of
-    all values of the associate type in weak head normal form
+    all values of the associated type in weak head normal form
   \item A type-checking rule for each new language construct
   \item Eliminators
   \item Type synthesis rules for each elimination
-  \item Beta reduction for each elimination
-  \item Optional eta-expansion for each type
+  \item β-reduction rules for each elimination
+  \item Optional η-expansion for each type
 \end{itemize}
 
 \section{What is supplied for free}
@@ -25,8 +25,8 @@ exist in a single universe. Although we could allow the user to
 provide some name for the universe, we opt not to for simplicity and
 instead mandate the construction "set" to mean the universe.
 
-When a user describes types, they are not required to specify that it
-is in the universe. In a single universe system there is nowhere else
+When a user describes types, they are not required to specify that
+they exist in the universe. In a single universe system there is nowhere else
 these constructions could live and so we give this functionality for
 free in the resulting software.
 
@@ -46,10 +46,10 @@ follows:
         \item premises for checking the type of the eliminator
         \item type expression of the whole elimination
         \end{itemize}        
-      \item zero or more construction descriptions where each is:
+      \item zero or more canonical forms where each is:
         \begin{itemize}
-        \item construction pattern
-        \item premises for checking the type of the construction
+        \item value pattern
+        \item premises for checking the type of the value
         \item $\beta$-reduction expression for every elimination described
         \end{itemize}
       \item zero or one $\eta$-expansion rules
@@ -66,8 +66,8 @@ as these are critical to describing and building terms in our DSL.
 
 In the high-level structure we make frequent reference to
 patterns. This is a concept we borrow from Conor McBride's previous
-work in bi-directional dependent type meta-theory
-\cite{TypesWhoSayNi}. These are tools we use to describe when
+work in formalising the meta-theory of bi-directional dependent type systems
+\cite{TypesWhoSayNi}. Patterns are tools we use to describe when
 arbitrary code matches a certain structure.
 
 In order to define a pattern we require meta-level variables to
@@ -99,9 +99,8 @@ $$
 \section{Representing expressions}
   
 An expression introduces a way for users to build terms from
-patterns that we decide are trusted. This concept is based on the
-same meta-theory from which we base our patterns
-\cite{TypesWhoSayNi}.
+patterns that we decide are trusted. We find this concept in
+the same meta-theory that gave us our patterns \cite{TypesWhoSayNi}.
 
 In defining an expression, we define atoms of the expression in
 the same way that we did for patterns. We may place multiple elements
@@ -166,7 +165,7 @@ where the variable was used.
 Substutions are given in order according to their de-bruijn index with
 the "least local" variable leftmost in the list and the most local
 variable rightmost. This list must also begin with a comma. We do not
-supply an empty-list in the case that a meta-term-variable cannot
+supply an empty-list in the case that a meta-term-variable does not
 contain free variables, we simply omit it. The following example shows
 how we use substitutions in this way by repeating the previous example
 except that now we make the captured "X" explicit and remove the free
@@ -175,23 +174,23 @@ except that now we make the captured "X" explicit and remove the free
 $$
 \mbox{\textbackslash}\;  X. \;
 \mbox{\textbackslash} \; Y. \; ->\; M} \qquad \Rightarrow \;
-  \mbox{\textbackslash}\;  X. \; ->\; .X \; and\;  M/[,\; .X,\; .X]} $$
+  \mbox{\textbackslash}\;  X. \; ->\; \{.X\} \; and\;  M/[,\; .X,\; .X]} $$
 
 
 In the substitution we do not require that the ".X" bound variable
 references are surrounded by curly braces, as they are not being
 embedded in some construction. So far we have given the various ways
-in which we might build expressions that represent constructions and
-how we may reference bound variables, how these are computations and
-how we might embed a computation in a construction by surrounding it
-in curly braces.
+in which we might build expressions that represent constructions.
+We have shown how we may reference bound variables, how these are
+computations and how we might embed a computation in a construction
+by surrounding it in curly braces.
 
 There are two other kinds of computations we can encode in our
-expressions. We may write an expression representing a term followed
-by a colon and another representing its type (both as constructions)
-to encode type annotation information or a computation followed by
-some whitespace and a construction to encode the elimination of the
-computation. 
+expressions. We may write some expression representing a term followed
+by a colon and another expression representing its type (both as constructions)
+to encode type annotation information. We might encode elimination by
+providing an expression representing some computation, followed by
+some whitespace and a construction.
 
 We give some examples of expressions below giving the in-scope patterns
 to the left of the "$\Rightarrow$" separated by commas and the
@@ -205,7 +204,7 @@ $\Rightarrow$ notation is not part of our DSL.
   \qquad \mbox{\textbackslash} Z. -> M/[,\; (L:A),\; .Z]\\
   TY \;\; , \;\; TM \;\; , \;\; E \qquad &\Rightarrow \qquad
   (TM:TY)\;\; E\\
-  A \;\; , \;\; \mbox{\textbackslash} \; X. \; -> M \;\; ,\;\; atm \qquad
+  A \;\; , \;\; \mbox{\textbackslash} \; X. \; -> M \;\; \qquad
   &\Rightarrow \qquad \mbox{\textbackslash} \; X. \; -> ((M/[,\; .X] : A)\;\; atm)
 \end{align*}
 
@@ -219,49 +218,52 @@ scope. It is merely a mental aid to construction.
 
 \section{Representing premise}
 
-As with patterns and expressions, the concepts of premise and premise
-chains that we discuss in this section is heavily influenced by the
-same source \cite{TypesWhoSayNi}.
+As with patterns and expressions, our treatment of premise and premise
+chains in this section is heavily influenced by the same source
+\cite{TypesWhoSayNi}.
 
 There are four kinds of premise representable in the DSL. Premise are
-listed together one after another, chained, in order to give the
+listed together one after another, in order to give the
 conditions under which we may make some judgement. We will first
 detail each type of premise before discussing what it means to chain
-the premise together and how we determin the scope of a premise. We
-will also later detail what is considered in-scope when defining an
-expression as part of a premise, and so we gloss over this when
-detailing the premises here.
+the premise together. We will later detail what is considered
+in-scope when defining an expression as part of a premise, and so we
+gloss over this when detailing the premises here.
 
 The type premise is written by stating the word "type" followed by
 the identifier corresponding to some meta level term variable in
-scope.
+scope. This premise states the condition that the syntax referred to
+by some meta-level variable must represent a type.
 
 $$
-type \;\; SOMETERM
+type \;\; SOMEMETAVAR
 $$
 
 The type check premise is written as some construction expression,
 followed by "\textless -" and some identifier corresponding to a meta
-level term variable in scope.
+level term variable in scope. This premise states the condition that
+the syntax referred to by some meta-level variable must be of a
+particular type.
 
 $$
-someexpression \;\;<-\;\; SOMETERM
+someexpression \;\;<-\;\; SOMEMETAVAR
 $$
 
 The equivalence premise is written as a construction expression
-followed by "=" and another construction expression.
+followed by "=" and another construction expression. This premise
+states the conditions that two pieces of syntax should be equivalent.
 
 $$
 someexpression \;\;=\;\; anotherexpression
 $$
 
-The context extension premise is written as some binder identifier,
+The context extension premise is written as some identifier,
 followed by ":" and a computation expression followed by "$|-$" and
 another premise. I.e. it allows to to present an arbitrary premise in
-the extended context.
+an extended context.
 
 $$
-X : someexpression \;\;|-\;\; SOME \;\;<-\;\; OTHERPREMISE
+X : someexpression \;\;|-\;\; some \;\;<-\;\; OTHERPREMISE
 $$
 
 Here we note that the expression must be a computation incase we use
@@ -307,7 +309,8 @@ for checking some language construction is of a certain type, then we
 trust that the type as input, and with this information assumed we
 seek to trust the new data constructor pattern that we take as a
 subject. The type of the target is also in scope when we give the
-premises that seek to trust some new eliminator we supply.
+premises that seek to trust some eliminator we supply in an
+elimination typing rule.
 
 \section{Representing $\eta$-expansion rules}
 \label{DSL-eta-rules}
@@ -321,8 +324,8 @@ terms which contain only a single data constructor.
 
 Secondly, for each argument to the data constructor, we must know the
 eliminator which we might use such that when we eliminate the original
-term with the eliminator, we get the term that is supplied as the
-argument.
+term with the eliminator, we get the term that is supplied at that
+place. 
 
 We can therefore give enough information to facilitate
 $\eta$-expansion by choosing a pattern representing some value, and
@@ -334,10 +337,10 @@ For instance, given the product type $A \; x \; B$ with eliminators
 $fst$ and $snd$ which describes values $X , Y$ then we might give $fst
 , snd$ to inform the construction of an $\eta$-expansion rule. Similarly,
 for a function type $A \; -> \; B$ which describes values $\setminus
-X. \; -> \; M$ and is eliminated by some pattern $E$ then we might
-give $\setminus Y. \; -> \; Y$ to inform the construction of an
-$\eta$-expansion rule which when applied to some target $T$ would
-result in an $\eta$-expanded term $\setminus Y. \; -> \; (T \; Y)$.
+X. \; -> \; M$  we might give $\setminus Y. \; -> \; Y$ to inform the
+construction of an $\eta$-expansion rule which when applied to some
+target $T$ would result in an $\eta$-expanded term
+$\setminus Y. \; -> \; (T \; Y)$.
 
 \section{The DSL}
 \label{DSL}

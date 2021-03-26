@@ -49,7 +49,7 @@ descriptions, and couple this with the ability to create descriptions
 and retrieve the \emph{meaning} of descriptions - get ahold of
 the actual entity they are describing.
 
-This idea is explored in a more in-depth context when we
+This idea is explored in more depth when we
 explore work detailing how we might build a universe of
 syntaxes that are both scope and type safe and abstractly
 define common semantics such as substitution (which is defined in this
@@ -58,32 +58,28 @@ defined in this paper to work over a specific description only).
 \cite{DBLP:journals/corr/abs-2001-11001}.
 
 In this paper, the authors detail a universe of type and scope safe
-syntaxes. Firstly they created the concept of well scoped entities by
-way of a family of types as well as useful combinators and required machinery
+syntaxes. First they formalise the concept of well scoped entities by
+way of a family of types and provide useful combinators and the required machinery
 for representing environments. They also introduce the idea of a
 generic notion of semanitics for a language and demonstrate its use by
 defining several operations in terms of this generic semantics.
 
 After priming the reader on previous work in creating a universe of
 data types \cite{DBLP:conf/icfp/ChapmanDMM10} they then go on to
-modify the descriptions used in this work in order to be instead used
-to describe a universe of scope safe and well-kinded syntaxes.
+modify the \emph{descriptions} defined in this work in order to be instead
+describe a universe of scope safe and well-kinded syntaxes.
 
 With this concept of descriptions in place, the previous notion of
 semantics is replaced by a more generic notion which is not
 syntax-specific and can be used to represent a semantics for any
-language that we might \emph{describe}. Finally, with these mechanics
-provided they are able to show true syntax-generic programming by
-forming functionality as semantics over a generic description
-\emph{d}.
+language that we might \emph{describe}. With these mechanics
+in place they are able to show true syntax-generic programming by
+forming functionality as semantics over a generic description.
 
 Later in this paper, the authors broach the subject of type-checking
 and elaboration. In particular, their section on elaboration provides
-a concrete example of creating an elaborator?? as a semantics over a
-description of bidirectional lambda calculus. The purpose of this
-project is akin to producing such an elaborator for for a
-generic description \emph{d} instead of a concrete description as in
-this paper.
+a concrete example of creating an elaborator as a semantics over a
+description of bidirectional lambda calculus.
 
 \section{Bi-directional dependent type theory}
 
@@ -95,8 +91,9 @@ The work in this paper formalizes the metatheory for a whole class of
 bi-directional dependently typed languages. It demonstrates how
 desirable properties of type systems may be enforced by construction,
 outlines pitfalls that might be encountered when combining type
-checking with type synthesis, as well as providing an object-level
-syntax split into carefully chosen grammatical classes.
+checking with type synthesis, and provides an object-level
+syntax split into carefully chosen grammatical classes that we might
+use to represent arbitrary syntax.
 
 It then emphasises the importance of precisely tracking information
 flow as it defines judgement forms, patterns, expressions and typing
@@ -104,11 +101,11 @@ rules and determines a method for approaching the \emph{schematic
   variables} that appear in \emph{formal judgements} in the typing
 rules.
 
-It is from this work that it is made clear that by carefully paying
-careful attention to the construction of the building blocks for
-describing a type theory, we may minimize the amount of information
+It is from this work we notice that by paying
+careful attention to the construction the individual components used to
+describe a type theory, we may minimize the amount of information
 the user is required to give, and better validate the information that
 they do give to ensure the resulting system has desirable
-properties. It also provides a rather useful framework for approaching
+properties. It also provides a useful framework for approaching
 this project as a whole.
 

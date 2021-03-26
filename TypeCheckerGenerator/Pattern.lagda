@@ -83,8 +83,9 @@ data _-Env {γ : Scope} : Pattern γ → Set where
   bind   : t -Env → (bind t) -Env
   thing  : {θ : δ ⊑ γ} → Const δ → (place θ) -Env
 \end{code}
-We define the γ opening of a pattern by recursing structurally and prepending
-the thinning by the identity thinning length $γ$.
+We define the γ opening of a pattern by recursing structurally until we reach
+some \emph{palce} and prepending the thinning by the identity thinning length 
+$γ$.
 \begin{code}
 _⊗_ : Openable Pattern
 \end{code}
@@ -208,7 +209,7 @@ bind v  ‼ bind t   = v ‼ t
 We define a few less interesting but critical utility functions for later
 use. We give a means to remove a place from a pattern, replacing it with
 a trivial atom. Similarly we extend the same functionality to environments.
-We are also define how a term might be build from a pattern and some fitting
+We also provide the means to build a term from a pattern and some appropriate
 environment.
 \begin{code}
 _-_       : (p : Pattern γ) → svar p δ → Pattern γ
@@ -281,7 +282,7 @@ bind v ^svar = bind (v ^svar)
 \end{code}
 }
 We will later find it useful to traverse a pattern and build a potential svar
-'on the way down' so that when we get to a $place$ we have the svar
+'on the way down' so that when we reach a $place$ we have the svar
 that refers to it and so we construct a type to help us.
 
 The notion is that instead of encoding some path to a $place$ in the pattern,

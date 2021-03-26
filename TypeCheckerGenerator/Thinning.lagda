@@ -50,16 +50,17 @@ denoted $δ ⊑ γ$ where they are embed some scope $δ$ into another
 scope $γ$ and as such it must be that $δ \leq γ$.
 
 Some thinning $δ ⊑ γ$ can be represented a a bit-vector $γ$ digits long where
-each digit identifies what is 'new' in $γ$. A thinning may also be interpreted
-as a selection from some scope $γ$, and we may use singleton thinnings in order
-to represent variables in this way. Our implementation maintains the $δ \leq γ$
-invariant by construction and is shown here.
+each digit might be $0$ indicating that the variable is new in $γ$ or $I$
+indicating that it previously existed in $δ$. A thinning may also be interpreted
+as a selection from some scope $γ$, and we may use singleton thinnings in
+order to represent variables in this way. Our implementation maintains the
+$δ \leq γ$ invariant by construction and is shown here.
 
 \begin{code}
 data _⊑_ : Scope → Scope → Set where
   ε   : 0 ⊑ 0
-  _O  : (θ : γ ⊑ δ) → γ ⊑ suc δ
-  _I  : (θ : γ ⊑ δ) → suc γ ⊑ suc δ
+  _O  : γ ⊑ δ → γ ⊑ suc δ
+  _I  : γ ⊑ δ → suc γ ⊑ suc δ
 \end{code}
 
 We define some elements for later use: the identity thinning, the empty
@@ -147,9 +148,9 @@ Selectable X = ∀ {δ} {γ} → (δ ⊑ γ) → X γ → X δ
 
 There are many scoped entities that we will wish a thinning to act on,
 and so we adopt the convention that all functions detailing an action
-of thinnings take the form begin with "⟨" with the exception of the
-action of a thinning on another thinning which equates to composition
-and so we use the more traditional $∘$ notation.
+of thinnings begin with "⟨" except the action of a thinning on another
+thinning which equates to composition and so we use the more traditional
+$∘$ notation.
 
 \begin{code}
 _∘_       : Thinnable (δ ⊑_)

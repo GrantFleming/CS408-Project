@@ -200,7 +200,9 @@ typechecking. This process is a set of mutually recursive definitions which
 we will describe here.
 
 When we check types, it is convenient to collect all the rules together so
-that we might easily pass them around. We do so with the following type.
+that we might easily pass them around. We do so with the following type, although
+in our evaluation we will reveal why it was a mistake to collect these rules
+together using lists.
 
 \begin{code}%
 \>[0]\AgdaKeyword{data}\AgdaSpace{}%
@@ -662,14 +664,14 @@ be a type before $infer$ returns it.
 Before we discuss the running of rule instances, we must first describe how
 to check a premise chain. The result of matching against a given rule provides
 us with the necessary environments for us to resolve the schematic variables
-thay might exist in a premise. In our implementation checking the premises
+that might exist in a premise. In our implementation, checking the premises
 turns out to be mostly trivial, if verbose. Each data constructor of a Premise
 resolves to a calling a single function that we have already provided (such as 
 \emph{type-check}, \emph{check} or \emph{\_≡ᵗ\_}) before building the required
 environments for what what is newly trusted and what remains to be trused.
 
-We provide just the definition for the '∈' premise by way of example here so that
-might see how the concrete terms are realised from expressions and schematic
+We provide just the definition for the '∈' premise by way of example here to
+illustrate how the concrete terms are realised from expressions and schematic
 variables before we delegate to $check$.
 \hide{
 \begin{code}%
@@ -1027,7 +1029,7 @@ type of rule should such a matching rule be found. We make sure to address
 the appropriate conditions here, such as checking that the type in a $∋$
 rule is indeed a type.
 
-We give two examples here, that of running a $∋$ rule and one of running
+We give two examples here, that of running a $∋$ rule and that of running
 an elimination rule. The first merely tries to succeed, the second must
 return the synthesized type.
 
@@ -1221,7 +1223,7 @@ empty scope while allowing them to be applied in any scope.
 \end{code}
 Our typechecking process is a highly mutually recursive process by nature. We can
 leverage Agda's termination checker to give us feedback which we might use to
-guarantee that the process terminates. We are unable to guarantee termination with
+guarantee that the process terminates. We are unable to guarantee termination in
 in this case as we do not impose the required restrictions on user supplied rules. If
 a user supplies a rule containing a circular check, then the type checking
 process will not halt. We talk more about this limitation later in our evaluation

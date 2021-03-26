@@ -132,22 +132,12 @@ target and whatever we learn to trust in the premises. These trusted patterns
 contain places that sculpt out component parts in a piece of matched syntax
 and allow us to use these component parts in constructing a new term.
 
-It mirrors the structure of our terms except that it includes the option
+Expressions mirror the structure of terms except that they include the option
 to reference some place in a pattern and instantiate it with some substitution
-of its free  variables.
+of its free variables. This means that we might build a term based on some
+piece of syntax that we do not yet have until the pattern is later matched.
 
 \begin{code}%
-\>[0]\AgdaFunction{Expr}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaDatatype{Pattern}\AgdaSpace{}%
-\AgdaGeneralizable{δ}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaDatatype{Dir}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaFunction{Scoped}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
 \>[0]\AgdaKeyword{data}\AgdaSpace{}%
 \AgdaDatatype{Con}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaBound{p}\AgdaSpace{}%
@@ -295,6 +285,15 @@ of its free  variables.
 \\
 %
 \\[\AgdaEmptyExtraSkip]%
+\>[0]\AgdaFunction{Expr}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaDatatype{Pattern}\AgdaSpace{}%
+\AgdaGeneralizable{δ}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaDatatype{Dir}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaFunction{Scoped}\<%
+\\
 \>[0]\AgdaFunction{Expr}\AgdaSpace{}%
 \AgdaBound{p}\AgdaSpace{}%
 \AgdaInductiveConstructor{const}\AgdaSpace{}%

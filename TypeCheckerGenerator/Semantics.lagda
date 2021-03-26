@@ -91,11 +91,11 @@ open β-rule
 open import Failable using (_>>=_)
 \end{code}
 }
-We now have what is required to find a matching rule my matching the various
-patterns. We iterate over the list of rules and return the first match. We chose
-a 'first match' approach here for simplicity of implementation however it
-is acknowledged that other approaches are far more suitable. We discuss this
-later in our evaluation of the software.
+We now have what is required to find a matching rule by matching the various
+patterns that it may contain. We iterate over the list of rules and return the
+first match. We chose a 'first match' approach here for simplicity of
+implementation however it is acknowledged that other approaches are far more
+suitable. We discuss this later in our evaluation of the software.
 
 In this type we first encounter the failure handing monad that we will use to
 propagate errors. It works as one might expect, either succeeding with a value
@@ -238,8 +238,6 @@ in a head form pattern, we are forced to add such a binder to our svar-builder t
 maintain its well-scopedness. Our proof achieves this by maintaining the invariant
 that the scope of the subterm currently identified by the svar-builder is always the
 original scope plus however many binders we have added when constructing it.
-As we learned the hard way, it is much easier to supply a trivial proof of this early on
-and maintain it than it is to build such a proof at the "leaf".
 
 \begin{code}
 qt : List η-Rule → (ty tm : Const γ) → Const γ
@@ -267,7 +265,7 @@ qt {γ = γ} rs ty v with EtaRule.findRule rs ty
            (subst Const prf (el ⟨term θ))
 \end{code}
 With the heavy lifting completed normalisation is then just a process of first
-evaluating the term before building the suitable head forms.
+evaluating the term before building suitable head forms.
 \begin{code}
 normalize :  List η-Rule → List β-rule  →
              Inferer × PremsChecker     →

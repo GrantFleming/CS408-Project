@@ -45,13 +45,12 @@ target and whatever we learn to trust in the premises. These trusted patterns
 contain places that sculpt out component parts in a piece of matched syntax
 and allow us to use these component parts in constructing a new term.
 
-It mirrors the structure of our terms except that it includes the option
+Expressions mirror the structure of terms except that they include the option
 to reference some place in a pattern and instantiate it with some substitution
-of its free  variables.
+of its free variables. This means that we might build a term based on some
+piece of syntax that we do not yet have until the pattern is later matched.
 
 \begin{code}
-Expr : Pattern δ → Dir → Scoped
-
 data Con (p : Pattern δ) (γ : Scope) : Set
 data Com (p : Pattern δ) (γ : Scope) : Set
 
@@ -67,6 +66,7 @@ data Com p γ where
   elim   : Com p γ → Con p γ → Com p γ
   _∷_    : Con p γ → Con p γ → Com p γ
 
+Expr : Pattern δ → Dir → Scoped
 Expr p const γ = Con p γ
 Expr p compu γ = Com p γ
 \end{code}

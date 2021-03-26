@@ -1,10 +1,10 @@
 \chapter{Building a type checker generator}
 
-Now that a user has the means of describing a type system, we will now
+Now that a user has the means of describing a type system, we will
 discuss how the generic type-checking software is constructed.
 
 We will describe key definitions and types in order to communicate a
-high level understanding of how the software is designed to work,
+high level understanding of how the software works,
 however we will often omit implmentation details in areas where the
 code is less important, tedius or verbose.
 
@@ -30,7 +30,8 @@ the mathematics in this paper. As we pointed out in the previous
 chapter: patterns, expressions and and the treatment of premises are
 all concepts that we take from this work. In addition our internal
 syntax is very like that described in the paper and we use the same
-approach for thinnings, substitution and contexts.
+approach for thinnings, substitution, contexts and much of our
+treatment of scope.
 
 \\\\
 \input{../../TypeCheckerGenerator/latex/CoreLanguage.tex}

@@ -58,7 +58,7 @@ composition of substitutions.
 [ / ]  ε       ∘σ σ' = ε
 [ / ] (σ -, x) ∘σ σ' = ([ / ] σ ∘σ σ') -, / x σ'
 \end{code}
-Here we have paid attention to the types in particular to aid readability of
+Here we have paid attention to the types to aid the readability of
 later definitions. This can be seen in the type of our final definition here
 which states that if some $T$ is substitutable, then we are able to compose
 the subsitutions.

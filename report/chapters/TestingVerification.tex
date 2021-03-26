@@ -31,7 +31,7 @@ excluding the need to test for behaviour on ill-formed environments
 while having the effect of guaranteeing a sensible output where we
 might otherwise have had to employ a Maybe result. Schematic variables
 get similar treatment here allowing us to provide a function to look
-up the term referred to by these variable in a manner that cannot
+up the term referred to by these variables in a manner that cannot
 fail. 
 
 The benefits of the careful use of types here has far reaching
@@ -61,9 +61,10 @@ to encode the information in the pattern if and only if the pattern
 contains no places. We then ensure that the only way to end a chain of
 premise is to give some proof of the placelessness of what is left to
 trust. This eliminates a vast amount of potential validation code and
-allows us to enforce this aspect of the well-formedness of premise
-chains rather than having to test how the software might deal
-with the failures resulting from ill-formed premises.
+associated tests. It allows us to enforce this aspect of the
+well-formedness at the type level rather than having to test how the
+software might deal with various failures resulting from an insufficient
+premise chain.
 
 \begin{verbatim}
 data _Placeless {γ : Scope} : Pattern γ → Set where
@@ -90,8 +91,8 @@ What we certainly need to test is aspects of the system that depend on
 user supplied instantiations of the concepts and rules we have
 defined. Especially where the results depend on several parts of the
 system working together. Using the type system to verify software is
-more suited to checking the software at a lower level of verifying
-small component parts. The invariants required when we start to
+more suited to checking the software at a lower level by verifying
+smaller component parts. The invariants required when we start to
 combine these parts are often large, complex and overly difficult to
 capture in a type and so these aspects of the system are tested in a
 more traditional manner.

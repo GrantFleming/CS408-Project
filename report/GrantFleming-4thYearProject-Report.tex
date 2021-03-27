@@ -13,12 +13,14 @@
 \secondmarker{Dr Clemens Kupke}
 
 \begin{document}
+        \pagenumbering{gobble}
         \maketitle
         \input{chapters/Abstract.tex}
-	\tableofcontents
-        \addtocontents{toc}{\protect\thispagestyle{empty}}
-        
+	{\tableofcontents}
+
+        \setcounter{page}{0}
         \part{Background \& Literature Review}
+        \pagenumbering{arabic}
 	\input{chapters/WhatIsATypeSystem.tex}
         \input{chapters/TypeTheoryOverview.tex}        
 	\input{chapters/RelevantRelatedWork.tex}

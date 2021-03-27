@@ -33,7 +33,75 @@ syntax is very like that described in the paper and we use the same
 approach for thinnings, substitution, contexts and much of our
 treatment of scope.
 
-\\\\
+\section{Implementation Overview}
+
+When we provide implementation details in this chapter, we must
+provide this information in a ‘bottom-up’ fashion so that the reader
+has the required knowledge to makes sense of the later code
+examples. To provide context to the reader in the earlier parts of
+this chapter we will now provide a high-level description of what we
+seek to accomplish. 
+
+Our software operates over an internal syntax that is split into two
+grammatical classes, constructions and computations. Constructions
+have their types checked, whereas computations have their types
+synthesised. The overall aim is to produce two functions, one to check
+types and the other to infer types. 
+
+To check and infer types in some arbitrary type system, we need access
+to information that describes the system: typing rules, β-rules and
+η-rules. These concepts are represented by types in our implementation. 
+
+We will find that these rules are all constructed from the same basic
+building blocks. Since we closely follow the approach in \cite{TypesWhoSayNi} then
+we require two distinct forms for describing syntax in rules. We
+require the ability to match patterns of syntax as information flows
+into a rule, and so we provide patterns for this purpose. We also
+require the ability to build terms conditionally and define the
+information that flows out of a rule and so we define expressions to
+accomplish this. These concepts are then used together since
+expressions are formed in the presence of some pattern that defines a
+trusted input that we may use when building a term. This allows us to
+create synthesis rules as functions from input patterns to output
+expressions. 
+
+By separating these concerns we can ensure differing characteristics
+in each case. Patterns cannot encode computation and further
+computation in some term cannot unmatch it from a pattern. In
+contrast, we can build computation freely using expressions. 
+
+To finish our rules we require some way to impose conditions on a
+pattern so that we might encode the premises of our rules. For this
+purpose we provide premises and premise chains, taking care to ensure
+that a premise chain is guaranteed to establish a minimum level of
+trust in some pattern. 
+
+Since our implementation accepts dependent types, we will need to
+provide operational semantics and normalisation (which in turn
+necessitates some implementation of substitution). We will need these
+concepts to check type equivalence.  
+
+We are explicit in handling scope throughout the project, so before we
+describe the implementation of everything we have introduced so far,
+we must begin by defining our representation of scope and provide
+tools for its manipulation. Using our tools we can create well-scoped
+contexts which help to eliminate a large class of potential errors
+from the type checking process.
+
+To help visualize the structure of the software, we provide a
+high-level dependency graph in figure \ref{fig:dep}. We have arranged
+the graph so that the dependencies roughly flow from top to bottom,
+and so we will have to implement the software from the bottom up
+according to this figure.
+
+\begin{figure}
+  \label{fig:dep}
+  \caption{The high-level dependency graph}
+\centering
+\includegraphics[width=\textwidth]{pictures/dependency-graph}
+\end{figure}
+\clearpage
+
 \input{../../TypeCheckerGenerator/latex/CoreLanguage.tex}
 \input{../../TypeCheckerGenerator/latex/Thinning.tex}
 \input{../../TypeCheckerGenerator/latex/Substitution.tex}

@@ -47,7 +47,7 @@ v ‼V Γ = lookup (Const) Γ v
 _^Γ = weaken _⟨Γ_
 \end{code}
 }
-We provide a special function to extend contexts which appends a new
+We provide a special function to extend contexts that appends a new
 element to the context (making it no longer a context as $suc γ \neq γ$ in
 $(suc γ) ⇒[ \mbox{Const} ]\; γ$) before weakening the whole substitution
 yielding the context $(suc γ)\; \mbox{⇒[Const]} \;(suc γ)$. The extra effort

@@ -94,11 +94,11 @@ open import Failable using (_>>=_)
 We now have what is required to find a matching rule by matching the various
 patterns that it may contain. We iterate over the list of rules and return the
 first match. We chose a 'first match' approach here for simplicity of
-implementation however it is acknowledged that other approaches are far more
+implementation, however it is acknowledged that other approaches are far more
 suitable. We discuss this later in our evaluation of the software.
 
 In this type, we first encounter the failure handing monad that we will use to
-propagate errors. It works as one might expect, either succeeding with a value
+propagate errors. It works as expected, either succeeding with a value
 or failing with an error message.
 \begin{code}
 findRule : List β-rule →
@@ -115,12 +115,12 @@ findRule (r ∷ rs) t ty e with β-match r t ty e
 ... | just env  = succeed (r , env)
 \end{code}
 }
-To achieve reduction we will need to check the premise chain in the enclosed
+To achieve reduction we will need to check the premise chain, in the enclosed
 elimination to access the required environments. The mechanics of
 checking premise chains is not the business of $β$-reduction code and so we
 instead give a type to represent a function that can do this for us and insist
-that the caller provide it. We also provide a similar type appended with `
-which captures the same intuition except that it is "pre-loaded" with the
+that the caller provide it. We also provide a similar type appended with `,
+that captures the same intuition except that it is "pre-loaded" with the
 context.
 \begin{code}
 PremsChecker =  ∀{δ} → Context δ         →
@@ -156,7 +156,7 @@ We previously gave a type describing a premise-chain-checker, now
 we give similar types for things that will reduce for us, and things that might
 infer types. What is noticeably absent from these types is the existence of any kind
 of rules. Our normalisation procedure should be rule-agnostic and so we achieve this
-by taking great care in where we choose to mention them, and where we choose \emph{not}
+by being very careful where we choose to mention them, and, critically, where we choose \emph{not}
 to. We must, however, bear the rules in mind when we normalise and so a conscious
 decision is made here for normalisation to be a non-failable operation. In a world of
 user-supplied typing rules, we decide that flexibility is important and so when we
@@ -229,7 +229,7 @@ eliminations that will occur at each place in that pattern. We then navigate dow
 through the structure of the head pattern in our helper function so that we
 get to each place in the pattern, and when we do, we have built the svar that
 identifies it. This allows us to use the ∋ rule to get the type of that particular
-place which in turn facilitates the recursive call to qt to generate the head form
+place, which in turn facilitates the recursive call to qt to generate the head form
 at the nested place.
 
 To satisfy the well-scopedness of the subterms, we must maintain a proof

@@ -38,14 +38,14 @@ known as normalisation by evaluation. To do this, we will find
 that we require the ability to perform $η$-expansion and so we provide a
 rule to help us achieve this.
 
-In our η-rule, we store only the eliminator for each place in the pattern,
-then, to generate the eta expanded form, we map the elimination of the target
+In our η-rule, we store only the eliminator for each place in the pattern.
+To generate the η-expanded form, we map the elimination of the target
 over this environment of eliminators to get the full eliminations that
 are destined for each place in the pattern. This is very straightforward
-as a concept but we have to fix-up our types a little to convince
-Agda of the well-scopedness. We use a mapping function we defined, but did not
-mention, at an earlier stage to easily map over an environment to help us
-build the eliminations from the eliminators.
+as a concept but we have to fix up our types a little to convince
+Agda of the well-scopedness. We use a mapping function we defined to easily
+map over an environment and help us concisely build the eliminations from
+the environment of eliminators.
 \begin{code}
 record η-Rule : Set where
   open ∋rule

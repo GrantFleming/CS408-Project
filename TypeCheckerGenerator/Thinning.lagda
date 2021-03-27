@@ -149,7 +149,7 @@ Selectable X = ∀ {δ} {γ} → (δ ⊑ γ) → X γ → X δ
 There are many scoped entities that we will wish a thinning to act on,
 and so we adopt the convention that all functions detailing an action
 of thinnings begin with "⟨" except the action of a thinning on another
-thinning which equates to composition and so we use the more traditional
+thinning which equates to composition, and so we use the more traditional
 $∘$ notation.
 
 \begin{code}
@@ -214,7 +214,7 @@ _!_ : Selectable (BwdVec X)
 }
 
 A weakening is a special case of a thinning where the scope is extended by
-one at its most local position, for instance when passing under a binder.
+one at its most local position, for example when passing under a binder.
 This concept is captured here, as well as the relevant type that details
 the action of a weakening.
 

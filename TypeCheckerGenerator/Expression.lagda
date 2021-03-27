@@ -138,20 +138,18 @@ map {d = compu} f (elim e x) = elim (map f e) (map f x)
 map {d = compu} f (t ∷ T) = map f t ∷ map f T
 \end{code}
 }
-
 We are able to generate a term from an expression and some opening
 of an environment for the trusted pattern. Most of the cases recurse
 structurally, while variables are simply opened to encompassing scope,
-however we can note here how it is that we process our svar instantiations
-
+however we demonstrate below how svar instatiations are processed.
 \begin{code}
 toTerm  : (γ ⊗ p) -Env → Expr p d γ' → Term d (γ + γ')
 toTerm {γ = γ} {d = const} {γ' = γ'} penv (ξ / σ)
   = let σ'     = map-toTerm σ penv  in
     let id-fv  = id ⟨σ (γ ◃ γ')     in
-      (ξ ‼ penv) /term ((id-fv ++ σ'))
+      (ξ ‼ penv) /term (id-fv ++ σ')
 \end{code}
-That is to say, we first resolve the substitution of expressions to one of
+We first resolve the substitution of expressions to one of
 terms (here we must inline a specialisation of map to satisfy Agda's
 termination checker) before extending it with the identity substitution for
 all the free variables and finally performing the substitution on the term

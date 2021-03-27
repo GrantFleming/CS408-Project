@@ -163,7 +163,8 @@ patterns, which we then match against concrete syntax.
 
 Our concept of a pattern is structurally identical to that of a construction,
 except that we exclude thunks and introduce the notion of a \emph{place} that
-may stand for an arbitrary construction so long as we can fix up the scope.
+may stand for an arbitrary construction so long as we can thin it to the required
+scope.
 
 The dual concept of a pattern is that of an environment. It is structurally
 similar to a pattern except where a pattern may have a \emph{place}, an
@@ -1002,8 +1003,8 @@ $γ$.
 We now have the required machinery to define pattern matching. We do not
 define matching over some term and pattern scoped identically, but more 
 generally over some term that might be operating in a wider scope. This
-is crucial as a pattern is often defined in the empty scope so that we might
-not refer to arbitrary free variables when defining formal rules but these rules
+is crucial as a pattern is often constructed in the empty scope so that we might
+not refer to arbitrary free variables when defining formal rules, however, these rules
 may then be applied in some non-empty scope. 
 \begin{code}%
 \>[0]\AgdaFunction{match}\AgdaSpace{}%
@@ -1878,9 +1879,9 @@ that refers to it and so we construct a type to help us.
 The notion is that instead of encoding some path to a $place$ in the pattern,
 we instead encode some path between the pattern $p$ and some subpattern $q$. 
 $X$ encodes an empty path between a pattern and itself, then we
-may extend it, say with "\_∙" or "∙\_" so that we now show the path between
-a pair, and one of the elements of that pair. We can continue in a similar fashion,
-building some path, and if we are lucky enough to have it end in a $place$, then
+may extend it with "\_∙", "∙\_" or "bind" so that we now show the path between
+some term and a direct substructure. We can continue in a similar fashion,
+building some path, and if the path ends in a $place$, then
 we know we might convert it to the appropriate svar.
 \hide{
 \begin{code}%

@@ -51,10 +51,10 @@ id {suc γ} = (id {γ} ^) -, var ze
 \end{code}
 }
 We also define the action of such a substitution on a term, where most cases
-recurse on direct substructures as one might expect except for two cases of
+merely recurse on direct substructures except for two cases of
 interest that we show here. The first is that we must ensure we alter the
 substitution accordingly as we pass under binders, introducing an identity
-substitution for the newly bound variable but first fixing up the scope of
+substitution for the newly bound variable after weakening the scope of
 the substitution we already have. The second is where we find some variable
 and perform the actual substitution.
 \begin{code}

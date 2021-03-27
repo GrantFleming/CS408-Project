@@ -610,8 +610,8 @@ an arbitrary scope and so we define such an opening.
 \AgdaBound{prem}\<%
 \end{code}
 }
-We now take a slight detour so that we might present a definition we will shortly need.
-This definition is used to prove that a pattern contains no places. We index this type
+Before showing how premises may be chained together, we must present supporting definition.
+This is used to prove that a pattern contains no places. We index this type
 with the pattern in question, mandate that the type follows the pattern structurally
 but provide no way to encode a place.
 \begin{code}%
@@ -839,7 +839,7 @@ We now use these concepts to define a chain of premises that is guaranteed to
 establish complete trust in some pattern.
 
 We may string together premises, threading what is left to trust
-after each premises into what is still to trust in the next. We collect everything
+after each premise into what is still to trust in the next. We collect everything
 that we learn to trust along the way, allowing later premises to refer to entities
 whose trust was established by earlier premises.
 
@@ -1978,7 +1978,7 @@ The type-checking rule involves both an input and a subject. For
 $T ∋ t$ we take T to be a trusted input and seek to establish trust
 in t. Our premise chain reflects this by using the input as its
 trusted pattern and seeking trust in the subject. Matching occurs on
-both the input and the subject. If successful it returns a pair of
+both the input and the subject. If successful, it returns a pair of
 environments.
 \begin{code}%
 \>[0]\AgdaKeyword{record}\AgdaSpace{}%
@@ -2677,9 +2677,9 @@ some \emph{target}. An elimination rule, if it matches, is used to try
 and \emph{supply} us with the type of the resulting term.
 
 To build the output, we don't need to hold any description
-of the target term whatsoever, it is enough that we describe what type we require
-it to be. In our elimination typing rules, we take a pattern that we might use to
-match against the type of the target, one that we might match against the $eliminator$,
+of the target term, it is enough that we describe what type we require
+it to be. In our elimination typing rules, we take a pattern to
+match against the type of the target, another to match against the $eliminator$,
 and seek to establish trust in the $eliminator$ under the assumption that we trust the
 target type. We use an Expression to build the type of the elimination from everything
 in which the premise chain has established trust. Matching an elimination rule requires

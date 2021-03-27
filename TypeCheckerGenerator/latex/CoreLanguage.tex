@@ -307,8 +307,8 @@ for a subterm), variables, type annotated terms with "::" and eliminations
 constructions using thunk, as being able to synthesize the type of a term
 guarantees that we are able to check it.
 
-Note that blindly embedding synthesizable terms with 'thunk' is
-not always the best course of action, in the case of an annotated
+Note that blindly embedding synthesizable terms with a thunk is
+not always the best course of action. In the case of an annotated
 term, we already have a suitable construction under the annotation.
 For convenience, we provide a function to perform this embedding and
 hence a function to take \emph{any} computation to a construction and

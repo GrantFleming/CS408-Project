@@ -27,7 +27,7 @@ instead mandate the construction "set" to mean the universe.
 
 When a user describes types, they are not required to specify that
 they exist in the universe. In a single-universe type system, there
-is nowhere else these constructions could live and so we give this
+is nowhere else they could live and so we give this
 functionality for free in the resulting software.
 
 \section{The high-level structure of descriptions}
@@ -57,7 +57,7 @@ follows:
 \end{itemize}
 
 We place additional conditions on when we can supply an
-$\eta$-rule which we will discuss further in a future section, however
+$\eta$-rule (which we will discuss further in a future section), however,
 for now we focus on the important concepts of patterns and expressions
 as these are critical to describing and building terms in our DSL.
 
@@ -75,8 +75,8 @@ represent arbitrary subterms in a pattern. We adopt the convention
 that meta-level variables are always uppercase and so when we speak
 of identifiers in this section, we are referring to strings of
 uppercase alphabetic characters. Newly bound variables are denoted by
-an identifier postfixed with a period, meta-level term variables are
-simply an identifier. All meta-level variables must be separated from
+an identifier postfixed with a period and meta-level term variables are
+are denoted by an identifier in isolation. All meta-level variables must be separated from
 the rest of the pattern by whitespace. All other characters are
 assumed to be literals and are parsed as atoms except for
 parenthesis. We may, for example, describe a pattern representing
@@ -116,15 +116,15 @@ $$
 $$
 
 In this case, we require that the bound variable reference is
-surrounded by curly braces, this is because we are placing a
+surrounded by curly braces because we are placing a
 computation in a place that expects a construction. We will consider
-the meaning of this more later and so we do not dwell on it now.
+the meaning of this later.
   
 Since we require no meta-level sub-expression variables, we assume
 that any identifier standing alone and un-post/prefixed is intended to
 refer to a meta-level term variable of some pattern that is
 in-scope. When this expression is used in some concrete scenario, all
-the in-scope patterns will have been matched against terms and these
+the in-scope patterns will have been matched against terms. These
 variables are then used to pull out subterms that we use to construct
 the new term. The following example demonstrates the construction of
 such an expression when we assume the pattern to the left of the
@@ -137,8 +137,8 @@ $$
 
 We now consider the case where we refer to a sub-term that exists
 under some number of binders in the pattern. If we wish to use such a
-term then we must provide the substitution for all of the free
-variables in the subterm. It is for this reason that such variables in
+term then we must provide a substitution for all of the free
+variables in the subterm and so variables in
 an expression can optionally be followed by a "/" and some
 substitution. A complete substitution for all free-variables is
 mandated in the DSL to avoid unintended variable capture and the
@@ -150,13 +150,13 @@ $$
 \mbox{\textbackslash} \; Y. \; ->\; M} \qquad \Rightarrow \;
   \mbox{\textbackslash}\;  X. \; ->\; \{.X\} \; and\;  M} $$
 
-We must also devise a syntax to describe substitutions themselves,
-we do so by simply giving substitutions as a list surrounded by square
-brackets, each substitution separated by a comma and is given as an
+We must also devise a syntax to describe substitutions themselves.
+We do so by giving substitutions as a list surrounded by square
+brackets, each substitution is separated by a comma and is given as an
 expression so long as that expression represents a term with a
-synthesizable type. When we later talk about how we build our
-type-checker we will discuss this further, but for now it is sufficient
-to explain that we may synthesize the type of a free variable (by
+synthesizable type (a computation). When we later talk about how we build our
+type-checker we will discuss this further, but for now the following
+justification should be sufficient. We may synthesize the type of a free variable (by
 looking up its type in the context) and so if we are to substitute
 this variable for another term we should make sure that it is possible
 to synthesize its type also incase this is a property that is needed
@@ -167,7 +167,7 @@ the "least local" variable leftmost in the list and the most local
 variable rightmost. This list must also begin with a comma. We do not
 supply an empty list in the case that a meta-term-variable does not
 contain free variables, we simply omit it. The following example shows
-how we use substitutions in this way by repeating the previous example
+how we use substitutions in this way by repeating the previous example,
 except that now we make the captured "X" explicit and remove the free
 "Y":
 
@@ -227,8 +227,7 @@ listed together one after another, to give the
 conditions under which we may make some judgement. We will first
 detail each type of premise before discussing what it means to chain
 the premise together. We will later detail what is considered
-in-scope when defining an expression as part of a premise, and so we
-gloss over this when detailing the premises here.
+in-scope when defining an expression as part of a premise.
 
 The type premise is written by stating the word "type" followed by
 the identifier corresponding to some meta-level term variable in
@@ -268,7 +267,7 @@ $$
 
 Here we note that the expression must be a computation in case we use
 it in a place where type synthesis is required. The context
-extension premise is somewhat different in that its use is mandated if
+extension premise is somewhat different. Its use is mandated if
 we wish to present a premise talking about some meta-level term
 variable that exists under a binder in the original pattern. That is,
 we are only allowed to present a term with free variables along with a
@@ -279,7 +278,7 @@ A chain of premises is always considered in the context of some
 pattern, the subject. A chain of premises also begins with some
 trusted pattern, the nature of this pattern depends on where we are
 using the chain of premises and will be detailed later. The subject
-contains meta-level term variable which we do not yet trust, but seek
+contains meta-level term variables which we do not yet trust, but seek
 to trust, and the trusted pattern contains meta-level term variables
 which we trust already. The purpose of a chain of premises is to obtain
 trust in the subject by describing how to obtain trust in each of the
@@ -296,21 +295,20 @@ variables when building expressions). As we process each link in the
 chain, we may potentially move something from the subject (to be
 trusted) to the input (which we trust) bringing it in-scope from the
 next link in the chain until the end. A chain may only end if there
-remains nothing in the subject to be trusted, this is something we
-enforce by construction in our software.
+remains nothing in the subject to be trusted (something we
+enforce by construction in our software).
 
-The initial scopes of a premise chain, that is the patterns where we
+The initial scope of a premise chain, that is the pattern where we
 may reference meta term variables without establishing any trust,
-differ depending on the purpose for which we are building the
+differa depending on the purpose for which we are building the
 chain. If we are supplying the premises for a new type, then we supply
 nothing as initially trusted and the pattern representing the new type
 is the subject that we seek to trust. If we are supplying the premises
 for checking some language construction is of a certain type, then we
-trust that the type as input, and with this information assumed we
-seek to trust the new data constructor pattern that we take as a
-subject. The type of the target is also in scope when we give the
-premises that seek to trust some eliminator we supply in an
-elimination typing rule.
+trust the type as input, and  we seek to trust the new data
+constructor pattern that we take as a subject. The type of the target
+is also in scope when we give the premises that seek to trust some
+eliminator we supply in an elimination typing rule.
 
 \section{Representing $\eta$-expansion rules}
 \label{DSL-eta-rules}
@@ -333,9 +331,9 @@ giving an environment for the pattern, where an environment is
 structurally identical except that it has a term everywhere the
 original pattern had a term variable.
 
-For instance, given the product type $A \; x \; B$ with eliminators
-$fst$ and $snd$ which describes values $X , Y$ then we might give $fst
-, snd$ to inform the construction of an $\eta$-expansion rule. Similarly,
+For instance, given the product type $A\;×\;B$ that describes values
+$(X \;,\; Y)$ and has eliminators $fst$ and $snd$ then we might give $(fst
+, snd)$ to inform the construction of an $\eta$-expansion rule. Similarly,
 for a function type $A \; -> \; B$ which describes values $\setminus
 X. \; -> \; M$  we might give $\setminus Y. \; -> \; Y$ to inform the
 construction of an $\eta$-expansion rule which when applied to some
@@ -349,7 +347,7 @@ When designing the DSL there were three main problems that we wished to
 address. The first is that
 type-theory is an inherently jargon-heavy topic and so here we attempt
 to keep our DSL as jargon-free as possible, in particular favouring
-syntax that can be read linearly. The trickiest part of describing a
+syntax that can be read linearly. The challenge in describing a
 type-system should be constructing the appropriate expressions,
 not understanding how the high-level syntax of the DSL is laid out.
 
@@ -366,8 +364,8 @@ approachable to read and understand.
 
 The third and final problem that we seek to address is that the
 freedom afforded with most methods of describing type-systems make
-dependencies non-obvious. For instance, it is easy to fall into the
-trap of thinking that perhaps typing some elimination depends on the
+dependencies non-obvious. For instance, it is easy to mistakenly
+convince yourself that the type of some elimination depends on the
 syntax of the target in some way, this is not the case. Dependencies
 are made clear in our DSL using a combination of hierarchical
 structure and a carefully chosen order in which we require the
@@ -433,7 +431,7 @@ in appendix \ref{STLCspec}.
 
 In the third stage, we define what patterns of syntax correspond to
 values of this type and provide the necessary premises to identify
-when this is the case, in our example we are forced to trust a single
+when this is the case. In our example we are forced to trust a single
 meta-variable so we need to supply at least one premise to achieve
 this.
 
@@ -456,7 +454,7 @@ Note that since we gave one eliminator earlier, we are forced to give
 exactly one reduction inside the value description which we do by
 supplying an expression that substitutes for the free variable in M.
 
-Again we emphasize the continued prioritization of a jargon-free linear
+Again we emphasise the continued prioritisation of a jargon-free linear
 reading experience and the use of hierarchy to make dependency explicit.
 
 Finally, we give the required information required to construct the
@@ -481,19 +479,20 @@ a complete description of simple non-dependent function types.
 
 We have given this description in four stages intentionally to show
 that at each stage we had a valid, parsable description of a type. We
-allow types with no values as was the case after the first stage, we
+allow types with no values as was shown the first stage. We
 allow the elimination typing rule to be supplied even if there are no
-values. We then allow the description of the values of the type, and
-finally, we allow the addition of eta-expansion information. The
+values as was shown in the second. We then allow descriptions of
+the values of the type in stage three, and finally, we allow the
+addition of η-expansion information in the last stage. The
 resulting DSL is quite modular and this makes definitions
-concise where all of the features are not required, as is the case for
+concise where all of the features are not required, as can be seen in
 the base type $alpha$ we introduced initially. This was an intentional
 decision that we made to address the problems with brevity that we
 identified earlier in this section.
 
 A final point to make is that of whitespace. Indentation is irrelevant
-in our DSL to allow maximum flexibility, we choose to indent
-our descriptions in such a way as to emphasise the structure of the
+in our DSL to allow maximum flexibility. We choose to indent
+our descriptions to emphasise the structure of the
 language. There are some cases where new lines are required, after a
 keyword (something ending with ":") or if the keyword is identifying
 some kind of entity described by a pattern then the new line must

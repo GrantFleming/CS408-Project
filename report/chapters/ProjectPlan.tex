@@ -13,7 +13,7 @@
   standardised enough for us to recognise common syntax for
   describing these aspects in literature.
 
-  This project seeks to capitalize on this by abstracting
+  This project seeks to capitalise on this by abstracting
   the common elements and asking the user to provide only what is
   specific to the type system they seek to represent. Given any
   description of a type-system in a specified format, a
@@ -37,8 +37,8 @@
   \item A type-checker generator as a standalone binary
   \item At least two example specifications in the DSL
   \item At least two source code examples for each
-    specification, one which type-checks successfully and one
-    which does not
+    specification, one that type-checks successfully and one
+    that does not
   \item The final report
   \end{itemize}
   
@@ -67,7 +67,7 @@
 
   \begin{enumerate}
   \item A DSL that we can use to write \emph{specifications}
-    of type systems
+    of type systems.
   \item A type-checker able to check types for a generic syntax
     using a \emph{fixed} set of typing rules where the checkable
     source code is supplied hard-coded.
@@ -92,7 +92,7 @@
     \item Failure to successfully type-check source code
     \end{itemize}
   \item The software passes a fixed set of test cases (specifications and
-    source codes) succeeding, failing and showing
+    source codes) succeeding, failing, and showing
     appropriate errors as detailed in the test cases.
   \item The software can generate type-checkers capable of
     checking both non-dependent and dependent types.
@@ -114,7 +114,7 @@ evaluate our performance.
   unambiguously describe a type system. \endlr
 28/12/2020 & Design a DSL, formalising a syntax for expressing these
 elements. \endlr
-04/01/2020 & Produce sample specifications for testing using the DSL. \endlr
+04/01/2021 & Produce sample specifications for testing using the DSL. \endlr
 01/03/2021 & Design and implement a type-checker-generator. \endlr
 15/03/2021 & Verify and test the implementation. \endlr
 22/03/2021 & Conduct a qualitative evaluation of the DSL and resulting
@@ -132,9 +132,9 @@ files interspersed with areas identified as code.
 
 By developing the code in this manner, we somewhat blur the lines
 between implementation, documentation and reporting as we develop
-aspects of all three simultaneously resulting in code that is
-self-documented. We do not consider a user-guide as necessary since running
-the software consists of running a binary and supplying paths to some
+aspects of all three simultaneously, resulting in code that is
+self-documented. We do not consider a user-guide necessary since running
+the software consists of executing a binary and supplying paths to some
 specification file and some source code file. We will ensure the
 software provides appropriate feedback if such files are not
 identified.

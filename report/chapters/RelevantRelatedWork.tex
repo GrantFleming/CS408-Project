@@ -23,49 +23,48 @@ appropriately and resolve dependencies, while it tries to
 solve unification constraints.
 
 This leads to an interesting consequence in their approach to
-generalization in let expressions. Now that type variables
+generalisation in let expressions. Now that type variables
 can exist in the context, we can instantiate a type
 scheme by introducing a new type variable to the context,
 and removing the necessary $\forall$ quantifier in the
-scheme. Consequently, to generalize, we can remove these
+scheme. Consequently, to generalise, we can remove these
 type-variables from the context and introduce an
 appropriate $\forall$ quantifier. The authors explicitly
 place a third element into the context, a marker that delimits
-generalization to an appropriate scope.
+generalisation to an appropriate scope.
 
 \section{Syntactic universes}
 
-The concept of a syntactic universe was first introduced by
-the author's supervisor, Conor McBride, and further general
-material on universe construction was obtained when covered
+The concept of a syntactic universe was first introduced to the author
+by his supervisor, Dr Conor McBride, and further general
+material on universe construction was obtained when it was covered
 as a topic in an Advanced Functional Programming class, taught
-by Fredrik Nordvall Forsberg.
+by Dr Fredrik Nordvall Forsberg.
 
 Universe constructions are a way of programming generically by
-computing over descriptions of data, rather than the data itself. Thus
-we design descriptions carefully to capture the properties of
-everything in our universe, create the required computations on the
-descriptions, and couple this with the ability to create descriptions
-and retrieve the \emph{meaning} of descriptions - get ahold of
+computing over descriptions of data, rather than the data itself. Thus,
+descriptions are designed carefully to capture the necessary properties of
+things in the universe and computations are created that operate on
+these descriptions. As well as creating descriptions it is also
+possible to retrieve the \emph{meaning} of descriptions - to get ahold of
 the actual entity they are describing.
 
-This idea is explored in more depth when we
+We learn more about this concept when we
 explore work detailing how we might build a universe of
 syntaxes that are both scope and type-safe and abstractly
-define common semantics such as substitution (which is defined in this
+define common semantics such as substitution (that is defined in this
 paper to work over arbitrary descriptions) and type-checking (that is
-defined in this paper to work over a specific description only).
+defined in this paper to work over a specific description only)
 \cite{DBLP:journals/corr/abs-2001-11001}.
 
-In this paper, the authors detail a universe of type and scope-safe
-syntaxes. First they formalise the concept of well-scoped entities
-using a family of types and detail useful combinators for handling
-scope as well as providing the required machinery for representing
-environments. They also introduce the idea of a general notion of
+The authors first formalise the concept of well-scoped entities
+using a family of types, and detail useful combinators for handling
+scope before providing the required machinery for representing
+environments. They then introduce the idea of a general notion of
 semantics for a language and demonstrate its use by defining several
 operations in terms of this generic semantics.
 
-After priming the reader on previous work in creating a universe of
+After exposing the reader to previous work in creating a universe of
 data types \cite{DBLP:conf/icfp/ChapmanDMM10} they then go on to
 modify the \emph{descriptions} defined in this work to instead
 describe a universe of scope safe and well-kinded syntaxes.
@@ -74,22 +73,23 @@ With this concept of descriptions in place, the previous notion of
 semantics is replaced by a more generic notion which is not
 syntax-specific and can be used to represent a semantics for any
 language that we might \emph{describe}. The authors are able to show
-true syntax-generic programming by forming functionality as semantics
+true syntax-generic programming by defining functionality as semantics
 over a generic description.
 
 Later in this paper, the authors broach the subject of type-checking
-and elaboration. In particular, their section on elaboration provides
+and elaboration. In particular, the section on elaboration provides
 a concrete example of creating an elaborator as semantics over a
 description of bidirectional lambda calculus.
 
-\section{Bi-directional dependent type theory}
+\section{Bidirectional dependent type theory}
 
-While bi-directional typing is not new
-\cite{DBLP:journals/toplas/PierceT00}, formalization of the metatheory
-is \cite{TypesWhoSayNi}. 
+While a bidirectional approach typing is not new
+\cite{DBLP:journals/toplas/PierceT00}, formalisation of the metatheory
+is \cite{TypesWhoSayNi} and we will use this formalisation thoughout
+our project. 
 
 The work in this paper formalizes the metatheory for a whole class of
-bi-directional dependently typed languages. It demonstrates how
+bidirectional dependently typed languages. It demonstrates how
 desirable properties of type systems may be enforced by construction,
 outlines pitfalls that might be encountered when combining type
 checking with type synthesis, and provides an object-level
@@ -97,8 +97,8 @@ syntax split into carefully chosen grammatical classes that we might
 use to represent arbitrary syntax.
 
 It then emphasises the importance of precisely tracking information
-flow as it defines judgement forms, patterns, expressions and typing
-rules and determines a method for approaching the \emph{schematic
+flow as it defines judgement forms, patterns, expressions, and typing
+rules before determining a method for approaching the \emph{schematic
   variables} that appear in \emph{formal judgements} in the typing
 rules.
 

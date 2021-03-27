@@ -13,10 +13,11 @@
 \secondmarker{Dr Clemens Kupke}
 
 \begin{document}
-	\maketitle
-	\tableofcontents
-
+        \maketitle
         \input{chapters/Abstract.tex}
+	\tableofcontents
+        \addtocontents{toc}{\protect\thispagestyle{empty}}
+        
         \part{Background \& Literature Review}
 	\input{chapters/WhatIsATypeSystem.tex}
         \input{chapters/TypeTheoryOverview.tex}        

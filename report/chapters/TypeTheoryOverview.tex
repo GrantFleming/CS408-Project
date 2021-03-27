@@ -28,9 +28,9 @@
           the logic, such as $ (\lambda x.xx)(\lambda x.xx) $ were no
           longer well-formed under the new system.
           
-          As the field of computer science developed in sophistication in
+          As the field of computer science expanded rapidly in
           the late 1960s and 1970s, prominent logicians and computer
-          scientists started to develop the notion of parametric
+          scientists started to discover the notion of parametric
           polymorphism. It was noted that some functions had common
           behaviour over differing types and that the behaviour of these
           functions did not depend on the types themselves. This lead to
@@ -55,7 +55,7 @@
           $\alpha\to\beta$ by modern notation. System F introduces a new
           binder $\Lambda$ that is used to bind variables that range over
           types. In this system, terms of the form $\Lambda t.M$ denotes a
-          function that takes as its first argument some type and returns a
+          function that takes, as its first argument, some type and returns a
           term with all references to t replaced by that type. This function
           has type $\Delta t.M^{t}$ where $M^t$ is the type of $M$.
       
@@ -82,8 +82,8 @@
             concepts as polytypes and monotypes respectively
             \cite{milner1978}. 
             
-            This has the consequence that a given term may have any number of
-            type-schemes, some more general than others, some more specific,
+            A given term may have any number of
+            type-schemes, some more general than others,
             allowing us to commit to stating more or less about our
             values as the situation requires. Hindley then presents
             the idea of a \textit{principle type scheme} (p.t.s) where
@@ -92,22 +92,21 @@
             substitution for quantified variables in the p.t.s.).
             
             He then proves that any term for which you can deduce a type scheme,
-            has a p.t.s., that it is always possible to work out what the p.t.s. is
-            up to \textit{trivial instances} and introduces an
+            has a p.t.s. It is always possible to work out what the p.t.s. is
+            up to \textit{trivial instances} and he introduces an
             algorithm to accomplish this type inference - Algorithm W.
 
             As a consequence of this system, there is no need for us to
             annotate the definitions in our code with type
             information since we can always infer the p.t.s (most
             general type-scheme) of our terms. This can result
-            in cleaner looking code in some circumstances however
+            in cleaner looking code in some circumstances however,
             there is an argument that providing type information
             explicitly in the syntax of the language serves as
             important documentation.
             
             The type inference algorithm that is detailed in the Hindley-Milner
-            system is also instrumental in the way types are checked.
-            
+            system is also instrumental in the way types are checked.         
             In a system like System F, whenever a polymorphic
             function is applied, it must first be provided with the type
             parameter before being provided with
@@ -115,7 +114,7 @@
             type-checked. With Hindley-Milner, as a direct consequence
             of its type inference features, this is not
             necessary. Instead, the
-            most general type of the function can be inferred, and it
+            most general type of the function can be inferred and it
             is then possible to check that the type of the supplied
             value parameter is some instance of the input type of the function.
             
@@ -180,7 +179,7 @@
             \end{array} \]
             
             In system F, this deduces the only type for $\Lambda t . \lambda x_t
-            \cdot x$ (up to the renaming of bound variables) however, note that
+            \cdot x$ (up to the renaming of bound variables), however, note that
             in Hindley-Milner we may also deduce other type (schemes)
             for $\lambda x \cdot x$: 
             
@@ -199,11 +198,11 @@
             \end{prooftree}}
             \end{array} \]
                                    
-            If you wanted a term with an equivalent type in system F you would
+            If you wanted a term with an equivalent type in System F you would
             need to create a new term $\Lambda t_1 . \Lambda t_2 . \lambda x_{t_1
               \to t_2} \cdot x$
             
-            A full list of the typing rules of both languages is available in
+            A full list of the typing rules of both type systems is available in
             appendices \ref{appendix:sysFrules} and
             \ref{appendix:HMrules}. 
                     
@@ -217,17 +216,16 @@
           Curry-Howard isomorphism: the idea that statements in logic can be
           thought of as types, and a proof of a logical statement can
           be thought of as a program (consequently, simplification of
-          proofs correspond to the execution of a program)
+          proofs correspond execution of programs)
           \cite{wadler2015}. He noted that despite this isomorphism,
           computer scientists often developed their own
           languages and type systems instead of using existing
-          logics and hence his theory of Intuitionistic types was
-          designed to have practical uses as both a logic and
-          programming language.
+          logics and so he designed his theory of Intuitionistic types
+          to have practical uses as both a logic and programming language.
 
-          While the Curry-Howard isomorphism had an existing
-          foothold, relating function types to implication, for
-          instance, Martin-Löf was the first to extend this to
+          While relating function types to implication was already
+          a well known consequence of the Curry-Howard isomorphism,
+          Martin-Löf was the first person to extend the notion to
           predicate logic by having his types depend on values,
           using dependent functions and dependent pairs to encode
           universal and existential quantification respectively.
@@ -258,32 +256,32 @@
           \item Types of the form $I (A , a , b)$ encode propositional
             equality where values of this type represent proofs
             that $a \equiv b \in A$.
-          \item W-types are a little more complex. They have the form
+          \item W-types have the form
             $( W x \in A ) B(x)$ and represent \emph{wellorderings} (a
             somewhat more intuitive explanation is that they represent
             well-founded trees). This type allows us to define types
             with complex structures that are inductive in nature.
             Some of the types that Martin-Löf includes in his
-            type-theory, such as that of Lists or $\mathbb{N}$ can be
+            type-theory, such as that of Lists or $\mathbb{N}$, can be
             defined as W-types.
           \item Universes are the type of types, allowing
             the transfinite types needed to talk about a "sets of
-            sets", Martin-Löf recognised the need for such types when
+            sets". Martin-Löf recognised the need for such types when
             reasoning about certain areas of maths such as category
             theory.
           \end{itemize}
 
-          One of the consequences of this, more powerful, type system,
+          One of the consequences of this powerful type system,
           is that unlike Hindley-Milner, we can no longer infer the
           most general type of any term.
 
           Take, for example, a value of some dependent pair $(2 , [a :: b
-            :: nil])$ perhaps the type of the second element is
+            :: nil])$ The type of the second element could
           dependent on the first, and the $B$ in the type $(
-          \Sigma x \in A ) B(x)$ corresponds to some function $\lambda
-          n \to Vec \: X \: n$, and yet maybe it does not depend on the first
-          argument at all and $B$ simply corresponds to $\lambda n \to
-          Vec \: X \: 2$ - there is no way for us to definitively
+          \Sigma x \in A ) B(x)$ might correspond to some function $\lambda
+          n \to Vec \: X \: n$, and yet it might not depend on the first
+          argument at all and $B$ could simply correspond to $\lambda n \to
+          Vec \: X \: 2$. There is no way for us to definitively
           deduce $B$ from the value alone. To give a more precise
           definition of the problem we might state that we cannot
           employ Hindley-Milner style type inference in a dependently

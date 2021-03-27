@@ -3,14 +3,14 @@
 From a computer science perspective, a type is a piece of information
 that we attach to terms or other constructs of a programming language
 so that we might verify the validity of their use or otherwise reason
-about the meaning of the program. The classic example of checking such
-validity is that of attaching a type to a function that identifies
-the type of the term it expects as input, and thus being able to later
+about the meaning of the program. The classic example of checking
+validity is attaching a type to a function that identifies
+the type of the term it expects as input, and thus we are able to later
 check that any input supplied conforms to this type.
 
 Type systems use the types assigned to terms to help the
 programmer avoid certain classes of errors by checking that terms of
-various types are combined in ways which are valid according to
+various types are combined in ways that are valid according to
 their types and the rules of the type system. Exactly when these
 checks take place can vary, sometimes occurring before compilation,
 known as static type checking, and sometimes occurring after
@@ -27,10 +27,10 @@ parameters to type constructors, the language is said to be
 dependently typed as it depends on values in the language.
 
 The features offered by type systems vary greatly. All will involve
-some incarnation of type checking however they can often include
+some incarnation of type checking however, they can often include
 more advanced features such as type inference, higher-order functions,
 algebraic data types, various flavours of polymorphism and termination
-checking \cite{Abel_2004}. In some applications, the type system even
+checking \cite{Abel_2004}. In some applications, the type system
 takes an interactive role in the production of code as is the case
 with some theorem provers and dependently typed programming languages. 
 
@@ -39,5 +39,5 @@ inductive rules that describe aspects of the system such as when we
 can assign some type or when we might consider types
 equivalent. In the case of dependent types, we also need to provide
 some semantics so that we might make sense of arbitrary terms in the
-type, in this case, the type checking process might need to appeal to
+type. In this case, the type checking process might need to appeal to
 reduction to perform some check.

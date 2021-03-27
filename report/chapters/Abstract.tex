@@ -4,33 +4,33 @@
   implement  type-checkers can be commonly abstracted across a
   family of type systems.
 
-  We will aim to create a generic type checker that is
+  The aim is to create a generic type checker that is
   able to type-check code so long as the type system of the language
   is described to it. 
   
   We begin by performing a general type theory literature review:
-  taking the reader on a whirlwind tour of the simply typed lambda calculus
+  covering the simply typed lambda calculus
   \cite{church1940}, System F \cite{reynolds1974} and Hindley-Milner
   type theory \cite{hindley1969,milner1978,milner1982}
   before finally exploring Intuitionistic type theory
   \cite{martinlof1980} (sometimes known as Martin L\"{o}f type
-  theory). We will then review some select literature relevant to
+  theory). We then review some select literature relevant to
   the implementation of various type-checker components and some
   relevant meta-theory.
 
-  Armed with our new found knowledge we will develop a domain-specific
+  After reviewing our research we will develop a domain-specific
   language (DSL) for describing type systems, paying special attention
   to not collect redundant information from the user.
 
-  We will put our DSL to good use by designing and
-  implementing a type-checker-generator in Agda. This will take the
+  We then use our DSL when we design and
+  implement a type-checker-generator in Agda. This will take the
   form of a piece of software that receives, as its input, a
   specification file written in our previously developed DSL and a
   source code file in the language it describes. The software will then 
   type-check the source code according to the type-system described in
   the specification. 
 
-  We will conclude by evaluating our DSL, software, and design and
+  We conclude by evaluating our DSL, software, and design and
   implementation process. Finally, we speculate as to how we might
   improve our software and conclude by outlining possible areas for
   future work.

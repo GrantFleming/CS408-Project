@@ -102,7 +102,7 @@ univ-check  :  Context γ            →
 We define a notion of term equivalence that we will need later
 to check the type of computations embedded in constructions. This is a
 purely syntactic action. If terms are to have their normal forms compared
-then they must be normalized before checking their equivalence here.
+then they must be normalised before checking their equivalence here.
 
 \begin{code}
 _≡v_ : Var γ → Var γ → Failable ⊤
@@ -146,7 +146,7 @@ _≡ᵗ_ {compu} (t ∷ T) (t' ∷ T') = do
 The high-level functionality of our type checker is given by two functions,
 check and infer. We check the type of constructions and infer the type of
 computations, however since we can embed computations in constructions using
-$thunk$ we may accept a call to check the type of any term.
+a thunk, we may accept a call to check the type of any term.
 
 When checking constructions, we make a distinction between two cases,
 either we duck under a thunk to check the computation beneath it, or we
@@ -245,7 +245,7 @@ check-premise-chain Γ rules penv qenv (prem ⇉ prems)
 Checking a whole chain of premise proceeds as one might expect; each premise is
 checked in order. The environments for the things we trust accumulate while the
 environments for the things that remain to be trusted are whittled away. If the
-premise chain is empty, we simply return what it is that we already trust.
+premise chain is empty, we simply return what we already trust.
 
 In direct correspondence to our initial three functions that check the
 various user-defined rules, we provide three more, one for running each
@@ -255,7 +255,7 @@ rule is indeed a type.
 
 We give two examples here, that of running a $∋$ rule and that of running
 an elimination rule. The first merely tries to succeed, the second must
-return the synthesized type.
+return the synthesised type.
 
 We do not request environments for the exact patterns in a rule, but instead
 for their opening into the current scope. Similarly, when we retrieve the
@@ -293,7 +293,7 @@ run-erule {γ} Γ rules elim-rule input-env subject-env
       succeed elim-ty
 \end{code}
 Our type checking process is a highly mutually recursive process by nature. We can
-leverage Agda's termination checker to give us feedback which we might use to
+leverage Agda's termination checker to give us feedback that we might use to
 guarantee that the process terminates. We are unable to guarantee termination
 in this case as we do not impose the required restrictions on user-supplied rules. If
 a user supplies a rule containing a circular check, then the type checking

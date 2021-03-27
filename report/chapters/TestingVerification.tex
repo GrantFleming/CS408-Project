@@ -5,8 +5,8 @@
 Throughout the process of building the software, we have tried to
 ensure we leverage Agda's expressive type system to maintain
 invariants that allow us to forgo large swathes of testing that would
-otherwise be required. There are certainly benefits to be had here
-however there are limitations to this method and it is often not
+otherwise be required. This approach carries benefits,
+however, there are limitations to this method and it is often not
 practical to rely on capturing such invariants in all cases.
 
 Firstly we note that we are explicit about scope throughout the
@@ -18,19 +18,19 @@ terms and expressions) are guaranteed to be well-scoped and as such we
 manage to eliminate a huge testing space where various functions would
 have otherwise had to deal with potential "out of scope"
 errors. Similarly, we can use scope to mandate that we are given a
-context sufficient for use with a particular scoped term and more
-generally ensure that we are explicit about the scope that we expect,
-that the scope that we choose to return.
+context sufficient for use with a particular scoped term and, more
+generally, ensure that we are explicit about the scope that we expect,
+and the scope that we are returning.
 
 Another area where we make careful use of types is that of patterns
 and environments. The way that an environment is
-constructed relative to some pattern that indexes it ensures that it
+constructed relative to some pattern that indexes it, ensures that it
 is well-formed according to the pattern in question. This also gives
 us the power to request such a well-formed environment, simultaneously
 excluding the need to test for behaviour on ill-formed environments
 while having the effect of guaranteeing a sensible output where we
 might otherwise have had to employ a Maybe result. Schematic variables
-get similar treatment here allowing us to provide a function to look
+get similar treatment, allowing us to provide a function to look
 up the term referred to by these variables in a manner that cannot
 fail. 
 
@@ -45,14 +45,14 @@ toTerm : (γ ⊗ p) -Env → Expr p d γ’ → Term d (γ + γ’)
 First, note how we can ensure that we get the correct kind of
 environment for the expression by sharing the same pattern \emph{p} in
 the environment and expression types. We ensure we get the correct
-kind of term, either a construction or a computation by sharing the
+kind of term, either a construction or a computation, by sharing the
 same directionality \emph{d} between the expression type and term
 type. Finally, we manage the scope explicitly, ensuring that for an
 expression in some scope \emph{γ'} and some pattern (in the empty
-scope although you cannot see that explicitly in the type here) which
-has been opened in \emph{γ} results in a term scoped in (γ + γ'). We
-certainly get a lot of verification "bang-for-the-buck" and make sure
-to capitalize on this throughout.
+scope although you cannot see that explicitly in the type here), which
+has been opened in \emph{γ} results in a term scoped in (γ + γ'). Agda
+affords us the opportunity to conduct a lot of verification in this
+manner and we make sure to capitalise on this throught the project.
 
 Another example where could expose our type-led verification is in
 that of premise chains described in section \ref{section-premises}. We
@@ -80,14 +80,14 @@ data Prems (p₀ q₀ : Pattern γ) : (p₂ : Pattern γ) → Set where
           Prems p₀ q₀ p₂’
 \end{verbatim}
 
-We have given some example of where we have used the type system to
-verify important properties of our code however this is a technique we
+We have given some examples of where we have used the type system to
+verify important properties of our code. This is a technique we
 used extensively when constructing the software and we consider it our
 primary method of ensuring a good level of correctness.
 
 \section{Where type-led verification is insufficient}
 
-What we certainly need to test is aspects of the system that depend on
+We must provide tests for aspects of the system that depend on
 user-supplied instantiations of the concepts and rules we have
 defined. Especially where the results depend on several parts of the
 system working together. Using the type system to verify software is
@@ -98,10 +98,10 @@ capture in a type and so these aspects of the system are tested in a
 more traditional manner.
 
 When writing this software, we include a suite of tests that cover
-areas such as beta reduction, normalisation, eta expansion, type
-checking and various aspects of parsing, an area where we
-focused less on type-led verification. A larger example of the testing
-conducted is available in appendix \ref{appendix-tests}.
+areas such as β-reduction, normalisation, η-expansion, type
+checking and various aspects of parsing (an area where we
+focused less on type-led verification). A larger example of the testing
+we conducted is available in appendix \ref{appendix-tests}.
 
 Finally, we tested our software using the three specifications in
 appendix \ref{appendix:examplespecifications} that we constructed

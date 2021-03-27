@@ -1,5 +1,4 @@
 \section{Semantics}
-
 \hide{
 \begin{code}%
 \>[0]\AgdaSymbol{\{-\#}\AgdaSpace{}%
@@ -12,7 +11,6 @@
 \AgdaKeyword{where}\<%
 \end{code}
 }
-
 \hide{
 \begin{code}%
 \>[0]\AgdaKeyword{open}\AgdaSpace{}%
@@ -162,7 +160,6 @@
 \AgdaModule{∋rule}\<%
 \end{code}
 }
-
 \hide{
 \begin{code}%
 \>[0]\AgdaKeyword{private}\<%
@@ -231,7 +228,6 @@ pattern of the target, when such a rule is matched we might then appeal to
 $β$-reduce. We are guaranteed to be able to return a computation here since
 we have kept the required type information to hand and so we make use of the
 $↞↞$ operator that we introduced in section \ref{section-corelanguage}.
-
 \begin{code}%
 \>[0]\AgdaKeyword{record}\AgdaSpace{}%
 \AgdaRecord{β-rule}\AgdaSpace{}%
@@ -418,11 +414,11 @@ $↞↞$ operator that we introduced in section \ref{section-corelanguage}.
 We now have what is required to find a matching rule by matching the various
 patterns that it may contain. We iterate over the list of rules and return the
 first match. We chose a 'first match' approach here for simplicity of
-implementation however it is acknowledged that other approaches are far more
+implementation, however it is acknowledged that other approaches are far more
 suitable. We discuss this later in our evaluation of the software.
 
 In this type, we first encounter the failure handing monad that we will use to
-propagate errors. It works as one might expect, either succeeding with a value
+propagate errors. It works as expected, either succeeding with a value
 or failing with an error message.
 \begin{code}%
 \>[0]\AgdaFunction{findRule}\AgdaSpace{}%
@@ -514,12 +510,12 @@ or failing with an error message.
 \AgdaBound{env}\AgdaSymbol{)}\<%
 \end{code}
 }
-To achieve reduction we will need to check the premise chain in the enclosed
+To achieve reduction we will need to check the premise chain, in the enclosed
 elimination to access the required environments. The mechanics of
 checking premise chains is not the business of $β$-reduction code and so we
 instead give a type to represent a function that can do this for us and insist
-that the caller provide it. We also provide a similar type appended with `
-which captures the same intuition except that it is "pre-loaded" with the
+that the caller provide it. We also provide a similar type appended with `,
+that captures the same intuition except that it is "pre-loaded" with the
 context.
 \begin{code}%
 \>[0]\AgdaFunction{PremsChecker}\AgdaSpace{}%
@@ -654,7 +650,7 @@ We previously gave a type describing a premise-chain-checker, now
 we give similar types for things that will reduce for us, and things that might
 infer types. What is noticeably absent from these types is the existence of any kind
 of rules. Our normalisation procedure should be rule-agnostic and so we achieve this
-by taking great care in where we choose to mention them, and where we choose \emph{not}
+by being very careful where we choose to mention them, and, critically, where we choose \emph{not}
 to. We must, however, bear the rules in mind when we normalise and so a conscious
 decision is made here for normalisation to be a non-failable operation. In a world of
 user-supplied typing rules, we decide that flexibility is important and so when we
@@ -720,7 +716,6 @@ opinion that this evaluation should not fail because of a type-error. Instead, t
 process continues with some $unknown$ type placeholder, meaning that it will not
 match any rules that might produce erroneous results. The responsibility of type-checking
 the term falls to the caller.
-
 \hide{
 \begin{code}%
 \>[0]\AgdaKeyword{open}\AgdaSpace{}%
@@ -970,7 +965,6 @@ the term falls to the caller.
 \AgdaSymbol{\#-\}}\<%
 \end{code}
 }
-
 The final step in normalisation by evaluation is trying to build the correct head
 form for the associated types of the term and its subterms. We do this using our
 η-Rule mechanics from \ref{section-etarules}, our svar-builder from \ref{section-patterns}
@@ -982,7 +976,7 @@ eliminations that will occur at each place in that pattern. We then navigate dow
 through the structure of the head pattern in our helper function so that we
 get to each place in the pattern, and when we do, we have built the svar that
 identifies it. This allows us to use the ∋ rule to get the type of that particular
-place which in turn facilitates the recursive call to qt to generate the head form
+place, which in turn facilitates the recursive call to qt to generate the head form
 at the nested place.
 
 To satisfy the well-scopedness of the subterms, we must maintain a proof
@@ -991,7 +985,6 @@ in a head form pattern, we are forced to add such a binder to our svar-builder t
 maintain its well-scopedness. Our proof achieves this by maintaining the invariant
 that the scope of the subterm currently identified by the svar-builder is always the
 original scope plus however many binders we have added when constructing it.
-
 \begin{code}%
 \>[0]\AgdaFunction{qt}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
@@ -1219,8 +1212,8 @@ original scope plus however many binders we have added when constructing it.
 \AgdaOperator{\AgdaFunction{⟨term}}\AgdaSpace{}%
 \AgdaBound{θ}\AgdaSymbol{))}\<%
 \end{code}
-With the heavy lifting completed normalisation is then just a process of first
-evaluating the term before building suitable head forms.
+Normalisation is then a process of first evaluating the term before building
+suitable head forms.
 \begin{code}%
 \>[0]\AgdaFunction{normalize}\AgdaSpace{}%
 \AgdaSymbol{:}%

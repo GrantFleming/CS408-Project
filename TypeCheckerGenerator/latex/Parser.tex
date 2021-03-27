@@ -1,5 +1,4 @@
 \section{Parser combinators}
-
 \hide{
 \begin{code}%
 \>[0]\AgdaKeyword{module}\AgdaSpace{}%
@@ -173,7 +172,6 @@
 \AgdaPrimitiveType{Set}\<%
 \end{code}
 }
-
 We acknowledge that parsing is an entire field of study in its own right
 and that it is certainly not the focus of this project. However,
 to have the user describe the type system in our DSL rather than in Agda
@@ -186,7 +184,6 @@ the rest of the string minus what was consumed during parsing. For convenience,
 we also provide a similar type that describes a parser operating on lists of
 characters and a way to plumb this into a 'real' parser by making the
 appropriate conversions.
-
 \begin{code}%
 \>[0]\AgdaKeyword{module}\AgdaSpace{}%
 \AgdaModule{Parser}\AgdaSpace{}%
@@ -264,7 +261,6 @@ appropriate conversions.
 \AgdaKeyword{open}\AgdaSpace{}%
 \AgdaModule{maybemonad}\<%
 \end{code}
-
 \hide{
 \begin{code}%
 %
@@ -308,12 +304,11 @@ appropriate conversions.
 \AgdaFunction{ParserState}\<%
 \end{code}
 }
-
 We build a small library of useful parsers, allowing us to build parsers
 incrementally using these parser combinators. We provide parsers that parser
 conditionally, parse zero-or-more times. Parsers that fail if they do not
 consume all their input, parsers to parse literal characters and strings. The
-list is somewhat large so we will not detail these parsers here. A full list of
+list is extensive so we will not detail these parsers here. A full list of
 the basic combinators used is available in appendix \ref{appendix-parsercombinators}.
 \hide{
 \begin{code}%
@@ -1321,7 +1316,6 @@ the basic combinators used is available in appendix \ref{appendix-parsercombinat
 \\
 \>[0]\<%
 \end{code}
-
 \begin{code}%
 \>[0][@{}l@{\AgdaIndent{1}}]%
 \>[2]\AgdaComment{-- text/number parsing}\<%
@@ -1778,7 +1772,10 @@ the basic combinators used is available in appendix \ref{appendix-parsercombinat
 \\
 %
 \\[\AgdaEmptyExtraSkip]%
-\>[0]\<%
+%
+\>[2]\AgdaSymbol{\{-\#}\AgdaSpace{}%
+\AgdaKeyword{TERMINATING}\AgdaSpace{}%
+\AgdaSymbol{\#-\}}\<%
 \\
 %
 \>[2]\AgdaFunction{bracketed}\AgdaSpace{}%
@@ -1793,15 +1790,20 @@ the basic combinators used is available in appendix \ref{appendix-parsercombinat
 \>[2]\AgdaFunction{bracketed}\AgdaSpace{}%
 \AgdaBound{p}\AgdaSpace{}%
 \AgdaSymbol{=}%
-\>[1042I]\AgdaKeyword{do}\<%
+\>[1044I]\AgdaKeyword{do}\<%
 \\
-\>[1042I][@{}l@{\AgdaIndent{0}}]%
+\>[1044I][@{}l@{\AgdaIndent{0}}]%
 \>[18]\AgdaFunction{literal}\AgdaSpace{}%
 \AgdaString{'('}\<%
 \\
 %
 \>[18]\AgdaBound{a}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{←}}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{either}}\AgdaSpace{}%
+\AgdaFunction{wsnl-tolerant}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaFunction{bracketed}\AgdaSpace{}%
+\AgdaBound{p}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{or}}\AgdaSpace{}%
 \AgdaFunction{wsnl-tolerant}\AgdaSpace{}%
 \AgdaBound{p}\<%
 \\
@@ -1852,11 +1854,11 @@ the basic combinators used is available in appendix \ref{appendix-parsercombinat
 \\
 %
 \>[2]\AgdaFunction{curlybracketed}%
-\>[1070I]\AgdaBound{p}\AgdaSpace{}%
+\>[1077I]\AgdaBound{p}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
 \AgdaKeyword{do}\<%
 \\
-\>[1070I][@{}l@{\AgdaIndent{0}}]%
+\>[1077I][@{}l@{\AgdaIndent{0}}]%
 \>[18]\AgdaFunction{literal}\AgdaSpace{}%
 \AgdaString{'\{'}\<%
 \\
@@ -1892,11 +1894,11 @@ the basic combinators used is available in appendix \ref{appendix-parsercombinat
 \\
 %
 \>[2]\AgdaFunction{squarebracketed}%
-\>[1087I]\AgdaBound{p}\AgdaSpace{}%
+\>[1094I]\AgdaBound{p}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
 \AgdaKeyword{do}\<%
 \\
-\>[.][@{}l@{}]\<[1087I]%
+\>[.][@{}l@{}]\<[1094I]%
 \>[18]\AgdaFunction{literal}\AgdaSpace{}%
 \AgdaString{'['}\<%
 \\

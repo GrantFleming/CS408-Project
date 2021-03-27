@@ -1,19 +1,17 @@
 \chapter{Evaluation}
-
 \section{DSL evaluation}
 \label{chapter-DSL-eval}
-
 In section \ref{DSL} we identify three common problems with the way type
 systems are currently described in the literature.
 
 \begin{enumerate}
 \item Descriptions are often jargon-heavy.
 \item Descriptions are often lengthy with repeated information.
-\item The separate nature of the rules make dependencies non-explicit.
+\item The separated nature of the rules make dependencies non-explicit.
 \end{enumerate}
 
 We aimed to address these issues when designing our DSL while also
-prioritizing readability, in particular aiming for type definitions
+prioritising readability, in particular aiming for type definitions
 to be readable in a linear fashion.
 
 We believe that in section \ref{DSL} we demonstrated the concrete
@@ -44,7 +42,7 @@ discharge the acceptance criteria where we specified that our solution
 must be capable of representing both non-dependent and dependent types.
 
 Some aspects of the DSL are worth further thought as there are
-certainly improvements to be had.
+improvements to be had.
 
 Firstly, the dependency on consistent ordering between elimination
 type descriptions and corresponding reductions in each value is not
@@ -57,7 +55,7 @@ in some form before the DSL was useful in any real-world application.
 
 A final limitation of our DSL is that when we introduce a new variable
 binding, the scope of that new binding begins immediately after the
-variable is introduced, there is no way for us to specify an
+variable is introduced. There is no way for us to specify an
 alternative location to begin the newly weakened scope. Consequently,
 we are unable to represent let-expressions in the customary manner, as
 the variable name appears before the value we then bind to it meaning
@@ -69,14 +67,12 @@ then x is in-scope when defining the term we plan to associate to
 it. This problem appears more generally any time we wish to provide a
 syntax for some kind of assignment in this manner. We can work around
 this issue by simply providing the term before the binding name,
-however, this results in wildly unintuitive syntax, opposing decades of
+however, this results in unintuitive syntax, opposing decades of
 convention.
 \begin{verbatim}
 let <some-term> = x in <some expression involving x>
 \end{verbatim}
-
 \section{Software evaluation}
-
 We open our evaluation of the software by first revisiting the
 acceptance criteria provided in section \ref{sec-acceptance}. We have
 already shown that the software can be run in the manner described by
@@ -120,8 +116,8 @@ potential improvements.
 
 Although there are a variety of languages we can type-check
 using this software, there are also certain notable limitations. We
-are most obviously limited by what we can describe using the
-DSL as is discussed in the previous section. We also require users
+are limited by what we can describe using the
+DSL as is discussed in the previous section. We also require users'
 source code to be extremely explicit about type information. There are
 no appeals to techniques such as unification to shorten the
 syntax of the languages we describe. For example, when we eliminate
@@ -137,29 +133,25 @@ to protect the user from their own errors. We make sure that
 when a user supplies some pattern that we only use it in particular
 rules if the premises can establish complete trust. However,
 there are other areas where we do not conduct checks and this leaves
-room for mischief in our DSL.
+room for user errors in our DSL.
 
 Most notably, users can construct types that lead to circular
 checks and therefore lead to a type-checking process that we cannot
 guarantee to terminate. The following description is perfectly legal
 in our DSL and our software will parse and attempt to use such
 information.
-
 \begin{verbatim}
 type: A
   if:
     type A
 \end{verbatim}
-
 Further testing with this example specification exposes another
 limitation of our system which we will now explore.
-
 \subsection{Rule matching depends on rule declaration order}
-
 When we collect together rules of a certain type, we make no checks to
 ensure that some syntax can only match zero or one of the rules. We
 will discuss this further when we explore missed opportunities for
-mathematical structure however what we expose here is that where
+mathematical structure, however, what we expose here is that where
 multiple rules might match, the rule we use is the one that
 is declared first. As a result, having some erroneous, but very
 generic, entity declared early in the file might "catch" matches
@@ -171,7 +163,7 @@ the collections of rules as a list. The arbitrary ordering of rules in
 a list does not admit any structure as to make an alternative method of
 processing obvious.
 
-In hindsight we propose a tree-like structure where rules are stored
+In hindsight, we propose a tree-like structure where rules are stored
 at leaves and nodes store the most specific pattern that matches all
 the rules stored in its subtrees. A node might either yield children
 for all sub-patterns giving rise to a collection of more specific
@@ -180,9 +172,7 @@ pattern. In this way, we might eliminate the problem that some syntax
 might match multiple patterns (since a node cannot contain both a leaf
 and a set of child nodes) while also eliminating the arbitrary
 dependency of matching on the order that certain elements are declared.
-
 \subsection{Missed opportunities for mathematical structure}
-
 We missed several opportunities
 to capitalise on mathematical structure when writing our
 code. We noted previously that we might have altered 
@@ -214,9 +204,7 @@ any $\bot$s.
 There are also areas where we might have used this structure to help
 us in parsing the source code as we rely heavily on parsing according
 to patterns.
-
 \subsection{Single universe limitation}
-
 To simplify the late-stage implementation of the
 software, we decided that all languages described would consist of a
 single universe of types. We call this universe "set" in our syntax
@@ -228,18 +216,16 @@ while intending for a user to describe the universes in our DSL too,
 this was not a feature we ended up carrying through to the final
 system due to time constraints.
 
-We might have thought to include the ability for the user to at least
-choose the name of the universe, this might have been easy to
+We might have thought to include the ability for the user to
+choose the name of the universe. This might have been easy to
 implement and could have been a welcome addition to the functionality
 we have provided.
-
 \subsection{Code quality}
-
 There are areas of the project where we might find ways to
 improve the quality of the code. Particularly in sections
 \ref{section-normalisation} and \ref{section-checking-types} we notice
-that many functions take long lists of arguments which is certainly
-indicative of a particular 'code smell'. There are improvements to be
+that many functions take long lists of arguments. This is a known
+anti-pattern, indicating that our code is suboptimal. There are improvements to be
 had by revisiting some sections of the code and collecting commonly
 associated information under some sensible types, and perhaps more
 generally reconsidering where some of these definitions are defined
@@ -267,7 +253,7 @@ interspersed with code in the same file, the maintenance of these
 files could become cumbersome. When making any alterations to the code
 we must also make sure that we update the documentation otherwise we
 might end up with a file that contains information that is out of date
-even with regards to itself! This is as opposed to the scenario where a
+even with regards to itself. This is as opposed to the scenario where a
 separate document might end up slightly behind the most up-to-date
 versions of the source code, here the problem is lessened since we
 might be able to determine its worthiness by cross-checking the date
@@ -296,12 +282,12 @@ have helped us to meet the deadlines we set originally. This has
 resulted in a slight decrease in code quality that is apparent in some
 of the later areas of the codebase.
 
-Firstly we over-estimated our dependently-typed programming skills and,
+Firstly, we over-estimated our dependently-typed programming skills and,
 being somewhat new to this typing paradigm, progress was naturally
 slower as thought was given as to how best to use the features it
 affords. Secondly, we found ourselves lacking experience in the design
 of functional programs. We certainly had experience in providing
-individual functions however we had very little experience of
+individual functions, however, we had very little experience of
 functional design at a higher level. We often found ourselves having
 to rewrite sections of code that seemed sufficient at the time but
 that made subsequent definitions prohibitively difficult.

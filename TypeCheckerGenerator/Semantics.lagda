@@ -1,12 +1,10 @@
 \section{Semantics}
-
 \hide{
 \begin{code}
 {-# OPTIONS --rewriting #-}
 module Semantics where
 \end{code}
 }
-
 \hide{
 \begin{code}
 open import CoreLanguage
@@ -29,7 +27,6 @@ open import Relation.Binary.PropositionalEquality using (sym; subst; _≡_; refl
 open ∋rule
 \end{code}
 }
-
 \hide{
 \begin{code}
 private
@@ -54,7 +51,6 @@ pattern of the target, when such a rule is matched we might then appeal to
 $β$-reduce. We are guaranteed to be able to return a computation here since
 we have kept the required type information to hand and so we make use of the
 $↞↞$ operator that we introduced in section \ref{section-corelanguage}.
-
 \begin{code}
 record β-rule : Set where
   open ElimRule
@@ -181,7 +177,6 @@ opinion that this evaluation should not fail because of a type-error. Instead, t
 process continues with some $unknown$ type placeholder, meaning that it will not
 match any rules that might produce erroneous results. The responsibility of type-checking
 the term falls to the caller.
-
 \hide{
 \begin{code}
 open import EtaRule
@@ -217,7 +212,6 @@ _-_∥_∥ :  Reducer × Inferer × PremsChecker →
 {-# TERMINATING #-}    
 \end{code}
 }
-
 The final step in normalisation by evaluation is trying to build the correct head
 form for the associated types of the term and its subterms. We do this using our
 η-Rule mechanics from \ref{section-etarules}, our svar-builder from \ref{section-patterns}
@@ -238,7 +232,6 @@ in a head form pattern, we are forced to add such a binder to our svar-builder t
 maintain its well-scopedness. Our proof achieves this by maintaining the invariant
 that the scope of the subterm currently identified by the svar-builder is always the
 original scope plus however many binders we have added when constructing it.
-
 \begin{code}
 qt : List η-Rule → (ty tm : Const γ) → Const γ
 qt {γ = γ} rs ty v with EtaRule.findRule rs ty
@@ -264,8 +257,8 @@ qt {γ = γ} rs ty v with EtaRule.findRule rs ty
            (typeOf (checkRule r) (build v) i s)
            (subst Const prf (el ⟨term θ))
 \end{code}
-With the heavy lifting completed normalisation is then just a process of first
-evaluating the term before building suitable head forms.
+Normalisation is then a process of first evaluating the term before building
+suitable head forms.
 \begin{code}
 normalize :  List η-Rule → List β-rule  →
              Inferer × PremsChecker     →

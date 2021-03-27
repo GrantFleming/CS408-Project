@@ -48,7 +48,8 @@ Attempting to parse this in a top-down manner may lead to infinite recursion in
 the same way that parsing a left-recursive grammar might. We can solve this problem
 in two ways, we could either implement a more sophisticated parser that is tolerant
 of such grammars or we could pre-process the patterns to create a right-recursive
-equivalent. We opt for the latter option due to time constraints.
+equivalent. We consider the first option to be outside the scope of this project and
+opt for the latter solution.
 
 Since our objective is to synthesize some type, the top-level parsable element here
 is a single \emph{computation}.
@@ -262,4 +263,3 @@ with the command \begin{verbatim}TypeCheck <spec-file> <term-file>\end{verbatim}
 first read the whole of the spec-file as a string, and parse the rules from it with
 our DSL parser. Armed with the set of rules we can then parse a term in the language
 from the term-file, and then attempt to type the term with a simple call to 'infer'.
-

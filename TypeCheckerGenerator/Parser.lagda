@@ -1,5 +1,4 @@
 \section{Parser combinators}
-
 \hide{
 \begin{code}
 module Parser where
@@ -36,7 +35,6 @@ private
     C : Set
 \end{code}
 }
-
 We acknowledge that parsing is an entire field of study in its own right
 and that it is certainly not the focus of this project. However,
 to have the user describe the type system in our DSL rather than in Agda
@@ -49,7 +47,6 @@ the rest of the string minus what was consumed during parsing. For convenience,
 we also provide a similar type that describes a parser operating on lists of
 characters and a way to plumb this into a 'real' parser by making the
 appropriate conversions.
-
 \begin{code}
 module Parser where
   Parser' : Set → Set
@@ -64,7 +61,6 @@ module Parser where
                     just ((a , fromList rest))
                   where open maybemonad
 \end{code}
-
 \hide{
 \begin{code}
   ParserState : RawMonadState String Parser
@@ -76,12 +72,11 @@ module parsermonad = RawMonad ParserMonad
 module parserstatemonad = RawMonadState ParserState
 \end{code}
 }
-
 We build a small library of useful parsers, allowing us to build parsers
 incrementally using these parser combinators. We provide parsers that parser
 conditionally, parse zero-or-more times. Parsers that fail if they do not
 consume all their input, parsers to parse literal characters and strings. The
-list is somewhat large so we will not detail these parsers here. A full list of
+list is extensive so we will not detail these parsers here. A full list of
 the basic combinators used is available in appendix \ref{appendix-parsercombinators}.
 \hide{
 \begin{code}
@@ -215,7 +210,6 @@ module Parsers where
     where open parsermonad
   
 \end{code}
-
 \begin{code}
   -- text/number parsing
 

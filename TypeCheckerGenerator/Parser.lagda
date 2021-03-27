@@ -300,11 +300,11 @@ module Parsers where
           return (toNat d)
         where open parsermonad
 
-  
+  {-# TERMINATING #-}
   bracketed : Parser A → Parser A
   bracketed p = do
                   literal '('
-                  a ← wsnl-tolerant p
+                  a ← either wsnl-tolerant (bracketed p) or wsnl-tolerant p
                   literal ')'
                   return a
      where open parsermonad

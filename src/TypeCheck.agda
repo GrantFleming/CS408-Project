@@ -37,14 +37,14 @@ module TypeCheck where
 
   relative : String -> Maybe String
   relative str with toList str
-  ... | ('.' ∷ '/' ∷ rest) = just (fromList ('/' ∷ rest))
-  ... | _                  = nothing
+  ... | ('/' ∷ rest) = nothing    
+  ... | rpath        = just (fromList rpath)
 
   buildPath : String -> IO String
   buildPath path with relative path
   ... | just rest  = do
                        dir ← currentDir 
-                       return (dir ++ rest)
+                       return (dir ++ "/" ++ rest)
   ... | nothing = return path
 
   main = run (do

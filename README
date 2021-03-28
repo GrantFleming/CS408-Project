@@ -1,0 +1,15 @@
+The source code for the project can be found in the "src" folder.
+
+The source code for the latex report can be found in the "report" folder.
+
+The report pdf is provided in the top level directory.
+
+There is a pre-compiled binary of the project provided at the top level directory for convenience. It has been compiled for x86 linux. If a version of the software is required for Windows it must be compiled using the script provided.
+
+The script is marked as executable and can be ran in the usual manner for your operating system. Provided that you have Haskell, Agda and the Agda Standard Library installed, the result will be a binary named "TypeCheck" that will be output in the same directory as the compile script.
+
+The software is then run from the terminal/command line in the usual manner for your operating system. It expects two file paths as input. The first is the path of the type system description and the second is the path of the source code to be type checked. 
+
+On a linux terminal, with some files "desc" and "source" in the same directory as the program (and assuming we are also in that directory) the software can be ran with the following command:
+
+./TypeCheck ./desc ./source

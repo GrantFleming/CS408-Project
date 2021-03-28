@@ -1,0 +1,4 @@
+#!/bin/sh
+
+cd src
+agda --compile --compile-dir="../" TypeCheck.agda

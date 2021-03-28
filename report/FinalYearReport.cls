@@ -60,7 +60,7 @@
                       been submitted for assessment in any other context.} \par}
 		  \vskip 3em
                   \begin{tabular}{@{}p{15em}p{18em}@{}}
-		     Signed:        & \hrulefill \\[1em]
+		     Signed:        & \includegraphics[width=10em]{pictures/Signature} \\[1em]
 		     & \@author \\[1em]
                      Date: & \today \\[1em]
 		  \end{tabular}

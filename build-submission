@@ -1,0 +1,25 @@
+#!/bin/sh
+
+rm -r submission-files
+mkdir submission-files
+
+cp -r src submission-files/
+cd submission-files/src
+rm -r *.agdai
+rm -r MAlonzo
+
+cd ../../
+cp -r report submission-files
+cd submission-files/report
+pdflatex -shell-escape -synctex=1 -interaction=nonstopmode --output-directory ./out -output-format=pdf \\nonstopmode\\input GrantFleming-4thYearProject-Report.tex
+
+cp ./out/GrantFleming-4thYearProject-Report.pdf ../ 
+cd ../../
+cp compile submission-files
+cp README submission-files
+./compile
+cp TypeCheck submission-files
+
+cd submission-files
+zip -r project-files.zip compile README report src TypeCheck
+rm -r compile README report src TypeCheck

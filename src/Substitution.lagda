@@ -52,7 +52,7 @@ Substitutable T = ∀ {γ} {γ'} → T γ → γ ⇒[ T ] γ' → T γ'
 Finally, we acknowledge that given two scope transformations, we can define
 a type to represent composition, which leads us nicely to a definition for
 composition of substitutions.
-\input{../../TypeCheckerGenerator/latex/Composition.tex}
+\input{../../src/latex/Composition.tex}
 \begin{code}
 [_]_∘σ_ : Substitutable T → Composable _⇒[ T ]_
 [ / ]  ε       ∘σ σ' = ε

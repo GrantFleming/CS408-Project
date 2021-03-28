@@ -51,20 +51,20 @@ module TypeCheck where
            (desc-filename ∷ source-filename ∷ []) ← getArgs
              where _ → do
                          _ ← putStrLn ("Must supply the name of the specification file" ++
-                                       " and the source code file.")
+                                       " and the source code file.\n")
                          return tt
            desc-path ← buildPath desc-filename
            source-path ← buildPath source-filename
            desc ← readFiniteFile desc-path
            src  ← readFiniteFile source-path
            just (rules@(rs tr ur ∋r er βr ηr) , rest) ← return (parse-spec desc)
-             where nothing → putStrLn ("Failed to parse spec file")
+             where nothing → putStrLn ("Failed to parse spec file.\n")
            _ ← putStrLn ("Parsed:\n" ++ show (length tr) ++ " types\n" ++
                                         show (length ∋r) ++ " values\n" ++
                                         show (length er) ++ " eliminations\n" ++
                                         show (length βr) ++ " β-rules\n")
            just (term , rest) ← return (computation (tr , ∋r , er) empty src)
-             where nothing → putStrLn ("Failed to parse source code file.")
+             where nothing → putStrLn ("Failed to parse source code file.\n")
            _ ← putStrLn ("Successfully parsed source code file.")           
            _ ← putStrLn ("Term parsed: " ++ print term)
            _ ← putStrLn ("Input ignored: " ++ rest ++ "\n")
@@ -74,5 +74,6 @@ module TypeCheck where
                      putStrLn msg)
            _ ← putStrLn ("Type checking succeeded.")             
            _ ← putStrLn ("type: " ++ print type)
+           _ ← putStrLn ("\n")
            return tt)
 
